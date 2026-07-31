@@ -19,7 +19,11 @@ interface Params {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const category = categoryFromSlug(params.slug)
   if (!category) return { title: 'Section not found' }
-  return { title: category, description: categoryMeta[category].description }
+  return {
+    title: category,
+    description: categoryMeta[category].description,
+    alternates: { canonical: `/category/${params.slug}` },
+  }
 }
 
 export default async function CategoryPage({ params }: Params) {

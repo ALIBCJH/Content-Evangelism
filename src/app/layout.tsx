@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Fraunces, Montserrat, Newsreader } from 'next/font/google'
+import { radioChannel, siteInfo, siteUrl, youtubeChannel } from '@/lib/content'
+import { JsonLd } from '@/components/json-ld'
 import './globals.css'
 
 const fraunces = Fraunces({
@@ -51,6 +53,44 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
+/* Site-wide knowledge graph, server-rendered so every crawler — including
+   the AI ones that never run JavaScript — can read who publishes this
+   site, who leads the ministry, and where the official channels live. */
+const siteGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${siteUrl}/#ministry`,
+      name: siteInfo.ministry,
+      alternateName: ['Repentance and Holiness', siteInfo.name],
+      url: siteUrl,
+      founder: { '@type': 'Person', name: siteInfo.head },
+      description:
+        'A global Christian ministry calling the nations to repentance, righteousness, and holiness in preparation for the coming of the Messiah.',
+      sameAs: [youtubeChannel.href, radioChannel.href],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      url: siteUrl,
+      name: siteInfo.name,
+      description:
+        'The publication desk of the Ministry of Repentance and Holiness — teachings, prophecies, oracles, Bible study guides, and devotionals.',
+      publisher: { '@id': `${siteUrl}/#ministry` },
+      inLanguage: 'en',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -62,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Static, synchronous theme bootstrap — runs before first paint. */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/theme-init.js" />
+        <JsonLd data={siteGraph} />
         {children}
       </body>
     </html>

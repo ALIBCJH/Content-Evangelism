@@ -506,7 +506,57 @@ export const navSections = [
   { label: 'Oracles', href: '/category/oracles' },
   { label: 'Teaching', href: '/category/teachings' },
   { label: 'Prophecy', href: '/category/prophecy' },
+  { label: 'About', href: '/about' },
 ]
+
+export const siteUrl = 'https://repentandpreparetheway.org'
+
+/* ── Official channels ───────────────────────────────────────────── */
+
+export interface Channel {
+  key: 'radio' | 'youtube' | 'whatsapp'
+  name: string
+  /** One line under the name wherever the channel is shown as a card/row. */
+  tagline: string
+  cta: string
+  href: string
+  /** Live now — rendered with the pulsing on-air dot. */
+  live?: boolean
+}
+
+/** Jesus is LORD Radio — the ministry's 24/7 carrier station. */
+export const radioChannel: Channel = {
+  key: 'radio',
+  name: 'Jesus is LORD Radio',
+  tagline: 'The ministry’s 24/7 station — worship, teachings, and live services.',
+  cta: 'Listen live',
+  href: 'https://www.jesusislordradio.info',
+  live: true,
+}
+
+export const youtubeChannel: Channel = {
+  key: 'youtube',
+  name: 'YouTube',
+  tagline: 'Watch services, revival meetings, and teachings from the altar.',
+  cta: 'Watch',
+  href: 'https://www.youtube.com/c/RepentPreparetheway',
+}
+
+/* WhatsApp is the distribution channel: this link opens a ready-to-send
+   invitation. Swap the href for the ministry's WhatsApp Channel invite
+   link once one exists — nothing else needs to change. */
+export const whatsappChannel: Channel = {
+  key: 'whatsapp',
+  name: 'WhatsApp',
+  tagline: 'Send the reading room to a friend — evangelism one chat at a time.',
+  cta: 'Share',
+  href: `https://wa.me/?text=${encodeURIComponent(
+    `Repent and Prepare the Way — teachings, prophecies, and oracles from the Ministry of Repentance and Holiness. ${siteUrl}`
+  )}`,
+}
+
+/** Every channel icon on the site reads from this list. */
+export const channels: Channel[] = [radioChannel, youtubeChannel, whatsappChannel]
 
 export const siteInfo = {
   name: 'Repent and Prepare the Way',
