@@ -15,6 +15,7 @@ import { listPostedArticles } from '@/lib/posted'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { ArticleArt } from '@/components/article-art'
+import { ArticleCard } from '@/components/article-card'
 import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
@@ -103,6 +104,7 @@ export default async function ArticlesPage() {
     authorName: authorById(a.authorId).name,
     publishedAt: a.publishedAt,
     readMinutes: a.readMinutes,
+    imageUrl: a.image?.src,
     art: a.art,
   }))
 
@@ -142,6 +144,10 @@ export default async function ArticlesPage() {
                   <span aria-hidden className="mx-2">·</span>
                   <span className="tabular">{lead.readMinutes} min read</span>
                 </p>
+                <p className="mt-4 inline-flex items-center gap-1.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-gold">
+                  Read More
+                  <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+                </p>
               </div>
             </Link>
           </div>
@@ -177,17 +183,7 @@ export default async function ArticlesPage() {
         {/* ── Secondary row ──────────────────────────────────── */}
         <div className="mt-12 grid grid-cols-1 gap-8 border-t border-hairline pt-10 sm:grid-cols-2 lg:grid-cols-3">
           {secondary.map((row) => (
-            <Link key={row.key} href={row.href} className="group block">
-              <Thumb row={row} className="aspect-[16/10] w-full rounded-xl border border-hairline" />
-              <Badge variant="outline" size="sm" className="mt-4">{row.category}</Badge>
-              <h3 className="mt-3 font-display text-xl font-semibold leading-snug text-ink-strong">
-                <span className="headline-link">{row.title}</span>
-              </h3>
-              <p className="mt-2 font-serif text-sm leading-relaxed text-ink-muted line-clamp-2">
-                {row.dek}
-              </p>
-              <Meta row={row} className="mt-3" />
-            </Link>
+            <ArticleCard key={row.key} row={row} />
           ))}
         </div>
 
@@ -199,13 +195,7 @@ export default async function ArticlesPage() {
             </div>
             <div className="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
               {grid.map((row) => (
-                <Link key={row.key} href={row.href} className="group block">
-                  <Thumb row={row} className="aspect-[16/10] w-full rounded-xl border border-hairline" />
-                  <h3 className="mt-4 font-display text-[1.05rem] font-semibold leading-snug text-ink">
-                    <span className="headline-link">{row.title}</span>
-                  </h3>
-                  <Meta row={row} className="mt-2" />
-                </Link>
+                <ArticleCard key={row.key} row={row} showDek={false} />
               ))}
             </div>
           </>

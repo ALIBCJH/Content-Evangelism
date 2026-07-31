@@ -240,6 +240,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-30',
     readMinutes: 12,
     art: { palette: 'midnight', icon: 'lamp' },
+    image: {
+      src: '/images/articles/discipline-of-waiting.jpg',
+      alt: 'Two candles burning steadily in the darkness',
+      width: 1024,
+      height: 683,
+    },
   },
   {
     slug: 'bread-in-the-wilderness',
@@ -250,6 +256,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-29',
     readMinutes: 9,
     art: { palette: 'harvest', icon: 'wheat' },
+    image: {
+      src: '/images/articles/bread-in-the-wilderness.jpg',
+      alt: 'A hand brushing ripe heads of wheat in a golden field',
+      width: 960,
+      height: 640,
+    },
   },
   {
     slug: 'creeds-still-speak',
@@ -260,6 +272,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-28',
     readMinutes: 14,
     art: { palette: 'wine', icon: 'book' },
+    image: {
+      src: '/images/articles/creeds-still-speak.jpg',
+      alt: 'The soaring nave and stone columns of an ancient cathedral',
+      width: 1024,
+      height: 729,
+    },
   },
   {
     slug: 'anatomy-of-a-blessing',
@@ -270,6 +288,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-27',
     readMinutes: 11,
     art: { palette: 'dawn', icon: 'sunrise' },
+    image: {
+      src: '/images/articles/anatomy-of-a-blessing.jpg',
+      alt: 'An outstretched hand lifted toward the skyline across the water',
+      width: 1024,
+      height: 683,
+    },
   },
   {
     slug: 'praying-the-hours',
@@ -280,6 +304,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-27',
     readMinutes: 7,
     art: { palette: 'flame', icon: 'flame' },
+    image: {
+      src: '/images/articles/praying-the-hours.jpg',
+      alt: 'A woman with hands clasped in quiet prayer by a window',
+      width: 960,
+      height: 640,
+    },
   },
   {
     slug: 'watchmen-not-alarmists',
@@ -290,6 +320,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-26',
     readMinutes: 13,
     art: { palette: 'orchid', icon: 'trumpet' },
+    image: {
+      src: '/images/articles/watchmen-not-alarmists.jpg',
+      alt: 'A lighthouse standing dark against a red evening sky',
+      width: 1024,
+      height: 676,
+    },
   },
   {
     slug: 'wells-our-fathers-dug',
@@ -300,6 +336,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-25',
     readMinutes: 16,
     art: { palette: 'olive', icon: 'well' },
+    image: {
+      src: '/images/articles/wells-our-fathers-dug.jpg',
+      alt: 'The green Kerio Valley escarpment in Kenya’s Rift Valley',
+      width: 1920,
+      height: 1080,
+    },
   },
   {
     slug: 'testimony-nairobi-nights',
@@ -310,6 +352,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-24',
     readMinutes: 8,
     art: { palette: 'flame', icon: 'star' },
+    image: {
+      src: '/images/articles/testimony-nairobi-nights.jpg',
+      alt: 'The Nairobi skyline glowing at dusk',
+      width: 1024,
+      height: 683,
+    },
   },
   {
     slug: 'shepherds-and-platforms',
@@ -320,6 +368,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-23',
     readMinutes: 10,
     art: { palette: 'olive', icon: 'shepherd' },
+    image: {
+      src: '/images/articles/shepherds-and-platforms.jpg',
+      alt: 'A shepherd walking ahead of his flock on a mountain pasture',
+      width: 1920,
+      height: 1280,
+    },
   },
   {
     slug: 'hope-is-a-discipline',
@@ -330,6 +384,12 @@ export const articles: Article[] = [
     publishedAt: '2026-07-22',
     readMinutes: 6,
     art: { palette: 'dawn', icon: 'anchor' },
+    image: {
+      src: '/images/articles/hope-is-a-discipline.jpg',
+      alt: 'A weathered iron anchor chain, link locked into link',
+      width: 1024,
+      height: 678,
+    },
   },
 ]
 
