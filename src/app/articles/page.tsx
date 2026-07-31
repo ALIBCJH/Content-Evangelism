@@ -7,6 +7,7 @@ import {
   articles as seedArticles,
   authorById,
   categoryArt,
+  categoryMeta,
   crossArticle,
   type ArticleArt as ArticleArtSpec,
 } from '@/lib/content'
@@ -19,6 +20,7 @@ import { Badge } from '@/components/ui/badge'
 export const metadata: Metadata = {
   title: 'Articles',
   description: 'All articles from the publication desk of the Ministry of Repentance and Holiness.',
+  alternates: { canonical: '/articles' },
 }
 
 export const dynamic = 'force-dynamic'
@@ -90,10 +92,11 @@ export default async function ArticlesPage() {
   ].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 
   // Seed pieces keep the page full while the archive is young; they fall
-  // off the bottom as real articles are published.
+  // off the bottom as real articles are published. They have no page of
+  // their own yet, so each links to its section rather than nowhere.
   const fill: Row[] = seedArticles.map((a) => ({
     key: a.slug,
-    href: '#',
+    href: `/category/${categoryMeta[a.category].slug}`,
     title: a.title,
     dek: a.dek,
     category: a.category,

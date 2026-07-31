@@ -6,8 +6,19 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Cross, Menu, Search, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
-import { navSections, siteInfo } from '@/lib/content'
+import { navSections, radioChannel, siteInfo, whatsappChannel, youtubeChannel } from '@/lib/content'
+import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
 import { ThemeToggle } from '@/components/theme-toggle'
+
+/** The pulsing on-air dot for the Listen Live affordances. */
+function LiveDot({ className }: { className?: string }) {
+  return (
+    <span className={cn('relative flex h-2 w-2', className)} aria-hidden>
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-status-danger" />
+    </span>
+  )
+}
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = React.useState(false)
@@ -70,6 +81,16 @@ export function SiteHeader() {
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href={radioChannel.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus-ring hidden h-8 items-center gap-2 whitespace-nowrap rounded-full border border-hairline-strong px-3 font-sans text-[0.625rem] font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold sm:inline-flex"
+              title={`${radioChannel.name} — ${radioChannel.cta}`}
+            >
+              <LiveDot />
+              Listen Live
+            </a>
             <Link
               href="/search"
               aria-label="Search the archive"
@@ -111,6 +132,38 @@ export function SiteHeader() {
                     {section.label}
                   </Link>
                 ))}
+
+                {/* Official channels — the mobile menu is where most
+                    readers will reach for them. */}
+                <div className="mt-2 border-t border-hairline pt-3">
+                  <a
+                    href={radioChannel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="kicker flex items-center gap-3 rounded-lg px-3 py-3 text-ink-muted transition-colors hover:bg-surface-2 hover:text-gold"
+                  >
+                    <LiveDot />
+                    Listen Live · {radioChannel.name}
+                  </a>
+                  <a
+                    href={youtubeChannel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="kicker flex items-center gap-3 rounded-lg px-3 py-3 text-ink-muted transition-colors hover:bg-surface-2 hover:text-[#FF3333]"
+                  >
+                    <YouTubeIcon className="h-4 w-4" />
+                    Watch on YouTube
+                  </a>
+                  <a
+                    href={whatsappChannel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="kicker flex items-center gap-3 rounded-lg px-3 py-3 text-ink-muted transition-colors hover:bg-surface-2 hover:text-[#25D366]"
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                    Share on WhatsApp
+                  </a>
+                </div>
               </div>
             </motion.div>
           )}

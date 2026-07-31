@@ -3,8 +3,9 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Cross } from 'lucide-react'
-import { crossArticle } from '@/lib/content'
+import { authorById, crossArticle, siteInfo, siteUrl } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
+import { JsonLd } from '@/components/json-ld'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
@@ -20,13 +21,31 @@ export const metadata: Metadata = {
   title: 'The Cross of Jesus: Where Repentance Meets Mercy',
   description:
     'Before it was ever an ornament, it was an execution. A teaching on the cross of Jesus — the place where the holiness of God and the hope of sinners met once and for all.',
+  alternates: { canonical: '/articles/the-cross-of-jesus' },
   openGraph: {
     type: 'article',
     title: 'The Cross of Jesus: Where Repentance Meets Mercy',
     description:
       'A teaching on the cross of Jesus — where the holiness of God and the hope of sinners met once and for all.',
+    url: '/articles/the-cross-of-jesus',
     images: [{ url: '/images/the-cross-of-jesus.png', width: 1155, height: 658 }],
   },
+}
+
+const articleLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  '@id': `${siteUrl}${crossArticle.href}`,
+  mainEntityOfPage: `${siteUrl}${crossArticle.href}`,
+  headline: crossArticle.title,
+  description: crossArticle.dek,
+  articleSection: crossArticle.category,
+  datePublished: crossArticle.publishedAt,
+  author: { '@type': 'Organization', name: authorById(crossArticle.authorId).name },
+  publisher: { '@id': `${siteUrl}/#ministry`, '@type': 'Organization', name: siteInfo.ministry },
+  isPartOf: { '@id': `${siteUrl}/#website` },
+  inLanguage: 'en',
+  ...(crossArticle.image ? { image: [`${siteUrl}${crossArticle.image.src}`] } : {}),
 }
 
 /** Section subheading with a small gold numeral, in the house style. */
@@ -65,6 +84,7 @@ export default async function CrossArticlePage() {
     .slice(0, 3)
   return (
     <>
+      <JsonLd data={articleLd} />
       <ReadingProgress />
       <SiteHeader />
       <main>

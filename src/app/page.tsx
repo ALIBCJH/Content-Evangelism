@@ -2,8 +2,10 @@ import * as React from 'react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Hero, type FrontLead, type FrontRailRow } from '@/components/sections/hero'
+import { SectionIndex } from '@/components/sections/section-index'
 import { LatestStrip } from '@/components/sections/latest-strip'
 import { TodaysVerse } from '@/components/sections/todays-verse'
+import { ConnectStrip } from '@/components/sections/connect-strip'
 import { mostRead } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 
@@ -11,6 +13,10 @@ import { listRealRows } from '@/lib/rows'
    article leads, the strip carries the next pieces, and the rail follows —
    an article never appears twice on the page. */
 export const dynamic = 'force-dynamic'
+
+export const metadata = {
+  alternates: { canonical: '/' },
+}
 
 const STRIP_SIZE = 3
 const RAIL_SIZE = 5
@@ -37,14 +43,13 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* JSON-LD structured data is injected by public/theme-init.js —
-          keeping it out of the React tree avoids SSR text-escaping and
-          hydration mismatches. */}
       <SiteHeader />
       <main>
         <Hero lead={lead} rail={rail} />
+        <SectionIndex />
         <LatestStrip rows={strip} />
         <TodaysVerse />
+        <ConnectStrip />
       </main>
       <SiteFooter />
     </>

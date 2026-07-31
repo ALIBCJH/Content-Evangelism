@@ -4,8 +4,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { ArrowLeft, Cross } from 'lucide-react'
+import { siteInfo, siteUrl } from '@/lib/content'
 import { getPostedArticle } from '@/lib/posted'
 import { listRealRows } from '@/lib/rows'
+import { JsonLd } from '@/components/json-ld'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
@@ -26,7 +28,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: article.title,
     description: article.dek,
-    openGraph: { type: 'article', title: article.title, description: article.dek },
+    alternates: { canonical: `/articles/${article.slug}` },
+    openGraph: {
+      type: 'article',
+      title: article.title,
+      description: article.dek,
+      url: `/articles/${article.slug}`,
+      publishedTime: article.publishedAt,
+      authors: [article.authorName],
+      ...(article.imageUrl ? { images: [{ url: article.imageUrl }] } : {}),
+    },
   }
 }
 
@@ -74,8 +85,25 @@ export default async function PostedArticlePage({ params }: Params) {
     .filter((row) => row.slug !== article.slug)
     .slice(0, 3)
 
+  const articleLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    '@id': `${siteUrl}/articles/${article.slug}`,
+    mainEntityOfPage: `${siteUrl}/articles/${article.slug}`,
+    headline: article.title,
+    description: article.dek,
+    articleSection: article.category,
+    datePublished: article.publishedAt,
+    author: { '@type': 'Person', name: article.authorName },
+    publisher: { '@id': `${siteUrl}/#ministry`, '@type': 'Organization', name: siteInfo.ministry },
+    isPartOf: { '@id': `${siteUrl}/#website` },
+    inLanguage: 'en',
+    ...(article.imageUrl ? { image: [`${siteUrl}${article.imageUrl}`] } : {}),
+  }
+
   return (
     <>
+      <JsonLd data={articleLd} />
       <ReadingProgress />
       <SiteHeader />
       <main>
