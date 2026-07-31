@@ -2,9 +2,9 @@ import * as React from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { RealRow } from '@/lib/rows'
-import { ago } from '@/components/article-card'
+import { ago, CardImage } from '@/components/article-card'
 
-/** "Read next" block at the foot of an article. */
+/** "Read next" block at the foot of an article — image-led, like the feed. */
 export function ReadNext({ rows }: { rows: RealRow[] }) {
   if (rows.length === 0) return null
   return (
@@ -13,8 +13,14 @@ export function ReadNext({ rows }: { rows: RealRow[] }) {
       <ul className="mt-4 divide-y divide-hairline">
         {rows.map((row) => (
           <li key={row.slug}>
-            <Link href={row.href} className="group flex items-center justify-between gap-4 py-4">
-              <span className="min-w-0">
+            <Link href={row.href} className="group flex items-center gap-4 py-4">
+              <CardImage
+                row={row}
+                className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline"
+                sealClassName="h-8 w-8"
+                iconClassName="h-3.5 w-3.5"
+              />
+              <span className="min-w-0 flex-1">
                 <span className="block font-display text-lg font-semibold leading-snug text-ink transition-colors group-hover:text-ink-strong">
                   {row.title}
                 </span>

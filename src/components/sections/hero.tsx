@@ -19,6 +19,8 @@ export interface FrontRailRow {
   title: string
   category: string
   readMinutes: number
+  imageUrl?: string
+  art: ArticleArtSpec
 }
 
 export interface FrontLead extends FrontRailRow {
@@ -84,17 +86,26 @@ export function Hero({ lead, rail }: { lead: FrontLead; rail: FrontRailRow[] }) 
             <p className="kicker text-ink">More from the desk</p>
           </div>
           <ol className="divide-y divide-hairline">
-            {rail.map((story, index) => (
+            {rail.map((story) => (
               <li key={story.href + story.title}>
-                <Link href={story.href} className="group flex gap-4 py-5">
-                  <span
-                    aria-hidden
-                    className="font-display text-3xl font-semibold leading-none text-gold/70 transition-colors group-hover:text-gold"
-                  >
-                    {index + 1}
-                  </span>
+                <Link href={story.href} className="group flex items-center gap-4 py-4">
+                  {story.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={story.imageUrl}
+                      alt=""
+                      className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline object-cover"
+                    />
+                  ) : (
+                    <ArticleArt
+                      art={story.art}
+                      className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline"
+                      sealClassName="h-8 w-8"
+                      iconClassName="h-3.5 w-3.5"
+                    />
+                  )}
                   <span className="min-w-0">
-                    <span className="block font-display text-[1.05rem] font-semibold leading-snug text-ink transition-colors group-hover:text-ink-strong">
+                    <span className="block font-display text-[1.02rem] font-semibold leading-snug text-ink transition-colors group-hover:text-ink-strong">
                       {story.title}
                     </span>
                     <span className="mt-1.5 block font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">

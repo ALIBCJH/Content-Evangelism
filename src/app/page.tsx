@@ -34,10 +34,14 @@ export default async function HomePage() {
     title: a.title,
     category: a.category,
     readMinutes: a.readMinutes,
+    imageUrl: a.image?.src,
+    art: a.art,
   }))
 
   const rail = [
-    ...railReal.map(({ href, title, category, readMinutes }) => ({ href, title, category, readMinutes })),
+    ...railReal.map(({ href, title, category, readMinutes, imageUrl, art }) => ({
+      href, title, category, readMinutes, imageUrl, art,
+    })),
     ...fill,
   ].slice(0, RAIL_SIZE)
 
