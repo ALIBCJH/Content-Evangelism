@@ -5,10 +5,14 @@ import { notFound } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { ArrowLeft, Cross } from 'lucide-react'
 import { getPostedArticle } from '@/lib/posted'
+import { listRealRows } from '@/lib/rows'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
 import { FadeIn } from '@/components/motion'
+import { ReadingProgress } from '@/components/progress-bar'
+import { ReadNext } from '@/components/read-next'
+import { ShareRow } from '@/components/share-row'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,8 +70,13 @@ export default async function PostedArticlePage({ params }: Params) {
   const article = await getPostedArticle(params.slug)
   if (!article) notFound()
 
+  const readNext = (await listRealRows())
+    .filter((row) => row.slug !== article.slug)
+    .slice(0, 3)
+
   return (
     <>
+      <ReadingProgress />
       <SiteHeader />
       <main>
         <article className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
@@ -89,6 +98,7 @@ export default async function PostedArticlePage({ params }: Params) {
                 <span aria-hidden className="mx-2">·</span>
                 <span className="tabular">{article.readMinutes} min read</span>
               </p>
+              <ShareRow title={article.title} className="mt-6" />
             </header>
 
             {article.imageUrl && (
@@ -109,6 +119,7 @@ export default async function PostedArticlePage({ params }: Params) {
                 <div className="ornament mx-auto max-w-xs">
                   <Cross className="h-4 w-4" strokeWidth={1.5} />
                 </div>
+                <ShareRow title={article.title} className="mt-8" />
                 <div className="mt-10 flex justify-center">
                   <Link
                     href="/articles"
@@ -119,6 +130,8 @@ export default async function PostedArticlePage({ params }: Params) {
                   </Link>
                 </div>
               </div>
+
+              <ReadNext rows={readNext} />
             </div>
           </FadeIn>
         </article>

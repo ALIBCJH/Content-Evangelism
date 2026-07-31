@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { format, parseISO } from 'date-fns'
+import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import { ArrowRight, Newspaper, TrendingUp } from 'lucide-react'
 import type { ArticleArt as ArticleArtSpec } from '@/lib/content'
 import { ArticleArt } from '@/components/article-art'
@@ -58,7 +58,7 @@ export function Hero({ lead, rail }: { lead: FrontLead; rail: FrontRailRow[] }) 
                 <span className="font-semibold text-ink-muted">{lead.authorName}</span>
                 <span aria-hidden className="mx-2">·</span>
                 <time dateTime={lead.publishedAt}>
-                  {format(parseISO(lead.publishedAt), 'd MMM yyyy')}
+                  {formatDistanceToNowStrict(parseISO(lead.publishedAt), { addSuffix: true })}
                 </time>
                 <span aria-hidden className="mx-2">·</span>
                 <span className="tabular">{lead.readMinutes} min read</span>

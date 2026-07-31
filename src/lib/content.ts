@@ -35,6 +35,7 @@ export interface Author {
 export type Category =
   | 'Teachings'
   | 'Prophecy'
+  | 'Oracles'
   | 'Devotional'
   | 'Doctrine'
   | 'Church History'
@@ -43,6 +44,7 @@ export type Category =
 export const CATEGORIES: Category[] = [
   'Teachings',
   'Prophecy',
+  'Oracles',
   'Devotional',
   'Doctrine',
   'Church History',
@@ -53,10 +55,50 @@ export const CATEGORIES: Category[] = [
 export const categoryArt: Record<Category, ArticleArt> = {
   Teachings: { palette: 'olive', icon: 'shepherd' },
   Prophecy: { palette: 'orchid', icon: 'trumpet' },
+  Oracles: { palette: 'midnight', icon: 'scroll' },
   Devotional: { palette: 'flame', icon: 'flame' },
   Doctrine: { palette: 'wine', icon: 'book' },
   'Church History': { palette: 'harvest', icon: 'well' },
   Testimony: { palette: 'dawn', icon: 'star' },
+}
+
+/** URL slug + section description for every category page. */
+export const categoryMeta: Record<Category, { slug: string; description: string }> = {
+  Teachings: {
+    slug: 'teachings',
+    description: 'Expositions and sermons — the Scriptures opened for the church.',
+  },
+  Prophecy: {
+    slug: 'prophecy',
+    description: 'Reading the times with sobriety — every word weighed and tested.',
+  },
+  Oracles: {
+    slug: 'oracles',
+    description: 'Words delivered at the altar — recorded, dated, and kept for the congregation.',
+  },
+  Devotional: {
+    slug: 'devotional',
+    description: 'Quiet columns for the daily walk: prayer, waiting, and hope.',
+  },
+  Doctrine: {
+    slug: 'doctrine',
+    description: 'The creeds, the covenants, and the character of God.',
+  },
+  'Church History': {
+    slug: 'church-history',
+    description: 'Two thousand years of the church, told as if it happened yesterday.',
+  },
+  Testimony: {
+    slug: 'testimony',
+    description: 'The congregation’s record of God’s faithfulness.',
+  },
+}
+
+export function categoryFromSlug(slug: string): Category | null {
+  const match = (Object.entries(categoryMeta) as [Category, { slug: string }][]).find(
+    ([, meta]) => meta.slug === slug
+  )
+  return match ? match[0] : null
 }
 
 export interface Article {
@@ -461,9 +503,9 @@ export const topics: Topic[] = [
 
 export const navSections = [
   { label: 'Articles', href: '/articles' },
-  { label: 'Oracles', href: '#oracle' },
-  { label: 'Teaching', href: '#teachings' },
-  { label: 'Prophecy', href: '#prophecy' },
+  { label: 'Oracles', href: '/category/oracles' },
+  { label: 'Teaching', href: '/category/teachings' },
+  { label: 'Prophecy', href: '/category/prophecy' },
 ]
 
 export const siteInfo = {

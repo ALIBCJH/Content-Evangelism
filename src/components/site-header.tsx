@@ -8,7 +8,6 @@ import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { navSections, siteInfo } from '@/lib/content'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = React.useState(false)
@@ -71,16 +70,13 @@ export function SiteHeader() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Link
+              href="/search"
               aria-label="Search the archive"
               className="focus-ring icon-only grid h-9 w-9 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-strong"
             >
               <Search className="h-4 w-4" />
-            </button>
-            <Button size="sm" className="hidden sm:inline-flex">
-              Subscribe
-            </Button>
+            </Link>
             <ThemeToggle />
             <button
               type="button"
@@ -115,9 +111,6 @@ export function SiteHeader() {
                     {section.label}
                   </Link>
                 ))}
-                <div className="pt-2">
-                  <Button className="w-full">Subscribe</Button>
-                </div>
               </div>
             </motion.div>
           )}
