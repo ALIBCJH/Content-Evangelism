@@ -1,0 +1,360 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────────────────────────────
+   The Altar Herald — theme tokens.
+   Ported from the Altar Reporting App so both products share one brand.
+   Dark is the default (deep navy broadsheet by candlelight); html.light
+   flips to the warm paper edition. Gold is the shared sacred accent.
+   ────────────────────────────────────────────────────────────────────── */
+:root,
+html.dark {
+  color-scheme: dark;
+
+  /* Brand (shared across themes) */
+  --navy: #0F172A;
+  --navy-100: #1A243F;
+  --navy-200: #141B2E;
+  --navy-900: #070B16;
+  --gold: #D4A017;
+  --gold-dark: #B8860B;
+  --gold-light: #E8B923;
+  --flagship-rgb: 124 196 255;      /* #7CC4FF - readable blue on dark */
+  --flagship-deep-rgb: 31 69 133;   /* #1F4585 ministry flagship blue */
+  --flagship-soft-rgb: 170 214 255;
+  --orchid-rgb: 139 124 246;        /* #8B7CF6 - pastel violet for dark */
+
+  /* Status accents */
+  --success-rgb: 110 231 183;
+  --warning-rgb: 252 211 77;
+  --danger-rgb: 253 164 175;
+  --info-rgb: var(--flagship-rgb);
+
+  /* Text */
+  --ink-rgb: 232 238 247;        /* #E8EEF7 */
+  --ink-muted-rgb: 160 176 196;  /* #A0B0C4 */
+  --ink-subtle-rgb: 110 126 148; /* #6E7E94 */
+  --ink-strong-rgb: 255 255 255; /* #FFFFFF */
+
+  /* Translucent surfaces (white-on-dark glass) */
+  --surface-1: rgba(255, 255, 255, 0.025);
+  --surface-2: rgba(255, 255, 255, 0.05);
+  --surface-3: rgba(255, 255, 255, 0.10);
+
+  /* Hairline borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --hairline: var(--border);
+  --hairline-strong: var(--border-strong);
+
+  /* Solid raised panels */
+  --panel-rgb: 12 32 70;         /* #0c2046 */
+
+  /* App background base */
+  --app-bg-rgb: 10 29 62;        /* #0a1d3e */
+  --ring-offset: #0a1d3e;
+
+  /* Card surface */
+  --card-bg: rgba(255,255,255,0.035);
+  --card-bg-hover: rgba(255,255,255,0.06);
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -10px rgba(0,0,0,0.55);
+  --card-shadow-hover: 0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 36px -14px rgba(0,0,0,0.65);
+  --shadow-panel: 0 1px 0 rgba(255,255,255,0.05) inset, 0 18px 60px -24px rgba(0,0,0,0.78);
+
+  /* Glass surfaces */
+  --glass-bg: rgba(255,255,255,0.035);
+  --glass-strong-bg: rgba(26,36,63,0.88);
+
+  /* Utility colors */
+  --scrollbar: rgba(255, 255, 255, 0.10);
+  --scrollbar-hover: rgba(255, 255, 255, 0.20);
+  --shimmer-base: rgba(255, 255, 255, 0.04);
+  --shimmer-mid: rgba(255, 255, 255, 0.08);
+  --selection-bg: rgba(212, 160, 23, 0.35);
+  --selection-fg: #ffffff;
+  --grain-opacity: 0.5;
+  --grain-image: url("data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23ffffff' fill-opacity='0.06'/%3E%3C/svg%3E");
+
+  /* App background gradient — candlelit navy with the flagship blue rising
+     from the top corner, like dawn behind a sanctuary. */
+  --body-overlay:
+    linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.22) 100%),
+    radial-gradient(60% 55% at 78% 0%, #1f4585 0%, rgba(31,69,133,0.55) 22%, rgba(31,69,133,0.18) 45%, rgba(31,69,133,0) 70%);
+  --mesh-blobs:
+    radial-gradient(32% 26% at 82% 74%, rgba(31,69,133,0.55) 0%, rgba(31,69,133,0) 65%),
+    radial-gradient(26% 22% at 28% 82%, rgba(124,196,255,0.12) 0%, rgba(124,196,255,0) 70%),
+    radial-gradient(28% 22% at 18% 28%, rgba(31,69,133,0.40) 0%, rgba(31,69,133,0) 65%);
+}
+
+html.light {
+  color-scheme: light;
+
+  --flagship-rgb: 15 38 140;      /* #0F268C ministry flagship blue */
+  --flagship-deep-rgb: 15 38 140;
+  --flagship-soft-rgb: 15 38 140;
+  --orchid-rgb: 109 40 217;       /* #6D28D9 */
+
+  --success-rgb: 4 120 87;
+  --warning-rgb: 180 83 9;
+  --danger-rgb: 190 18 60;
+  --info-rgb: var(--flagship-rgb);
+
+  --ink-rgb: 15 38 71;
+  --ink-muted-rgb: 56 70 100;
+  --ink-subtle-rgb: 96 111 139;
+  --ink-strong-rgb: 8 19 38;
+
+  --surface-1: rgba(15, 23, 42, 0.045);
+  --surface-2: rgba(15, 23, 42, 0.075);
+  --surface-3: rgba(15, 23, 42, 0.12);
+
+  --border: rgba(15, 23, 42, 0.14);
+  --border-strong: rgba(15, 23, 42, 0.24);
+  --hairline: var(--border);
+  --hairline-strong: var(--border-strong);
+
+  --panel-rgb: 255 255 255;
+
+  /* Paper edition: a warmer off-white than the reporting app, so long
+     reading feels like newsprint rather than a dashboard. */
+  --app-bg-rgb: 250 249 245;     /* #FAF9F5 */
+  --ring-offset: #FAF9F5;
+
+  --card-bg: #ffffff;
+  --card-bg-hover: #FFFDF8;
+  --card-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 10px 28px -20px rgba(15,23,42,0.22);
+  --card-shadow-hover: 0 2px 6px rgba(15,23,42,0.08), 0 18px 42px -24px rgba(15,23,42,0.28);
+  --shadow-panel: 0 1px 2px rgba(15,23,42,0.07), 0 22px 60px -30px rgba(15,23,42,0.30);
+
+  --glass-bg: rgba(255,255,255,0.75);
+  --glass-strong-bg: rgba(255,255,255,0.92);
+
+  --scrollbar: rgba(15, 23, 42, 0.18);
+  --scrollbar-hover: rgba(15, 23, 42, 0.30);
+  --shimmer-base: rgba(15, 23, 42, 0.04);
+  --shimmer-mid: rgba(15, 23, 42, 0.09);
+  --selection-bg: rgba(212, 160, 23, 0.28);
+  --selection-fg: #0F2647;
+  --grain-opacity: 0.10;
+  --grain-image: url("data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%230f268c' fill-opacity='0.045'/%3E%3C/svg%3E");
+
+  --body-overlay: none;
+  --mesh-blobs: none;
+}
+
+/* Light mode: gold reads as ink, not paint (~5:1 bronze on paper). */
+html.light .text-gold,
+html.light .text-gold-light,
+html.light .group:hover .group-hover\:text-gold-light {
+  color: #8C6A0A;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+  color: rgb(var(--ink-rgb));
+  background-color: rgb(var(--app-bg-rgb));
+  background-image: var(--body-overlay);
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+  min-height: 100vh;
+  font-family: var(--font-montserrat), 'Segoe UI', system-ui, sans-serif;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* Ambient mesh lives on the canvas, behind everything. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--mesh-blobs);
+  filter: blur(8px);
+}
+
+/* Site-wide grain — the "paper tooth". */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--grain-image);
+  opacity: var(--grain-opacity);
+  z-index: 0;
+}
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Editorial primitives ─────────────────────────────────────────── */
+
+/* Kicker: the small caps label above every headline. */
+.kicker {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Drop cap for lead paragraphs. */
+.dropcap::first-letter {
+  font-family: var(--font-fraunces), Georgia, serif;
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.82;
+  padding-right: 0.09em;
+  padding-top: 0.05em;
+  font-weight: 600;
+  color: var(--gold);
+}
+html.light .dropcap::first-letter { color: #8C6A0A; }
+
+/* Thin newspaper column rule between grid children (desktop only). */
+@media (min-width: 1024px) {
+  .col-rules > * + * {
+    border-left: 1px solid var(--hairline);
+  }
+}
+
+/* Double rule — the classic masthead separator. */
+.double-rule {
+  border-top: 3px double var(--hairline-strong);
+}
+
+/* Ornamental center divider: ── ✦ ── */
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  color: var(--gold);
+}
+.ornament::before,
+.ornament::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to var(--orn-dir, right), var(--hairline-strong), transparent);
+}
+.ornament::before { --orn-dir: left; }
+
+/* Glass surfaces */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.glass-strong {
+  background: var(--glass-strong-bg);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Card — glassmorphic surface */
+.card {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: var(--card-shadow);
+}
+html.light .card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.card-interactive {
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 280ms ease,
+              background 280ms ease,
+              box-shadow 280ms ease;
+}
+.card-interactive:hover {
+  border-color: var(--border-strong);
+  background: var(--card-bg-hover);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Headline underline sweep on hover. */
+.headline-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 96%;
+  background-repeat: no-repeat;
+  transition: background-size 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+a:hover .headline-link,
+.headline-link:hover {
+  background-size: 100% 1px;
+}
+
+/* Horizontal scroll rows (series shelf). */
+.scroll-row {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row > * { scroll-snap-align: start; }
+
+/* Shimmer loading */
+.shimmer {
+  background: linear-gradient(90deg, var(--shimmer-base) 0%, var(--shimmer-mid) 44%, var(--shimmer-base) 88%);
+  background-size: 220% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+/* Focus ring */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring-offset), 0 0 0 4px rgba(212,160,23,0.7);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); background-clip: padding-box; border: 2px solid transparent; }
+
+/* Selection */
+::selection { background: var(--selection-bg); color: var(--selection-fg); }
+
+/* Tabular numbers */
+.tabular { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 768px) {
+  button:not(.icon-only),
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
