@@ -180,9 +180,6 @@ export function SiteHeader() {
             {siteInfo.name}
           </h1>
         </Link>
-        <p className="kicker mt-4 text-ink-subtle">
-          {siteInfo.ministry} <span aria-hidden className="mx-1 text-gold">✦</span> {siteInfo.head}
-        </p>
       </header>
     </>
   )

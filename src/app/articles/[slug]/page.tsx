@@ -7,6 +7,7 @@ import { ArrowLeft, Cross } from 'lucide-react'
 import { siteInfo, siteUrl } from '@/lib/content'
 import { getPostedArticle } from '@/lib/posted'
 import { listRealRows } from '@/lib/rows'
+import { ArticleGate } from '@/components/article-gate'
 import { JsonLd } from '@/components/json-ld'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -141,7 +142,15 @@ export default async function PostedArticlePage({ params }: Params) {
             )}
 
             <div className="mx-auto mt-12 max-w-2xl">
-              <ArticleBody body={article.body} />
+              {/* Short pieces read straight through; longer ones open the
+                  reading gate — a taste, a blur, one Read More. */}
+              {article.body.length > 1200 ? (
+                <ArticleGate>
+                  <ArticleBody body={article.body} />
+                </ArticleGate>
+              ) : (
+                <ArticleBody body={article.body} />
+              )}
 
               <div className="mt-14 border-t border-hairline pt-8">
                 <div className="ornament mx-auto max-w-xs">
