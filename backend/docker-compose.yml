@@ -1,0 +1,19 @@
+# Local development database — stands in for Neon.
+#   docker compose up -d     start it (data persists in the rptw_pgdata volume)
+#   docker compose down      stop it (add -v to also wipe the data)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rptw-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rptw
+      POSTGRES_PASSWORD: rptw-local-dev
+      POSTGRES_DB: rptw
+    ports:
+      - "5455:5432"
+    volumes:
+      - rptw_pgdata:/var/lib/postgresql/data
+
+volumes:
+  rptw_pgdata:

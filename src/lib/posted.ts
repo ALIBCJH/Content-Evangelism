@@ -1,20 +1,18 @@
-import { promises as fs } from 'fs'
-import path from 'path'
 import { CATEGORIES, type Category } from '@/lib/content'
 
 export { CATEGORIES }
 
 /**
- * The light CMS store.
+ * The article store — now the FastAPI backend (backend/), which owns the
+ * Postgres database. This module is the only place the frontend talks to
+ * it; everything else imports from here.
  *
- * Two backends, auto-detected:
- *  - Vercel KV / Upstash Redis (production): set KV_REST_API_URL and
- *    KV_REST_API_TOKEN — exactly the env vars Vercel injects when you
- *    attach a KV store to the project. Talked to over plain REST, so no
- *    extra npm dependency is needed.
- *  - Local JSON file (development): data/articles.json in the project
- *    root. Created on first write.
+ * API_URL points at the backend (default: local dev server). The write
+ * calls forward the caller's posting key, so the backend remains the one
+ * authority on ADMIN_TOKEN — the frontend never holds the secret.
  */
+
+const API_URL = process.env.API_URL ?? 'http://localhost:8801'
 
 export interface PostedArticle {
   slug: string
@@ -29,97 +27,135 @@ export interface PostedArticle {
   readMinutes: number
 }
 
-const KV_KEY = 'rptw:articles'
-const FILE_PATH = path.join(process.cwd(), 'data', 'articles.json')
+export interface ArticleInput {
+  title: string
+  dek: string
+  category: Category
+  authorName: string
+  body: string
+  imageUrl?: string
+}
 
-const kvUrl = process.env.KV_REST_API_URL
-const kvToken = process.env.KV_REST_API_TOKEN
-const useKv = Boolean(kvUrl && kvToken)
+export interface WriteResult {
+  status: number
+  article?: PostedArticle
+  error?: string
+}
 
-async function kvGetAll(): Promise<PostedArticle[]> {
-  const res = await fetch(`${kvUrl}/get/${KV_KEY}`, {
-    headers: { Authorization: `Bearer ${kvToken}` },
-    cache: 'no-store',
-  })
-  if (!res.ok) return []
-  const json = (await res.json()) as { result: string | null }
-  if (!json.result) return []
-  try {
-    return JSON.parse(json.result) as PostedArticle[]
-  } catch {
-    return []
+/** FastAPI errors arrive as {detail: string | ValidationError[]}. */
+function detailToMessage(detail: unknown): string {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        const loc = Array.isArray(item?.loc) ? item.loc.slice(1).join('.') : ''
+        return loc ? `${loc}: ${item?.msg ?? 'invalid'}` : String(item?.msg ?? 'invalid')
+      })
+      .join('; ')
   }
-}
-
-async function kvSetAll(articles: PostedArticle[]): Promise<void> {
-  const res = await fetch(`${kvUrl}/set/${KV_KEY}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${kvToken}` },
-    body: JSON.stringify(articles),
-  })
-  if (!res.ok) throw new Error(`KV write failed: ${res.status}`)
-}
-
-async function fileGetAll(): Promise<PostedArticle[]> {
-  try {
-    const raw = await fs.readFile(FILE_PATH, 'utf8')
-    return JSON.parse(raw) as PostedArticle[]
-  } catch {
-    return []
-  }
-}
-
-async function fileSetAll(articles: PostedArticle[]): Promise<void> {
-  await fs.mkdir(path.dirname(FILE_PATH), { recursive: true })
-  await fs.writeFile(FILE_PATH, JSON.stringify(articles, null, 2), 'utf8')
+  return 'The publication API rejected the request.'
 }
 
 export async function listPostedArticles(): Promise<PostedArticle[]> {
-  const articles = useKv ? await kvGetAll() : await fileGetAll()
-  return articles.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+  try {
+    const res = await fetch(`${API_URL}/api/articles?limit=100`, { cache: 'no-store' })
+    if (!res.ok) return []
+    const json = (await res.json()) as { items?: PostedArticle[] }
+    return json.items ?? []
+  } catch {
+    // API unreachable — the site still renders with its built-in pieces.
+    return []
+  }
 }
 
 export async function getPostedArticle(slug: string): Promise<PostedArticle | null> {
-  const articles = await listPostedArticles()
-  return articles.find((a) => a.slug === slug) ?? null
+  try {
+    const res = await fetch(`${API_URL}/api/articles/${encodeURIComponent(slug)}`, {
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    return (await res.json()) as PostedArticle
+  } catch {
+    return null
+  }
 }
 
-export async function savePostedArticle(article: PostedArticle): Promise<void> {
-  const articles = useKv ? await kvGetAll() : await fileGetAll()
-  const next = [...articles.filter((a) => a.slug !== article.slug), article]
-  if (useKv) await kvSetAll(next)
-  else await fileSetAll(next)
+async function write(
+  method: 'POST' | 'PATCH',
+  path: string,
+  input: Partial<ArticleInput>,
+  token: string
+): Promise<WriteResult> {
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(input),
+      cache: 'no-store',
+    })
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) return { status: res.status, error: detailToMessage(json.detail) }
+    return { status: res.status, article: json as PostedArticle }
+  } catch {
+    return { status: 502, error: 'Could not reach the publication API.' }
+  }
 }
 
-export async function deletePostedArticle(slug: string): Promise<boolean> {
-  const articles = useKv ? await kvGetAll() : await fileGetAll()
-  const next = articles.filter((a) => a.slug !== slug)
-  if (next.length === articles.length) return false
-  if (useKv) await kvSetAll(next)
-  else await fileSetAll(next)
-  return true
+export function createPostedArticle(input: ArticleInput, token: string): Promise<WriteResult> {
+  return write('POST', '/api/articles', input, token)
 }
 
-/* ── Helpers shared by the API layer ─────────────────────────────── */
-
-export function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80)
+export function updatePostedArticle(
+  slug: string,
+  input: Partial<ArticleInput>,
+  token: string
+): Promise<WriteResult> {
+  return write('PATCH', `/api/articles/${encodeURIComponent(slug)}`, input, token)
 }
 
-export function estimateReadMinutes(body: string): number {
-  const words = body.trim().split(/\s+/).length
-  return Math.max(1, Math.round(words / 200))
+/** Returns the API status code: 204 deleted, 404 unknown, 401 bad key. */
+export async function deletePostedArticle(slug: string, token: string): Promise<number> {
+  try {
+    const res = await fetch(`${API_URL}/api/articles/${encodeURIComponent(slug)}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    })
+    return res.status
+  } catch {
+    return 502
+  }
 }
 
-/** True when the request carries the admin posting key. */
-export function isAuthorized(request: Request): boolean {
-  const token = process.env.ADMIN_TOKEN || 'change-me'
-  const header = request.headers.get('authorization') || ''
-  return header === `Bearer ${token}`
+/** Bearer token from an incoming request, for forwarding to the API. */
+export function bearerToken(request: Request): string {
+  const header = request.headers.get('authorization') ?? ''
+  return header.startsWith('Bearer ') ? header.slice(7) : ''
 }
 
+/** Friendly field checks so the posting desk gets clear messages; the
+    publication API revalidates everything anyway. */
+export function validateInput(
+  payload: Record<string, unknown>
+): { error?: string; input?: ArticleInput } {
+  const title = String(payload.title ?? '').trim()
+  const dek = String(payload.dek ?? '').trim()
+  const body = String(payload.body ?? '').trim()
+  const authorName = String(payload.authorName ?? '').trim() || 'The Editorial Desk'
+  const category = String(payload.category ?? '') as Category
+  const imageUrl = String(payload.imageUrl ?? '').trim()
+
+  if (title.length < 3) return { error: 'A title is required.' }
+  if (dek.length < 10) return { error: 'A summary (dek) of at least 10 characters is required.' }
+  if (body.length < 50) return { error: 'The article body is too short.' }
+  if (!CATEGORIES.includes(category)) {
+    return { error: `Category must be one of: ${CATEGORIES.join(', ')}.` }
+  }
+  if (imageUrl && !/^(https:\/\/|\/)/.test(imageUrl)) {
+    return { error: 'Image URL must start with https:// (or / for a local image).' }
+  }
+  return { input: { title, dek, category, authorName, body, imageUrl: imageUrl || undefined } }
+}

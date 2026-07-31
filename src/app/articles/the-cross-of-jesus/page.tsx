@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, Cross } from 'lucide-react'
 import { authorById, crossArticle, siteInfo, siteUrl } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
+import { ArticleGate } from '@/components/article-gate'
 import { JsonLd } from '@/components/json-ld'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -130,6 +131,7 @@ export default async function CrossArticlePage() {
           {/* ── Body ───────────────────────────────────────────── */}
           <FadeIn>
             <div className="mx-auto mt-12 max-w-2xl">
+              <ArticleGate>
               <P className="dropcap">
                 Every movement in history has chosen its symbol. Empires took the eagle;
                 dynasties took the lion; revolutions took the rising sun. The church of
@@ -244,6 +246,7 @@ export default async function CrossArticlePage() {
                 remains is the oldest invitation in the world, and the kindest:{' '}
                 <em>come</em>.
               </P>
+              </ArticleGate>
 
               {/* ── Close ──────────────────────────────────────── */}
               <div className="mt-14 border-t border-hairline pt-8">
