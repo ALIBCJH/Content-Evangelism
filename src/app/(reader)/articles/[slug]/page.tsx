@@ -8,6 +8,8 @@ import { ArrowLeft, Cross } from 'lucide-react'
 import { categoryMeta, siteInfo, siteUrl } from '@/lib/content'
 import { getPostedArticle } from '@/lib/posted'
 import { listRealRows } from '@/lib/rows'
+import { extractHeadings, headingId } from '@/lib/toc'
+import { StudyMargin } from '@/components/study-margin'
 import { ArticleGate } from '@/components/article-gate'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
@@ -60,12 +62,14 @@ function ArticleBody({ body }: { body: string }) {
     <>
       {blocks.map((block, index) => {
         if (block.startsWith('## ')) {
+          const text = block.slice(3).trim()
           return (
             <h2
               key={index}
-              className="mt-12 font-display text-2xl font-semibold leading-snug text-ink-strong md:text-3xl"
+              id={headingId(text)}
+              className="mt-12 scroll-mt-24 font-display text-2xl font-semibold leading-snug text-ink-strong md:text-3xl"
             >
-              {block.slice(3)}
+              {text}
             </h2>
           )
         }
@@ -110,12 +114,20 @@ export default async function PostedArticlePage({ params }: Params) {
     ...(article.imageUrl ? { image: [`${siteUrl}${article.imageUrl}`] } : {}),
   }
 
+  const headings = extractHeadings(article.body)
+
   return (
     <>
       <JsonLd data={articleLd} />
       <ReadingProgress />
-      <main>
-        <article className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
+      <main className="xl:mx-auto xl:grid xl:max-w-[88rem] xl:grid-cols-[15rem_minmax(0,1fr)_15rem] xl:gap-6 xl:px-8">
+        {/* The study margin fills the once-empty left column on desktop. */}
+        <aside className="hidden xl:block" aria-label="Study margin">
+          <div className="sticky top-24 pt-10">
+            <StudyMargin headings={headings} title={article.title} />
+          </div>
+        </aside>
+        <article className="mx-auto w-full max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8 xl:px-0">
           <FadeIn>
             <header className="text-center">
               <Breadcrumbs
@@ -189,6 +201,8 @@ export default async function PostedArticlePage({ params }: Params) {
             </div>
           </FadeIn>
         </article>
+        {/* Right spacer mirrors the rail so the reading column stays centered. */}
+        <div aria-hidden className="hidden xl:block" />
       </main>
     </>
   )
