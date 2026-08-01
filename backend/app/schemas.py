@@ -61,6 +61,8 @@ class ArticleOut(CamelModel):
     body: str
     image_url: str | None
     published_at: datetime
+    # Feeds sitemap <lastmod> and Article dateModified downstream.
+    updated_at: datetime
     read_minutes: int
 
 

@@ -65,6 +65,12 @@ const siteGraph = {
       name: siteInfo.ministry,
       alternateName: ['Repentance and Holiness', siteInfo.name],
       url: siteUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/logo.png`,
+        width: 512,
+        height: 512,
+      },
       founder: { '@type': 'Person', name: siteInfo.head },
       description:
         'A global Christian ministry calling the nations to repentance, righteousness, and holiness in preparation for the coming of the Messiah.',
