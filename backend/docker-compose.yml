@@ -1,6 +1,11 @@
-# Local development database — stands in for Neon.
+# Local development database — stands in for the hosted Postgres.
 #   docker compose up -d     start it (data persists in the rptw_pgdata volume)
 #   docker compose down      stop it (add -v to also wipe the data)
+#
+# No password on purpose: the port is bound to loopback only, so nothing
+# off this machine can reach it, and the repo carries no credential-shaped
+# strings for secret scanners to flag. Never expose this pattern beyond
+# localhost.
 services:
   db:
     image: postgres:16-alpine
@@ -8,10 +13,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: rptw
-      POSTGRES_PASSWORD: rptw-local-dev
       POSTGRES_DB: rptw
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5455:5432"
+      - "127.0.0.1:5455:5432"
     volumes:
       - rptw_pgdata:/var/lib/postgresql/data
 

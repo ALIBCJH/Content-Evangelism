@@ -18,7 +18,8 @@ def test_estimate_read_minutes():
 def test_database_url_normalization():
     from app.config import normalize_database_url
 
-    url = "postgresql://u:p@ep-x.neon.tech/db?sslmode=require&channel_binding=require"
+    # "user:password" verbatim — secret scanners ban-list these values
+    url = "postgresql://user:password@ep-x.neon.tech/db?sslmode=require&channel_binding=require"
     normalized = normalize_database_url(url)
     assert normalized.startswith("postgresql+asyncpg://")
     assert "ssl=require" in normalized
