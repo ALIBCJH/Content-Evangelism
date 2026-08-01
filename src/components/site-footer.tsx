@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { Cross, RadioTower, Search } from 'lucide-react'
-import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
+import { ArrowUpRight, Cross, RadioTower, Search } from 'lucide-react'
+import { channelCtaTone, channelTone, WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
 import { CATEGORIES, categoryMeta, channels, siteInfo } from '@/lib/content'
 
 const channelIcons = {
@@ -85,13 +85,15 @@ export function SiteFooter() {
                       href={channel.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`focus-ring group flex items-start gap-3 rounded-xl border border-hairline p-3 text-ink-muted transition-colors ${channelHover[channel.key]}`}
+                      className={`focus-ring group flex items-start gap-4 rounded-2xl border border-hairline bg-surface/60 p-4 text-ink-muted transition-colors ${channelHover[channel.key]}`}
                     >
-                      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-hairline bg-surface-2">
-                        <Icon className="h-4 w-4" />
+                      <span
+                        className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl border ${channelTone[channel.key]}`}
+                      >
+                        <Icon className="h-7 w-7" />
                       </span>
-                      <span className="min-w-0">
-                        <span className="flex items-center gap-2 font-sans text-sm font-semibold text-ink">
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2 font-sans text-[0.9375rem] font-semibold text-ink-strong">
                           {channel.name}
                           {channel.live && (
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2 py-0.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-danger">
@@ -103,8 +105,14 @@ export function SiteFooter() {
                             </span>
                           )}
                         </span>
-                        <span className="mt-0.5 block font-serif text-xs leading-relaxed text-ink-subtle">
+                        <span className="mt-1 block font-serif text-sm leading-relaxed text-ink-muted">
                           {channel.tagline}
+                        </span>
+                        <span
+                          className={`mt-2.5 inline-flex items-center gap-1.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker ${channelCtaTone[channel.key]}`}
+                        >
+                          {channel.cta}
+                          <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                         </span>
                       </span>
                     </a>

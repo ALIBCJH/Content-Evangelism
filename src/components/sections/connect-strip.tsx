@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { ArrowUpRight, RadioTower } from 'lucide-react'
-import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
+import { channelCtaTone, channelTone, WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
 import { channels } from '@/lib/content'
 import { SectionHeading } from '@/components/section-heading'
 import { FadeIn } from '@/components/motion'
@@ -12,11 +12,6 @@ const channelIcons = {
 } as const
 
 /* Each card carries its channel's brand color on hover. */
-const iconTone: Record<string, string> = {
-  radio: 'border-gold/40 bg-gold/10 text-gold',
-  youtube: 'border-[#FF0000]/30 bg-[#FF0000]/10 text-[#FF3333]',
-  whatsapp: 'border-[#25D366]/30 bg-[#25D366]/10 text-[#25D366]',
-}
 
 /**
  * The channels band — after a reader has finished the front page, this is
@@ -47,9 +42,9 @@ export function ConnectStrip() {
               >
                 <span className="flex items-center justify-between">
                   <span
-                    className={`grid h-12 w-12 place-items-center rounded-full border ${iconTone[channel.key]}`}
+                    className={`grid h-14 w-14 place-items-center rounded-2xl border ${channelTone[channel.key]}`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-7 w-7" />
                   </span>
                   {channel.live && (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2.5 py-1 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-danger">
@@ -67,7 +62,7 @@ export function ConnectStrip() {
                 <span className="mt-2 font-serif text-sm leading-relaxed text-ink-muted">
                   {channel.tagline}
                 </span>
-                <span className="mt-5 inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-kicker text-gold">
+                <span className={`mt-5 inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-kicker ${channelCtaTone[channel.key]}`}>
                   {channel.cta}
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </span>
