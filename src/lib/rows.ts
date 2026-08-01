@@ -20,6 +20,8 @@ export interface RealRow {
   art: ArticleArtSpec
   /** Search haystack (body included for posted pieces). */
   text: string
+  /** Display body (posted pieces only) — feeds the front-page teaser. */
+  body?: string
 }
 
 export async function listRealRows(): Promise<RealRow[]> {
@@ -37,6 +39,7 @@ export async function listRealRows(): Promise<RealRow[]> {
       imageUrl: a.imageUrl,
       art: categoryArt[a.category],
       text: `${a.title}\n${a.dek}\n${a.body}`.toLowerCase(),
+      body: a.body,
     })),
     {
       slug: crossArticle.slug,

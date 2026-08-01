@@ -29,6 +29,17 @@ export interface FrontLead extends FrontRailRow {
   publishedAt: string
   imageUrl?: string
   art: ArticleArtSpec
+  /** When present, the opening paragraphs render as a blurred-out teaser. */
+  body?: string
+}
+
+/** First readable paragraphs of a body (skips `## ` headings). */
+function teaserParagraphs(body: string, count = 3): string[] {
+  return body
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter((block) => block && !block.startsWith('## '))
+    .slice(0, count)
 }
 
 export function Hero({ lead, rail }: { lead: FrontLead; rail: FrontRailRow[] }) {
@@ -63,11 +74,40 @@ export function Hero({ lead, rail }: { lead: FrontLead; rail: FrontRailRow[] }) 
               </p>
             </div>
           </Link>
-          <div className="mt-7 flex flex-wrap items-center gap-4">
-            <Link href={lead.href} className={buttonVariants({ size: 'lg' })}>
-              Read the Full Article
-              <ArrowRight />
-            </Link>
+
+          {/* ── Teaser: the article itself begins, then falls away ── */}
+          {lead.body ? (
+            <div className="relative mt-7">
+              <div
+                aria-hidden
+                className="max-h-52 overflow-hidden [mask-image:linear-gradient(to_bottom,black_25%,rgba(0,0,0,0.35)_65%,transparent_92%)] md:max-h-60"
+              >
+                {teaserParagraphs(lead.body).map((paragraph, index) => (
+                  <p
+                    key={index}
+                    className={`font-serif text-base leading-[1.8] text-ink-muted md:text-lg ${index === 0 ? 'dropcap' : 'mt-5'}`}
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+              <div className="absolute inset-x-0 -bottom-2 flex justify-center">
+                <Link href={lead.href} className={`${buttonVariants({ size: 'lg' })} shadow-glow-gold`}>
+                  Read More
+                  <ArrowRight />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-7">
+              <Link href={lead.href} className={buttonVariants({ size: 'lg' })}>
+                Read the Full Article
+                <ArrowRight />
+              </Link>
+            </div>
+          )}
+
+          <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link href="/articles" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
               <Newspaper />
               See More Articles
