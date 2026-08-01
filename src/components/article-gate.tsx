@@ -18,6 +18,14 @@ const COLLAPSED_HEIGHT = 420
 export function ArticleGate({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false)
 
+  // The study margin's chapter links need the full text visible before
+  // they can scroll to a heading — they announce themselves here.
+  React.useEffect(() => {
+    const reveal = () => setOpen(true)
+    window.addEventListener('rptw:reveal', reveal)
+    return () => window.removeEventListener('rptw:reveal', reveal)
+  }, [])
+
   return (
     <div className="relative">
       <motion.div
