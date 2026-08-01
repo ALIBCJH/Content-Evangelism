@@ -5,25 +5,38 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+_LOCAL_HOSTS = (None, "localhost", "127.0.0.1", "::1")
+
+
 def normalize_database_url(url: str) -> str:
-    """Make any Postgres URL (Neon's included) usable by SQLAlchemy+asyncpg.
+    """Make any Postgres URL (Neon's and Heroku's included) usable by SQLAlchemy+asyncpg.
 
     - postgres:// and postgresql:// become postgresql+asyncpg://
     - sslmode=require (libpq dialect) becomes ssl=require (asyncpg dialect)
     - channel_binding is dropped — asyncpg does not accept it
+    - remote URLs with no ssl/sslmode param get ssl=require — Heroku
+      Postgres omits the param from DATABASE_URL yet refuses plain TCP
     """
-    scheme, netloc, path, query, fragment = urlsplit(url)
+    parts = urlsplit(url)
+    scheme = parts.scheme
     if scheme in ("postgres", "postgresql"):
         scheme = "postgresql+asyncpg"
     params = []
-    for key, value in parse_qsl(query):
+    has_ssl = False
+    for key, value in parse_qsl(parts.query):
         if key == "sslmode":
             params.append(("ssl", value))
+            has_ssl = True
+        elif key == "ssl":
+            params.append((key, value))
+            has_ssl = True
         elif key == "channel_binding":
             continue
         else:
             params.append((key, value))
-    return urlunsplit((scheme, netloc, path, urlencode(params), fragment))
+    if not has_ssl and parts.hostname not in _LOCAL_HOSTS:
+        params.append(("ssl", "require"))
+    return urlunsplit((scheme, parts.netloc, parts.path, urlencode(params), parts.fragment))
 
 
 class Settings(BaseSettings):

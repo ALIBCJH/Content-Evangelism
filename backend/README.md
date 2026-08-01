@@ -93,16 +93,65 @@ Point its functions at this API (e.g. `API_URL=https://api.example.com`)
 and nothing else in the site changes. Recommended order: deploy this API,
 seed it, then switch `posted.ts` over in one small PR.
 
-## Deploying
+## Deploying to Heroku
 
-Any always-on Python host works — Render, Railway, Fly.io:
+The repo root is the Next.js site, so the backend deploys as its own
+Heroku app from this subdirectory via `git subtree`. `Procfile` and
+`.python-version` in `backend/` become the app root of the pushed tree.
 
-- build: `pip install -r requirements.txt`
-- start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- env: `DATABASE_URL`, `ADMIN_TOKEN`, `CORS_ORIGINS`
+One-time setup (from the **repo root**):
 
-Neon's free tier scales to zero when idle; the connection pool here is
-configured (pre-ping + recycle) to survive that.
+```bash
+heroku login
+heroku create rptw-api                        # pick your own app name
+
+# Database — either attach Heroku Postgres…
+heroku addons:create heroku-postgresql:essential-0 -a rptw-api
+# …or keep Neon and set its connection string yourself:
+# heroku config:set DATABASE_URL='postgresql://…neon.tech/neondb?sslmode=require' -a rptw-api
+
+heroku config:set -a rptw-api \
+  ADMIN_TOKEN="$(openssl rand -hex 32)" \
+  CORS_ORIGINS="https://repentandpreparetheway.org,https://www.repentandpreparetheway.org"
+```
+
+Deploy (every time, from the repo root on `main`):
+
+```bash
+git subtree push --prefix backend heroku main
+```
+
+(First add the remote: `heroku git:remote -a rptw-api`. If Heroku rejects
+a push after history was squashed, force it with
+`git push heroku "$(git subtree split --prefix backend main)":main --force`.)
+
+Verify, then point the frontend at it:
+
+```bash
+curl https://rptw-api.herokuapp.com/health    # {"status":"ok"}
+# In the frontend host's env (NOT committed):
+#   API_URL=https://rptw-api.herokuapp.com
+#   ADMIN_TOKEN=<same value as the backend's>
+```
+
+Heroku specifics already handled by the code:
+
+- `Procfile` binds uvicorn to Heroku's `$PORT`.
+- `DATABASE_URL` arrives as `postgres://` with no `sslmode` param;
+  `normalize_database_url` upgrades the scheme for asyncpg and defaults
+  remote hosts to `ssl=require` (Heroku refuses plain TCP).
+- Tables are created on boot, so no release phase is needed yet — add
+  one (`release: alembic upgrade head`) when Alembic arrives.
+- Seeding a fresh database: `DATABASE_URL="$(heroku config:get DATABASE_URL -a rptw-api)" python -m scripts.seed`.
+- Dyno restarts happen daily; state lives only in Postgres, so this is safe.
+
+Any other always-on Python host (Render, Railway, Fly.io) works the same
+way: build `pip install -r requirements.txt`, start
+`uvicorn app.main:app --host 0.0.0.0 --port $PORT`, env `DATABASE_URL`,
+`ADMIN_TOKEN`, `CORS_ORIGINS`.
+
+If you stay on Neon: its free tier scales to zero when idle; the
+connection pool here is configured (pre-ping + recycle) to survive that.
 
 ## Notes
 
