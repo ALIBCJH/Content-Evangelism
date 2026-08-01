@@ -52,7 +52,7 @@ export function ConnectStrip() {
                     <Icon className="h-5 w-5" />
                   </span>
                   {channel.live && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2.5 py-1 font-sans text-[0.625rem] font-bold uppercase tracking-kicker text-status-danger">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2.5 py-1 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-danger">
                       <span className="relative flex h-1.5 w-1.5" aria-hidden>
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
                         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />

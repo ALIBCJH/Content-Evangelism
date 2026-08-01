@@ -2,8 +2,6 @@ import * as React from 'react'
 import type { Metadata } from 'next'
 import { Search } from 'lucide-react'
 import { listRealRows } from '@/lib/rows'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { ArticleCard } from '@/components/article-card'
 
 export const metadata: Metadata = {
@@ -25,7 +23,6 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <>
-      <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 pb-20 pt-4 sm:px-6 md:pb-28 lg:px-8">
         <div className="mx-auto max-w-xl text-center">
           <p className="kicker text-gold">The archive</p>
@@ -42,8 +39,8 @@ export default async function SearchPage({ searchParams }: Props) {
               name="q"
               defaultValue={query}
               placeholder="Search teachings, prophecies, articles…"
-              autoFocus
-              className="focus-ring h-12 w-full rounded-full border border-hairline-strong bg-surface pl-12 pr-5 font-sans text-sm text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
+              enterKeyHint="search"
+              className="focus-ring h-12 w-full rounded-full border border-hairline-strong bg-surface pl-12 pr-5 font-sans text-base text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60 sm:text-sm"
             />
           </form>
         </div>
@@ -70,7 +67,6 @@ export default async function SearchPage({ searchParams }: Props) {
           </div>
         )}
       </main>
-      <SiteFooter />
     </>
   )
 }

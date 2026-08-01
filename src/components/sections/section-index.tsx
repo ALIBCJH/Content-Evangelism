@@ -18,7 +18,7 @@ export function SectionIndex() {
           <Link
             key={category}
             href={`/category/${categoryMeta[category].slug}`}
-            className="focus-ring inline-flex h-8 items-center rounded-full border border-hairline-strong px-3.5 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/60 hover:bg-gold/10 hover:text-gold"
+            className="focus-ring inline-flex h-10 items-center rounded-full border border-hairline-strong px-4 sm:h-8 sm:px-3.5 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/60 hover:bg-gold/10 hover:text-gold"
           >
             {category}
           </Link>

@@ -12,10 +12,7 @@ import {
   type ArticleArt as ArticleArtSpec,
 } from '@/lib/content'
 import { listPostedArticles } from '@/lib/posted'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
-import { ArticleArt } from '@/components/article-art'
-import { ArticleCard } from '@/components/article-card'
+import { ArticleCard, CardImage } from '@/components/article-card'
 import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
@@ -41,15 +38,6 @@ interface Row {
 
 function ago(iso: string): string {
   return formatDistanceToNowStrict(parseISO(iso), { addSuffix: true })
-}
-
-function Thumb({ row, className }: { row: Row; className: string }) {
-  return row.imageUrl ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={row.imageUrl} alt="" className={`${className} object-cover`} />
-  ) : (
-    <ArticleArt art={row.art} className={className} sealClassName="h-11 w-11" iconClassName="h-5 w-5" />
-  )
 }
 
 function Meta({ row, className = '' }: { row: Row; className?: string }) {
@@ -116,7 +104,6 @@ export default async function ArticlesPage() {
 
   return (
     <>
-      <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 md:pb-28 lg:px-8">
         {/* ── Slim section label ─────────────────────────────── */}
         <div className="flex items-baseline justify-between border-b-2 border-hairline-strong pb-3">
@@ -128,7 +115,12 @@ export default async function ArticlesPage() {
         <div className="col-rules mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-0">
           <div className="lg:col-span-8 lg:pr-10">
             <Link href={lead.href} className="group block">
-              <Thumb row={lead} className="aspect-[16/9] w-full rounded-2xl border border-hairline" />
+              <CardImage
+                row={lead}
+                className="aspect-[16/9] w-full rounded-2xl border border-hairline"
+                sizes="(min-width: 1024px) 66vw, 100vw"
+                priority
+              />
               <div className="mt-5">
                 <Badge variant="gold" size="sm">{lead.category}</Badge>
                 <h2 className="mt-3 font-display text-2xl font-semibold leading-[1.15] tracking-tight text-ink-strong md:text-4xl">
@@ -201,7 +193,6 @@ export default async function ArticlesPage() {
           </>
         )}
       </main>
-      <SiteFooter />
     </>
   )
 }

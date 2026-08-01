@@ -1,4 +1,5 @@
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import { ArrowRight } from 'lucide-react'
@@ -20,21 +21,31 @@ export interface CardRow {
   art: ArticleArtSpec
 }
 
-/** Cover image for a card; falls back to the article's house art plate. */
+/**
+ * Cover image for a card; falls back to the article's house art plate.
+ * The single next/image gateway — every article image on the site flows
+ * through here so `sizes` is always deliberate and phones never download
+ * desktop-sized files.
+ */
 export function CardImage({
   row,
   className,
+  sizes,
+  priority = false,
   sealClassName = 'h-11 w-11',
   iconClassName = 'h-5 w-5',
 }: {
   row: Pick<CardRow, 'imageUrl' | 'art'>
   className: string
+  sizes: string
+  priority?: boolean
   sealClassName?: string
   iconClassName?: string
 }) {
   return row.imageUrl ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={row.imageUrl} alt="" className={`${className} object-cover`} />
+    <div className={`relative overflow-hidden ${className}`}>
+      <Image src={row.imageUrl} alt="" fill sizes={sizes} priority={priority} className="object-cover" />
+    </div>
   ) : (
     <ArticleArt art={row.art} className={className} sealClassName={sealClassName} iconClassName={iconClassName} />
   )
@@ -47,7 +58,11 @@ export function CardImage({
 export function ArticleCard({ row, showDek = true }: { row: CardRow; showDek?: boolean }) {
   return (
     <Link href={row.href} className="group block">
-      <CardImage row={row} className="aspect-[16/10] w-full rounded-xl border border-hairline" />
+      <CardImage
+        row={row}
+        className="aspect-[16/10] w-full rounded-xl border border-hairline"
+        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+      />
       <p className="mt-4 font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
         {row.category}
         <span aria-hidden className="mx-1.5 text-gold">·</span>

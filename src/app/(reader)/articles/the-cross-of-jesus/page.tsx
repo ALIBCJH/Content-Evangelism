@@ -7,8 +7,6 @@ import { authorById, crossArticle, siteInfo, siteUrl } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 import { ArticleGate } from '@/components/article-gate'
 import { JsonLd } from '@/components/json-ld'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
 import { Byline } from '@/components/byline'
 import { FadeIn } from '@/components/motion'
@@ -87,7 +85,6 @@ export default async function CrossArticlePage() {
     <>
       <JsonLd data={articleLd} />
       <ReadingProgress />
-      <SiteHeader />
       <main>
         <article className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
           {/* ── Standfirst ─────────────────────────────────────── */}
@@ -119,6 +116,7 @@ export default async function CrossArticlePage() {
                   width={article.image.width}
                   height={article.image.height}
                   priority
+                  sizes="(min-width: 768px) 48rem, 100vw"
                   className="w-full rounded-2xl border border-hairline"
                 />
               )}
@@ -273,7 +271,6 @@ export default async function CrossArticlePage() {
           </FadeIn>
         </article>
       </main>
-      <SiteFooter />
     </>
   )
 }

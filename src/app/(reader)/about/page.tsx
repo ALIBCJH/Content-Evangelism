@@ -9,8 +9,6 @@ import {
   whatsappChannel,
   youtubeChannel,
 } from '@/lib/content'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { JsonLd } from '@/components/json-ld'
 import { FadeIn } from '@/components/motion'
 import { buttonVariants } from '@/components/ui/button'
@@ -91,7 +89,6 @@ const aboutGraph = {
 export default function AboutPage() {
   return (
     <>
-      <SiteHeader />
       <JsonLd data={aboutGraph} />
       <main className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
         <FadeIn>
@@ -191,7 +188,6 @@ export default function AboutPage() {
           </div>
         </FadeIn>
       </main>
-      <SiteFooter />
     </>
   )
 }
