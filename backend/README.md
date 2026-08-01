@@ -34,10 +34,16 @@ The committed `.env.example` shows the shape; a local `.env` (gitignored)
 pointing at the compose database looks like:
 
 ```
-DATABASE_URL=postgresql://rptw:rptw-local-dev@localhost:5455/rptw
-ADMIN_TOKEN=local-dev-secret
+DATABASE_URL=postgresql://rptw@localhost:5455/rptw
+ADMIN_TOKEN=any-value-you-like-for-local-dev
 CORS_ORIGINS=http://localhost:3000
 ```
+
+The compose database is passwordless (`trust` auth) and reachable from
+this machine only — the port is bound to 127.0.0.1. A volume created
+before the passwordless switch still expects its old password; run
+`docker compose down -v && docker compose up -d` once to reinitialize
+(then reseed), or keep your existing password in the local `.env`.
 
 Port notes for this machine: 8000 is occupied by another project's Django
 server and 5433 by another Postgres — hence 8801 and 5455.
