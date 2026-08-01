@@ -6,6 +6,7 @@ import { Feather } from 'lucide-react'
 import { categoryFromSlug, categoryMeta } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 import { ArticleCard } from '@/components/article-card'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 import { buttonVariants } from '@/components/ui/button'
 
 export const dynamic = 'force-dynamic'
@@ -34,6 +35,10 @@ export default async function CategoryPage({ params }: Params) {
     <>
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 md:pb-28 lg:px-8">
         <div className="border-b-2 border-hairline-strong pb-4">
+          <Breadcrumbs
+            className="mb-3 [&_ol]:justify-start"
+            crumbs={[{ name: 'Home', href: '/' }, { name: category }]}
+          />
           <p className="kicker text-gold">The desk</p>
           <h1 className="mt-2 font-display text-3xl font-semibold text-ink-strong md:text-4xl">
             {category}

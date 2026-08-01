@@ -4,15 +4,23 @@ import { Search } from 'lucide-react'
 import { listRealRows } from '@/lib/rows'
 import { ArticleCard } from '@/components/article-card'
 
-export const metadata: Metadata = {
-  title: 'Search',
-  description: 'Search the archive of Repent and Prepare the Way.',
-}
-
 export const dynamic = 'force-dynamic'
 
 interface Props {
   searchParams: { q?: string }
+}
+
+/* The search page itself is indexable; result pages (?q=…) are thin,
+   query-shaped duplicates of the articles they list — Google's guidance
+   is to keep internal search results out of the index. */
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const query = (searchParams.q ?? '').trim()
+  return {
+    title: 'Search',
+    description: 'Search the archive of Repent and Prepare the Way.',
+    alternates: { canonical: '/search' },
+    ...(query ? { robots: { index: false, follow: true } } : {}),
+  }
 }
 
 export default async function SearchPage({ searchParams }: Props) {
