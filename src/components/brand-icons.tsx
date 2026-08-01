@@ -6,6 +6,26 @@ import * as React from 'react'
  * live here as plain SVGs. Sized/colored via className like any Lucide icon.
  */
 
+/**
+ * Vivid tile treatment for each official channel — always in brand color,
+ * never hover-only, so the marks read instantly on phones too. One map so
+ * the footer and the homepage Connect strip stay identical.
+ */
+export const channelTone: Record<'radio' | 'youtube' | 'whatsapp', string> = {
+  radio: 'border-gold/50 bg-gold/15 text-gold shadow-[0_0_24px_-6px] shadow-gold/40',
+  youtube:
+    'border-[#FF0000]/50 bg-[#FF0000]/15 text-[#FF3333] shadow-[0_0_24px_-6px] shadow-[#FF0000]/40',
+  whatsapp:
+    'border-[#25D366]/50 bg-[#25D366]/15 text-[#25D366] shadow-[0_0_24px_-6px] shadow-[#25D366]/40',
+}
+
+/** CTA text color per channel, matching the tile. */
+export const channelCtaTone: Record<'radio' | 'youtube' | 'whatsapp', string> = {
+  radio: 'text-gold',
+  youtube: 'text-[#FF3333]',
+  whatsapp: 'text-[#25D366]',
+}
+
 export function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
