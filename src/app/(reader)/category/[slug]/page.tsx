@@ -5,8 +5,6 @@ import { notFound } from 'next/navigation'
 import { Feather } from 'lucide-react'
 import { categoryFromSlug, categoryMeta } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { ArticleCard } from '@/components/article-card'
 import { buttonVariants } from '@/components/ui/button'
 
@@ -34,7 +32,6 @@ export default async function CategoryPage({ params }: Params) {
 
   return (
     <>
-      <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 md:pb-28 lg:px-8">
         <div className="border-b-2 border-hairline-strong pb-4">
           <p className="kicker text-gold">The desk</p>
@@ -71,7 +68,6 @@ export default async function CategoryPage({ params }: Params) {
           </div>
         )}
       </main>
-      <SiteFooter />
     </>
   )
 }

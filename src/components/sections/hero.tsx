@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import { ArrowRight, Newspaper, TrendingUp } from 'lucide-react'
 import type { ArticleArt as ArticleArtSpec } from '@/lib/content'
-import { ArticleArt } from '@/components/article-art'
+import { CardImage } from '@/components/article-card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Stagger, StaggerItem } from '@/components/motion'
@@ -38,16 +38,12 @@ export function Hero({ lead, rail }: { lead: FrontLead; rail: FrontRailRow[] }) 
         {/* ── Lead story ─────────────────────────────────────── */}
         <StaggerItem className="lg:col-span-8 lg:pr-12">
           <Link href={lead.href} className="group block">
-            {lead.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={lead.imageUrl}
-                alt=""
-                className="aspect-[16/9] w-full rounded-2xl border border-hairline object-cover"
-              />
-            ) : (
-              <ArticleArt art={lead.art} className="aspect-[16/9] rounded-2xl border border-hairline" />
-            )}
+            <CardImage
+              row={lead}
+              className="aspect-[16/9] w-full rounded-2xl border border-hairline"
+              sizes="(min-width: 1024px) 66vw, 100vw"
+              priority
+            />
             <div className="mt-6">
               <Badge variant="gold" size="sm">{lead.category}</Badge>
               <h2 className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tight text-ink-strong md:text-5xl">
@@ -89,21 +85,13 @@ export function Hero({ lead, rail }: { lead: FrontLead; rail: FrontRailRow[] }) 
             {rail.map((story) => (
               <li key={story.href + story.title}>
                 <Link href={story.href} className="group flex items-center gap-4 py-4">
-                  {story.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={story.imageUrl}
-                      alt=""
-                      className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline object-cover"
-                    />
-                  ) : (
-                    <ArticleArt
-                      art={story.art}
-                      className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline"
-                      sealClassName="h-8 w-8"
-                      iconClassName="h-3.5 w-3.5"
-                    />
-                  )}
+                  <CardImage
+                    row={story}
+                    className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline"
+                    sizes="96px"
+                    sealClassName="h-8 w-8"
+                    iconClassName="h-3.5 w-3.5"
+                  />
                   <span className="min-w-0">
                     <span className="block font-display text-[1.02rem] font-semibold leading-snug text-ink transition-colors group-hover:text-ink-strong">
                       {story.title}

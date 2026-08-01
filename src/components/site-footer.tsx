@@ -40,9 +40,9 @@ export function SiteFooter() {
           {/* ── Sections ───────────────────────────────────────── */}
           <nav className="md:col-span-3" aria-label="Sections">
             <p className="kicker text-ink-subtle">The desk</p>
-            <ul className="mt-4 space-y-2.5">
+            <ul className="mt-2 space-y-0.5 sm:mt-4 sm:space-y-2.5">
               <li>
-                <Link href="/articles" className="font-sans text-sm text-ink-muted transition-colors hover:text-gold">
+                <Link href="/articles" className="block py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1">
                   All articles
                 </Link>
               </li>
@@ -50,21 +50,21 @@ export function SiteFooter() {
                 <li key={category}>
                   <Link
                     href={`/category/${categoryMeta[category].slug}`}
-                    className="font-sans text-sm text-ink-muted transition-colors hover:text-gold"
+                    className="block py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1"
                   >
                     {category}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/about" className="font-sans text-sm text-ink-muted transition-colors hover:text-gold">
+                <Link href="/about" className="block py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1">
                   About the ministry
                 </Link>
               </li>
               <li>
                 <Link
                   href="/search"
-                  className="inline-flex items-center gap-1.5 font-sans text-sm text-ink-muted transition-colors hover:text-gold"
+                  className="inline-flex items-center gap-1.5 py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1"
                 >
                   <Search className="h-3.5 w-3.5" />
                   Search the archive
@@ -94,7 +94,7 @@ export function SiteFooter() {
                         <span className="flex items-center gap-2 font-sans text-sm font-semibold text-ink">
                           {channel.name}
                           {channel.live && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2 py-0.5 font-sans text-[0.5625rem] font-bold uppercase tracking-kicker text-status-danger">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2 py-0.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-danger">
                               <span className="relative flex h-1.5 w-1.5">
                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
                                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />

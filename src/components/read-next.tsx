@@ -17,6 +17,7 @@ export function ReadNext({ rows }: { rows: RealRow[] }) {
               <CardImage
                 row={row}
                 className="aspect-[16/11] w-24 shrink-0 rounded-lg border border-hairline"
+                sizes="96px"
                 sealClassName="h-8 w-8"
                 iconClassName="h-3.5 w-3.5"
               />

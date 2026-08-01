@@ -85,7 +85,7 @@ export function SiteHeader() {
               href={radioChannel.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="focus-ring hidden h-8 items-center gap-2 whitespace-nowrap rounded-full border border-hairline-strong px-3 font-sans text-[0.625rem] font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold sm:inline-flex"
+              className="focus-ring hidden h-8 items-center gap-2 whitespace-nowrap rounded-full border border-hairline-strong px-3 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold sm:inline-flex"
               title={`${radioChannel.name} — ${radioChannel.cta}`}
             >
               <LiveDot />
@@ -94,7 +94,7 @@ export function SiteHeader() {
             <Link
               href="/search"
               aria-label="Search the archive"
-              className="focus-ring icon-only grid h-9 w-9 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-strong"
+              className="focus-ring icon-only grid h-10 w-10 place-items-center sm:h-9 sm:w-9 rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-strong"
             >
               <Search className="h-4 w-4" />
             </Link>
@@ -104,7 +104,7 @@ export function SiteHeader() {
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
-              className="focus-ring icon-only grid h-9 w-9 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-strong md:hidden"
+              className="focus-ring icon-only grid h-10 w-10 place-items-center sm:h-9 sm:w-9 rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-strong md:hidden"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>

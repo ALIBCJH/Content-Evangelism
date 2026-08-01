@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { Hero, type FrontLead, type FrontRailRow } from '@/components/sections/hero'
 import { SectionIndex } from '@/components/sections/section-index'
 import { LatestStrip } from '@/components/sections/latest-strip'
@@ -47,7 +45,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <SiteHeader />
       <main>
         <Hero lead={lead} rail={rail} />
         <SectionIndex />
@@ -55,7 +52,6 @@ export default async function HomePage() {
         <TodaysVerse />
         <ConnectStrip />
       </main>
-      <SiteFooter />
     </>
   )
 }

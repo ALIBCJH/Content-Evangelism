@@ -1,5 +1,6 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
@@ -9,8 +10,6 @@ import { getPostedArticle } from '@/lib/posted'
 import { listRealRows } from '@/lib/rows'
 import { ArticleGate } from '@/components/article-gate'
 import { JsonLd } from '@/components/json-ld'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
 import { FadeIn } from '@/components/motion'
 import { ReadingProgress } from '@/components/progress-bar'
@@ -106,7 +105,6 @@ export default async function PostedArticlePage({ params }: Params) {
     <>
       <JsonLd data={articleLd} />
       <ReadingProgress />
-      <SiteHeader />
       <main>
         <article className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
           <FadeIn>
@@ -131,12 +129,14 @@ export default async function PostedArticlePage({ params }: Params) {
             </header>
 
             {article.imageUrl && (
-              <figure className="mt-10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl border border-hairline">
+                <Image
                   src={article.imageUrl}
                   alt=""
-                  className="w-full rounded-2xl border border-hairline object-cover"
+                  fill
+                  priority
+                  sizes="(min-width: 768px) 48rem, 100vw"
+                  className="object-cover"
                 />
               </figure>
             )}
@@ -173,7 +173,6 @@ export default async function PostedArticlePage({ params }: Params) {
           </FadeIn>
         </article>
       </main>
-      <SiteFooter />
     </>
   )
 }
