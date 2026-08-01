@@ -29,6 +29,13 @@ export const metadata: Metadata = {
     url: '/articles/the-cross-of-jesus',
     images: [{ url: '/images/the-cross-of-jesus.png', width: 1155, height: 658 }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Cross of Jesus: Where Repentance Meets Mercy',
+    description:
+      'A teaching on the cross of Jesus — where the holiness of God and the hope of sinners met once and for all.',
+    images: ['/images/the-cross-of-jesus.png'],
+  },
 }
 
 const articleLd = {

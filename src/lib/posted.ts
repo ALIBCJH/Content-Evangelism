@@ -24,6 +24,8 @@ export interface PostedArticle {
   body: string
   imageUrl?: string
   publishedAt: string
+  /** Set by the backend on every edit; absent from articles fetched before the field shipped. */
+  updatedAt?: string
   readMinutes: number
 }
 

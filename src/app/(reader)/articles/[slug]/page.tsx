@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { ArrowLeft, Cross } from 'lucide-react'
-import { siteInfo, siteUrl } from '@/lib/content'
+import { categoryMeta, siteInfo, siteUrl } from '@/lib/content'
 import { getPostedArticle } from '@/lib/posted'
 import { listRealRows } from '@/lib/rows'
 import { ArticleGate } from '@/components/article-gate'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { Badge } from '@/components/ui/badge'
 import { FadeIn } from '@/components/motion'
@@ -35,8 +36,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       description: article.dek,
       url: `/articles/${article.slug}`,
       publishedTime: article.publishedAt,
+      ...(article.updatedAt ? { modifiedTime: article.updatedAt } : {}),
       authors: [article.authorName],
-      ...(article.imageUrl ? { images: [{ url: article.imageUrl }] } : {}),
+      section: article.category,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.dek,
     },
   }
 }
@@ -94,6 +101,8 @@ export default async function PostedArticlePage({ params }: Params) {
     description: article.dek,
     articleSection: article.category,
     datePublished: article.publishedAt,
+    ...(article.updatedAt ? { dateModified: article.updatedAt } : {}),
+    timeRequired: `PT${article.readMinutes}M`,
     author: { '@type': 'Person', name: article.authorName },
     publisher: { '@id': `${siteUrl}/#ministry`, '@type': 'Organization', name: siteInfo.ministry },
     isPartOf: { '@id': `${siteUrl}/#website` },
@@ -109,6 +118,14 @@ export default async function PostedArticlePage({ params }: Params) {
         <article className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
           <FadeIn>
             <header className="text-center">
+              <Breadcrumbs
+                className="mb-5"
+                crumbs={[
+                  { name: 'Home', href: '/' },
+                  { name: article.category, href: `/category/${categoryMeta[article.category].slug}` },
+                  { name: article.title },
+                ]}
+              />
               <Badge variant="gold" size="sm">{article.category}</Badge>
               <h1 className="mx-auto mt-5 max-w-2xl font-display text-3xl font-semibold leading-[1.12] tracking-tight text-ink-strong sm:text-4xl md:text-5xl">
                 {article.title}
@@ -132,7 +149,7 @@ export default async function PostedArticlePage({ params }: Params) {
               <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl border border-hairline">
                 <Image
                   src={article.imageUrl}
-                  alt=""
+                  alt={article.title}
                   fill
                   priority
                   sizes="(min-width: 768px) 48rem, 100vw"
