@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Hero, type FrontLead, type FrontRailRow } from '@/components/sections/hero'
 import { SectionIndex } from '@/components/sections/section-index'
 import { LatestStrip } from '@/components/sections/latest-strip'
-import { TodaysVerse } from '@/components/sections/todays-verse'
 import { ConnectStrip } from '@/components/sections/connect-strip'
 import { mostRead } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
@@ -49,7 +48,6 @@ export default async function HomePage() {
         <Hero lead={lead} rail={rail} />
         <SectionIndex />
         <LatestStrip rows={strip} />
-        <TodaysVerse />
         <ConnectStrip />
       </main>
     </>
