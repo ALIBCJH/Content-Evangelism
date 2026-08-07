@@ -1,7 +1,6 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import type { Category } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 import { Opener } from '@/components/archive/opener'
 import {
@@ -11,22 +10,21 @@ import {
 } from '@/components/archive/archive-months'
 
 /**
- * The archive, rendered whole or filtered to one section.
+ * The archive: every published piece, newest first, grouped by month with
+ * the newest opened in place at its head.
  *
- * `/`, `/teachings` and `/prophecies` are all this component — the site has
- * exactly one way of listing articles, so a section page is the same page
- * with a narrower set of rows and its own heading.
+ * Only `/` renders this today — the section pages carry Coming Soon banners
+ * until they open — but it stays a component so the page file says what the
+ * page is rather than how the list is built.
  */
 
 export interface ArchiveViewProps {
   /** Small caps label above the title. */
   kicker: string
   title: string
-  /** The italic line under the title. Omitted on section pages that don't need one. */
+  /** The italic line under the title. */
   purpose?: string
-  /** Restrict to one section; omit for the whole archive. */
-  category?: Category
-  /** Shown when nothing matches — always says what is missing, by name. */
+  /** Shown when nothing has been published yet. */
   emptyMessage: string
 }
 
@@ -78,12 +76,10 @@ export async function ArchiveView({
   kicker,
   title,
   purpose,
-  category,
   emptyMessage,
 }: ArchiveViewProps) {
   /* listRealRows already returns real, published pieces newest first. */
-  const all = await listRealRows()
-  const rows = (category ? all.filter((r) => r.category === category) : all).map((r) => ({
+  const rows = (await listRealRows()).map((r) => ({
     slug: r.slug,
     href: r.href,
     title: r.title,

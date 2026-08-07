@@ -1,24 +1,22 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
-import { ArchiveView } from '@/components/archive/archive-view'
+import { ComingSoon } from '@/components/coming-soon'
 
 export const metadata: Metadata = {
   title: 'Teachings',
   description:
-    'Expositions and sermons from the Ministry of Repentance and Holiness — the Scriptures opened for the church.',
+    'Expositions and sermons from the Ministry of Repentance and Holiness — the Scriptures opened for the church. Opening soon.',
   alternates: { canonical: '/teachings' },
 }
 
-export const dynamic = 'force-dynamic'
-
 export default function TeachingsPage() {
   return (
-    <ArchiveView
+    <ComingSoon
       kicker="The desk"
       title="Teachings"
-      purpose="Expositions and sermons — the Scriptures opened for the church."
-      category="Teachings"
-      emptyMessage="Nothing has been published in Teachings yet. The first piece will open here."
+      blurb="Expositions and sermons — the Scriptures opened for the church."
+      verse="Preach the word; be instant in season, out of season; reprove, rebuke, exhort with all longsuffering and doctrine."
+      reference="2 Timothy 4:2"
     />
   )
 }

@@ -62,6 +62,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/about" className="font-sans text-sm transition-colors hover:text-linen">
+                About
+              </Link>
+            </li>
+            <li>
               <Link
                 href="/search"
                 className="inline-flex items-center gap-1.5 font-sans text-sm transition-colors hover:text-linen"
@@ -73,14 +78,12 @@ export function SiteFooter() {
           </ul>
         </nav>
 
-        <nav aria-label="Ministry">
-          <h2 className="kicker mb-4 font-semibold text-linen">Ministry</h2>
-          <ul className="space-y-2.5">
-            <li>
-              <Link href="/about" className="font-sans text-sm transition-colors hover:text-linen">
-                About us
-              </Link>
-            </li>
+        {/* The official channels. The menu no longer carries them, so this
+            is where a reader finds the radio, the videos, and the share
+            link — they are given room accordingly. */}
+        <nav aria-label="Channels" className="sm:col-span-2 md:col-span-1">
+          <h2 className="kicker mb-4 font-semibold text-linen">Listen &amp; watch</h2>
+          <ul className="space-y-2">
             {channels.map((channel) => {
               const Icon = channelIcons[channel.key]
               return (
@@ -89,16 +92,25 @@ export function SiteFooter() {
                     href={channel.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`inline-flex items-center gap-2 font-sans text-sm transition-colors ${channelHover[channel.key]}`}
+                    className={`focus-ring group flex items-center gap-3 rounded-sm border border-white/10 px-3 py-2.5 transition-colors hover:border-white/25 hover:bg-white/5 ${channelHover[channel.key]}`}
                   >
-                    <Icon className="h-3.5 w-3.5 shrink-0" />
-                    {channel.name}
-                    {channel.live && (
-                      <span className="relative flex h-1.5 w-1.5" aria-label="On air">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-sm border border-white/15 bg-white/5">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2 font-sans text-sm font-medium text-linen">
+                        {channel.name}
+                        {channel.live && (
+                          <span className="relative flex h-1.5 w-1.5" aria-label="On air">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
+                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />
+                          </span>
+                        )}
                       </span>
-                    )}
+                      <span className="mt-0.5 block font-sans text-xs leading-snug text-sky/80">
+                        {channel.cta}
+                      </span>
+                    </span>
                   </a>
                 </li>
               )
