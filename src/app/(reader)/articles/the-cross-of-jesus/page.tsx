@@ -93,7 +93,7 @@ export default async function CrossArticlePage() {
       <JsonLd data={articleLd} />
       <ReadingProgress />
       <main>
-        <article className="mx-auto max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8">
+        <article className="cloth mx-auto my-6 max-w-3xl px-5 pb-16 pt-10 sm:px-10 md:my-10 md:pb-20">
           {/* ── Standfirst ─────────────────────────────────────── */}
           <FadeIn>
             <header className="text-center">
@@ -124,7 +124,7 @@ export default async function CrossArticlePage() {
                   height={article.image.height}
                   priority
                   sizes="(min-width: 768px) 48rem, 100vw"
-                  className="w-full rounded-2xl border border-hairline"
+                  className="w-full rounded-sm border border-hairline"
                 />
               )}
               <figcaption className="mt-3 text-center font-sans text-xs text-ink-subtle">

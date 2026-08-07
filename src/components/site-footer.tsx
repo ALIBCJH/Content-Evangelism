@@ -1,8 +1,8 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, Cross, RadioTower, Search } from 'lucide-react'
-import { channelCtaTone, channelTone, WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
-import { CATEGORIES, categoryMeta, channels, siteInfo } from '@/lib/content'
+import { RadioTower, Search } from 'lucide-react'
+import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
+import { channels, siteInfo } from '@/lib/content'
 
 const channelIcons = {
   radio: RadioTower,
@@ -12,123 +12,107 @@ const channelIcons = {
 
 /* Brand hover colors so each channel reads instantly. */
 const channelHover: Record<string, string> = {
-  radio: 'hover:border-gold/60 hover:text-gold',
-  youtube: 'hover:border-[#FF0000]/60 hover:text-[#FF3333]',
-  whatsapp: 'hover:border-[#25D366]/60 hover:text-[#25D366]',
+  radio: 'hover:text-gold',
+  youtube: 'hover:text-[#FF6B6B]',
+  whatsapp: 'hover:text-[#25D366]',
 }
 
+/**
+ * The footer closes the page the way the reference does: a centred epigraph
+ * on navy, three columns of links beneath it, and a hairline base bar. It
+ * collapses 3 → 2 → 1 column as the viewport narrows.
+ */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-hairline bg-navy-900/40">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-8">
-          {/* ── Brand + mission ────────────────────────────────── */}
-          <div className="md:col-span-5">
-            <span className="grid h-10 w-10 place-items-center rounded-full border border-gold/40 bg-gold/10">
-              <Cross className="h-4 w-4 text-gold" strokeWidth={1.5} />
-            </span>
-            <p className="mt-4 font-display text-2xl font-bold text-ink-strong">{siteInfo.name}</p>
-            <p className="mt-3 max-w-md font-serif text-sm leading-relaxed text-ink-muted">
-              {siteInfo.mission}
-            </p>
-            <p className="mt-5 max-w-md font-serif text-sm italic leading-relaxed text-ink-subtle">
-              “Your word is a lamp to my feet and a light to my path.”
-            </p>
-            <p className="kicker mt-1 text-gold">Psalm 119:105</p>
-          </div>
+    <footer className="on-navy bg-navy text-sky">
+      {/* ── Epigraph ─────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-shell px-5 pt-14 text-center sm:px-6">
+        <p className="mx-auto mb-3 max-w-lg font-display text-lg font-light italic leading-snug text-linen sm:text-xl">
+          And thou shalt make holy garments for Aaron thy brother for glory and for beauty.
+        </p>
+        <cite className="font-sans text-[0.625rem] font-medium uppercase not-italic tracking-[0.2em] text-gold">
+          Exodus 28:2
+        </cite>
+      </div>
 
-          {/* ── Sections ───────────────────────────────────────── */}
-          <nav className="md:col-span-3" aria-label="Sections">
-            <p className="kicker text-ink-subtle">The desk</p>
-            <ul className="mt-2 space-y-0.5 sm:mt-4 sm:space-y-2.5">
-              <li>
-                <Link href="/articles" className="block py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1">
-                  All articles
-                </Link>
-              </li>
-              {CATEGORIES.map((category) => (
-                <li key={category}>
-                  <Link
-                    href={`/category/${categoryMeta[category].slug}`}
-                    className="block py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1"
+      {/* ── Columns ──────────────────────────────────────────────── */}
+      <div className="mx-auto grid max-w-shell grid-cols-1 gap-9 px-5 pb-8 pt-14 sm:px-6 sm:grid-cols-2 md:grid-cols-[1.6fr_1fr_1fr] md:gap-12">
+        <div className="sm:col-span-2 md:col-span-1">
+          <p className="mb-4 font-display text-xl text-linen sm:text-[1.3rem]">{siteInfo.name}</p>
+          <p className="mb-4 max-w-md text-[0.95rem] leading-relaxed">{siteInfo.mission}</p>
+          <p className="text-[0.95rem] leading-relaxed">Nyeri, Kenya</p>
+        </div>
+
+        <nav aria-label="Read">
+          <h2 className="kicker mb-4 font-semibold text-linen">Read</h2>
+          <ul className="space-y-2.5">
+            <li>
+              <Link href="/" className="font-sans text-sm transition-colors hover:text-linen">
+                All articles
+              </Link>
+            </li>
+            <li>
+              <Link href="/teachings" className="font-sans text-sm transition-colors hover:text-linen">
+                Teachings
+              </Link>
+            </li>
+            <li>
+              <Link href="/prophecies" className="font-sans text-sm transition-colors hover:text-linen">
+                Prophecies
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/search"
+                className="inline-flex items-center gap-1.5 font-sans text-sm transition-colors hover:text-linen"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Search the archive
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Ministry">
+          <h2 className="kicker mb-4 font-semibold text-linen">Ministry</h2>
+          <ul className="space-y-2.5">
+            <li>
+              <Link href="/about" className="font-sans text-sm transition-colors hover:text-linen">
+                About us
+              </Link>
+            </li>
+            {channels.map((channel) => {
+              const Icon = channelIcons[channel.key]
+              return (
+                <li key={channel.key}>
+                  <a
+                    href={channel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex items-center gap-2 font-sans text-sm transition-colors ${channelHover[channel.key]}`}
                   >
-                    {category}
-                  </Link>
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    {channel.name}
+                    {channel.live && (
+                      <span className="relative flex h-1.5 w-1.5" aria-label="On air">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />
+                      </span>
+                    )}
+                  </a>
                 </li>
-              ))}
-              <li>
-                <Link href="/about" className="block py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1">
-                  About the ministry
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/search"
-                  className="inline-flex items-center gap-1.5 py-2 font-sans text-sm text-ink-muted transition-colors hover:text-gold sm:py-1"
-                >
-                  <Search className="h-3.5 w-3.5" />
-                  Search the archive
-                </Link>
-              </li>
-            </ul>
-          </nav>
+              )
+            })}
+          </ul>
+        </nav>
+      </div>
 
-          {/* ── Connect ────────────────────────────────────────── */}
-          <div className="md:col-span-4">
-            <p className="kicker text-ink-subtle">Connect</p>
-            <ul className="mt-4 space-y-3">
-              {channels.map((channel) => {
-                const Icon = channelIcons[channel.key]
-                return (
-                  <li key={channel.key}>
-                    <a
-                      href={channel.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`focus-ring group flex items-start gap-4 rounded-2xl border border-hairline bg-surface/60 p-4 text-ink-muted transition-colors ${channelHover[channel.key]}`}
-                    >
-                      <span
-                        className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl border ${channelTone[channel.key]}`}
-                      >
-                        <Icon className="h-7 w-7" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex flex-wrap items-center gap-2 font-sans text-[0.9375rem] font-semibold text-ink-strong">
-                          {channel.name}
-                          {channel.live && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-status-danger/30 bg-status-danger/10 px-2 py-0.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-danger">
-                              <span className="relative flex h-1.5 w-1.5">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
-                                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />
-                              </span>
-                              On air
-                            </span>
-                          )}
-                        </span>
-                        <span className="mt-1 block font-serif text-sm leading-relaxed text-ink-muted">
-                          {channel.tagline}
-                        </span>
-                        <span
-                          className={`mt-2.5 inline-flex items-center gap-1.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker ${channelCtaTone[channel.key]}`}
-                        >
-                          {channel.cta}
-                          <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                        </span>
-                      </span>
-                    </a>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        </div>
-
-        <div className="double-rule mt-12 pt-5">
-          <p className="text-center font-sans text-xs text-ink-subtle">
-            © {new Date().getFullYear()} {siteInfo.name} · {siteInfo.ministry} ·{' '}
-            <span className="text-gold">Soli Deo Gloria</span>
-          </p>
-        </div>
+      {/* ── Base bar ─────────────────────────────────────────────── */}
+      <div className="mx-auto flex max-w-shell flex-wrap gap-4 border-t border-sky/20 px-5 pb-10 pt-6 font-sans text-xs tracking-[0.04em] sm:px-6">
+        <span>
+          © {new Date().getFullYear()} {siteInfo.ministry}
+        </span>
+        <span className="text-gold sm:ms-auto">#PrepareTheWayTheMessiahIsComing</span>
       </div>
     </footer>
   )

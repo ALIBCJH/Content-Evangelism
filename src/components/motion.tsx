@@ -1,15 +1,52 @@
 'use client'
 
 import * as React from 'react'
-import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 /**
  * Scroll-reveal primitives. One orchestrated rise per section — restrained,
  * editorial motion rather than scattered effects.
+ *
+ * These are deliberately fail-safe. The hidden state is applied by JS on
+ * mount and removed by an IntersectionObserver, so the server always sends
+ * visible markup: if scripting is off, the observer never fires, or the
+ * reader prefers reduced motion, the content is simply there. Reveals that
+ * ship `opacity: 0` from the server can strand a whole page blank, and the
+ * front page and article body both sit above the fold.
  */
 
-const EASE = [0.22, 1, 0.36, 1] as const
+/** Applies the reveal lifecycle to a wrapper element. */
+function useReveal<T extends HTMLElement>(margin = '-80px') {
+  const ref = React.useRef<T>(null)
+
+  React.useEffect(() => {
+    const node = ref.current
+    if (!node) return
+
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !('IntersectionObserver' in window)
+    ) {
+      return
+    }
+
+    node.setAttribute('data-reveal', 'pending')
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          entry.target.setAttribute('data-reveal', 'in')
+          io.unobserve(entry.target)
+        })
+      },
+      { rootMargin: margin }
+    )
+    io.observe(node)
+    return () => io.disconnect()
+  }, [margin])
+
+  return ref
+}
 
 export function FadeIn({
   children,
@@ -22,23 +59,21 @@ export function FadeIn({
   delay?: number
   y?: number
 }) {
-  const reduce = useReducedMotion()
+  const ref = useReveal<HTMLDivElement>()
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: reduce ? 0 : y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
+    <div
+      ref={ref}
+      className={cn('reveal', className)}
+      style={
+        {
+          '--reveal-y': `${y}px`,
+          '--reveal-delay': `${delay}s`,
+        } as React.CSSProperties
+      }
     >
       {children}
-    </motion.div>
+    </div>
   )
-}
-
-const staggerParent: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
 }
 
 export function Stagger({
@@ -48,19 +83,18 @@ export function Stagger({
   children: React.ReactNode
   className?: string
 }) {
+  const ref = useReveal<HTMLDivElement>('-60px')
   return (
-    <motion.div
-      className={className}
-      variants={staggerParent}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: '-60px' }}
-    >
+    <div ref={ref} className={cn('reveal reveal-parent', className)}>
       {children}
-    </motion.div>
+    </div>
   )
 }
 
+/**
+ * A child of <Stagger>. Its delay comes from its position, so the group
+ * rises in sequence once the parent enters the viewport.
+ */
 export function StaggerItem({
   children,
   className,
@@ -70,14 +104,12 @@ export function StaggerItem({
   className?: string
   y?: number
 }) {
-  const reduce = useReducedMotion()
-  const item: Variants = {
-    hidden: { opacity: 0, y: reduce ? 0 : y },
-    show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
-  }
   return (
-    <motion.div className={cn(className)} variants={item}>
+    <div
+      className={cn('reveal-item', className)}
+      style={{ '--reveal-y': `${y}px` } as React.CSSProperties}
+    >
       {children}
-    </motion.div>
+    </div>
   )
 }

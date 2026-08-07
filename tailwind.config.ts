@@ -6,28 +6,31 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
-        // Editorial pairing: Fraunces carries the masthead & headlines,
-        // Newsreader carries deks/excerpts, Montserrat (the Altar brand
-        // sans) carries kickers, navigation and UI chrome.
-        display: ['var(--font-fraunces)', 'Georgia', 'Times New Roman', 'serif'],
-        serif: ['var(--font-newsreader)', 'Georgia', 'serif'],
-        sans: ['var(--font-montserrat)', 'Segoe UI Variable', 'Segoe UI', 'system-ui', '-apple-system', 'sans-serif'],
+        // Editorial pairing: Newsreader carries the masthead & headlines,
+        // Gentium Book Plus carries running text (it is the reading face,
+        // and therefore the body default), IBM Plex Sans carries kickers,
+        // navigation, and UI chrome.
+        display: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
+        serif: ['var(--font-gentium)', 'Georgia', 'serif'],
+        sans: ['var(--font-plex)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       colors: {
+        // Navy chrome: the nav, the footer, and the solid buttons.
         navy: {
-          DEFAULT: '#0F172A',
-          50: '#1E293B',
-          100: '#1A243F',
-          200: '#141B2E',
-          300: '#0F172A',
-          900: '#070B16',
+          DEFAULT: '#123563', // --blue
+          50: '#2A4E7E',
+          100: '#1B4177',
+          200: '#123563',
+          300: '#0F2A50',
+          900: '#0C1E3A', // --deep
         },
+        // Gold is paint at DEFAULT and ink at .ink — see globals.css.
         gold: {
           DEFAULT: '#D4A017',
+          ink: '#8A6410',
           dark: '#B8860B',
           light: '#E8B923',
           50: '#FBF7E8',
@@ -62,17 +65,26 @@ const config: Config = {
           DEFAULT: 'var(--hairline)',
           strong: 'var(--hairline-strong)',
         },
+        // Paper: the linen ground and the cloth an article is printed on.
+        linen: '#F1F2F4',
+        sand: '#E4E7EC',
+        cloth: '#FFFFFF',
+        thread: '#D6DAE1',
+        sky: '#8FB4DE',
         panel: 'rgb(var(--panel-rgb) / <alpha-value>)',
         canvas: 'rgb(var(--app-bg-rgb) / <alpha-value>)',
       },
+      maxWidth: {
+        shell: 'var(--shell)',
+      },
       boxShadow: {
-        'glow-gold': '0 0 0 1px rgba(212,160,23,0.35), 0 8px 30px -10px rgba(212,160,23,0.45)',
+        'glow-gold': '0 1px 2px rgba(12,30,58,0.10), 0 8px 22px -12px rgba(12,30,58,0.35)',
         'glow-soft': 'var(--shadow-panel)',
         card: 'var(--card-shadow)',
       },
       letterSpacing: {
-        kicker: '0.18em',
-        masthead: '0.06em',
+        kicker: '0.19em',
+        masthead: '0.01em',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',

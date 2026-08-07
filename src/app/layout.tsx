@@ -1,26 +1,32 @@
 import type { Metadata } from 'next'
-import { Fraunces, Montserrat, Newsreader } from 'next/font/google'
+import { Gentium_Book_Plus, IBM_Plex_Sans, Newsreader } from 'next/font/google'
 import { radioChannel, siteInfo, siteUrl, youtubeChannel } from '@/lib/content'
 import { JsonLd } from '@/components/json-ld'
 import './globals.css'
 
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
-  variable: '--font-fraunces',
-  display: 'swap',
-})
-
+/* Display: mastheads, headlines, and pulled scripture. */
 const newsreader = Newsreader({
   subsets: ['latin'],
   style: ['normal', 'italic'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-newsreader',
   display: 'swap',
 })
 
-const montserrat = Montserrat({
+/* Reading face: every paragraph of running text on the site. */
+const gentium = Gentium_Book_Plus({
   subsets: ['latin'],
-  variable: '--font-montserrat',
+  style: ['normal', 'italic'],
+  weight: ['400', '700'],
+  variable: '--font-gentium',
+  display: 'swap',
+})
+
+/* Utility: kickers, navigation, buttons, timestamps. */
+const plex = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-plex',
   display: 'swap',
 })
 
@@ -101,13 +107,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      suppressHydrationWarning
-      className={`${fraunces.variable} ${newsreader.variable} ${montserrat.variable}`}
+      className={`${newsreader.variable} ${gentium.variable} ${plex.variable}`}
     >
       <body>
-        {/* Static, synchronous theme bootstrap — runs before first paint. */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script src="/theme-init.js" />
         <JsonLd data={siteGraph} />
         {children}
       </body>

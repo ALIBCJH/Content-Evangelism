@@ -60,7 +60,7 @@ export function ArticleCard({ row, showDek = true }: { row: CardRow; showDek?: b
     <Link href={row.href} className="group block">
       <CardImage
         row={row}
-        className="aspect-[16/10] w-full rounded-xl border border-hairline"
+        className="aspect-[16/10] w-full rounded-sm border border-hairline"
         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
       />
       <p className="mt-4 font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">

@@ -1,53 +1,28 @@
 import * as React from 'react'
-import { Hero, type FrontLead, type FrontRailRow } from '@/components/sections/hero'
-import { SectionIndex } from '@/components/sections/section-index'
-import { LatestStrip } from '@/components/sections/latest-strip'
-import { mostRead } from '@/lib/content'
-import { listRealRows } from '@/lib/rows'
+import type { Metadata } from 'next'
+import { ArchiveView } from '@/components/archive/archive-view'
 
-/* The front page is served fresh on every request: the newest published
-   article leads, the strip carries the next pieces, and the rail follows —
-   an article never appears twice on the page. */
-export const dynamic = 'force-dynamic'
+/* The archive is the site. The newest piece opens in place at the top and
+   everything published sits beneath it, newest month first. */
 
-export const metadata = {
+export const metadata: Metadata = {
+  title: {
+    absolute: 'Repent and Prepare the Way — Articles',
+  },
+  description:
+    'The full archive from the publication desk of the Ministry of Repentance and Holiness — every piece opens with its first line.',
   alternates: { canonical: '/' },
 }
 
-const STRIP_SIZE = 3
-const RAIL_SIZE = 5
+export const dynamic = 'force-dynamic'
 
-export default async function HomePage() {
-  const rows = await listRealRows()
-
-  const lead: FrontLead = rows[0]
-  const strip = rows.slice(1, 1 + STRIP_SIZE)
-  const railReal = rows.slice(1 + STRIP_SIZE, 1 + STRIP_SIZE + RAIL_SIZE)
-
-  // Seed pieces keep the rail full while the archive is young.
-  const fill: FrontRailRow[] = mostRead.map((a) => ({
-    href: '/articles',
-    title: a.title,
-    category: a.category,
-    readMinutes: a.readMinutes,
-    imageUrl: a.image?.src,
-    art: a.art,
-  }))
-
-  const rail = [
-    ...railReal.map(({ href, title, category, readMinutes, imageUrl, art }) => ({
-      href, title, category, readMinutes, imageUrl, art,
-    })),
-    ...fill,
-  ].slice(0, RAIL_SIZE)
-
+export default function ArchivePage() {
   return (
-    <>
-      <main>
-        <Hero lead={lead} rail={rail} />
-        <SectionIndex />
-        <LatestStrip rows={strip} />
-      </main>
-    </>
+    <ArchiveView
+      kicker="Archive"
+      title="Articles"
+      purpose="Writing on repentance, holiness, and the garments of the priesthood. Every piece opens with its first line, so you can start reading here."
+      emptyMessage="Nothing has been published yet. The first piece will open here."
+    />
   )
 }

@@ -61,8 +61,10 @@ export function ArticleGate({ children }: { children: React.ReactNode }) {
               aria-hidden
               className="pointer-events-none absolute inset-0"
               style={{
+                // The article is printed on cloth, so the text settles into
+                // cloth — not the linen ground behind it.
                 background:
-                  'linear-gradient(to bottom, transparent, rgb(var(--app-bg-rgb) / 0.72) 55%, rgb(var(--app-bg-rgb)) 92%)',
+                  'linear-gradient(to bottom, transparent, rgb(var(--panel-rgb) / 0.72) 55%, rgb(var(--panel-rgb)) 92%)',
               }}
             />
 

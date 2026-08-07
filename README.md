@@ -1,21 +1,23 @@
 # Repent and Prepare the Way
 
 The publication desk of the Ministry of Repentance and Holiness (headed by
-Prophet Dr. David Owuor) — a premium Christian knowledge platform for
-teachings, prophecies, oracles, study guides, and devotionals.
-Organized like a modern broadsheet newspaper (layout hierarchy inspired by
-premium news sites), styled with the shared Altar brand: deep navy, sacred
-gold, and the ministry's flagship blue.
+Prophet Dr. David Owuor).
+
+The site is deliberately one thing: **an archive of articles**. The landing
+page (`/`) is the archive itself — the newest piece opens in place, and
+everything published sits beneath it, grouped by month. Each piece has its
+own page at `/articles/<slug>`. There is no homepage above the archive, no
+section landing pages, and no marketing furniture; the reader arrives
+already reading.
 
 ## Stack
 
-- Next.js 14 (App Router) + TypeScript — fully static homepage
-- Tailwind CSS 3 with the Altar Reporting App design tokens (dark = candlelit
-  navy edition, light = warm paper edition)
-- Framer Motion (restrained editorial scroll reveals)
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS 3 on the paper palette (linen ground, cloth articles, navy
+  chrome, gold as a rule) — see **Theming**
 - Lucide icons, shadcn/ui-style primitives (`src/components/ui`)
-- Fonts: Fraunces (masthead & headlines), Newsreader (deks & excerpts),
-  Montserrat (kickers, nav, UI chrome — the Altar brand sans)
+- Fonts: Newsreader (masthead & headlines), Gentium Book Plus (running
+  text), IBM Plex Sans (kickers, nav, UI chrome)
 
 ## Run it
 
@@ -25,33 +27,50 @@ npm run dev      # http://localhost:3000
 npm run build && npm start   # production
 ```
 
-Note: don't run `next dev` and `next start` at the same time — they share
-the `.next` directory and will corrupt each other.
+**Prototyping mode — the frontend runs alone.** The FastAPI backend in
+`backend/` is currently unplugged: articles are read straight off disk from
+`data/articles.json`, so `npm run dev` is the only process the site needs —
+no Postgres, no API server, no `API_URL`. To re-attach the server later,
+restore the `fetch` calls in `src/lib/posted.ts`; that module is the only
+place the frontend talks to the store, so nothing else has to change.
+
+Note: don't run `next dev` and `next build`/`next start` at the same time —
+they share the `.next` directory and will corrupt each other. If you see
+`Cannot find module './###.js'`, that's what happened: stop everything,
+`rm -rf .next`, and start again.
+
+## The routes
+
+| Route | What it is |
+| --- | --- |
+| `/` | The archive — the whole site |
+| `/articles/<slug>` | One article |
+| `/search` | Search across published pieces |
+| `/admin` | The posting desk |
+
+`/articles`, `/about` and `/category/*` are permanent redirects to `/`;
+they were removed when the site was cut down to the archive.
 
 ## Where things live
 
-- `src/lib/content.ts` — the whole editorial content model + seed content
-  (articles, oracle, series, guides, prophecy record, authors, topics).
-  Swap this file for your CMS/API layer; the components render its shapes.
-- `src/components/article-art.tsx` — the "illuminated plate" generator.
-  The site uses no stock photography: every piece gets deterministic art
-  (palette + emblem icon + halo rings + grain) declared next to its content.
-- `src/components/sections/*` — one file per homepage section, in page
-  order: hero (broadsheet), featured oracle, latest teachings, today's
-  verse, featured series, recent articles (+ topics rail), study guides,
-  prophecy collection, voices (authors), newsletter.
-- `src/app/globals.css` — the ported Altar theme tokens plus editorial
-  primitives (kicker, drop cap, column rules, ornament divider, glass).
-- `public/theme-init.js` — pre-paint theme bootstrap + JSON-LD injection
-  (kept out of the React tree on purpose: inline JSON-LD gets HTML-escaped
-  by React SSR and breaks hydration).
+- `src/lib/content.ts` — the content model plus site chrome (categories,
+  channels, nav, `siteInfo`). Articles themselves live in the store, not
+  here; the one exception is `crossArticle`, which has a hand-built page.
+- `src/components/article-art.tsx` — the "illuminated plate" generator: a
+  piece published without a photograph gets deterministic art (palette +
+  emblem + halo rings) instead.
+- `src/components/archive/*` — the Articles archive: `opener.tsx` (the
+  newest piece, opened in place and faded out into one Read button) and
+  `archive-months.tsx` (months down the left, pieces down the right).
+- `src/app/globals.css` — the theme tokens plus editorial primitives
+  (kicker, drop cap, column rules, ornament, verse, excerpt, reveal).
 
 ## The light CMS backend
 
 Articles can be posted from the browser at **`/admin`** ("The Posting Desk") —
 title, category, summary, body (blank line = paragraph, `## ` = subheading),
 optional image URL, and the posting key. Published pieces appear at
-`/articles/<slug>` and on the `/articles` index (the Articles nav link).
+`/articles/<slug>` and at the top of the archive on `/`.
 
 API (same deployment, Next.js route handlers):
 
@@ -81,7 +100,13 @@ Storage is auto-detected in `src/lib/posted.ts`:
 
 ## Theming
 
-Dark (default) is the candlelit navy edition; light is the paper edition.
-The toggle in the top strip stores the choice in `localStorage` under
-`herald-theme`. The Oracle and Prophecy sections intentionally stay dark
-in both themes — they are the paper's reverent rooms.
+One palette: the paper edition. Linen ground, cloth-white article
+surfaces, navy chrome, gold as a rule rather than as paint. There is no
+dark mode and no toggle — every colour in `globals.css` is the colour that
+ships. The Oracle and Prophecy sections stay on navy; they are the paper's
+reverent rooms, and they carry `on-navy` so gold reads bright there.
+
+Gold has two values on purpose. `--gold` (#D4A017) is **paint** and only
+sits on navy chrome. `--gold-ink` (#8A6410) is **ink** — the same hue
+darkened until it clears 4.5:1 on linen — and `.text-gold` resolves to it
+automatically. Never swap them.

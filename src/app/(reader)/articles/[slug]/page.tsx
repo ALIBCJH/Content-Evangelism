@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { ArrowLeft, Cross } from 'lucide-react'
-import { categoryMeta, siteInfo, siteUrl } from '@/lib/content'
+import { siteInfo, siteUrl } from '@/lib/content'
 import { getPostedArticle } from '@/lib/posted'
 import { listRealRows } from '@/lib/rows'
 import { extractHeadings, headingId } from '@/lib/toc'
@@ -127,14 +127,15 @@ export default async function PostedArticlePage({ params }: Params) {
             <StudyMargin headings={headings} title={article.title} />
           </div>
         </aside>
-        <article className="mx-auto w-full max-w-3xl px-4 pb-20 pt-6 sm:px-6 md:pb-28 lg:px-8 xl:px-0">
+        {/* An article is printed on cloth, the way the archive shows it. */}
+        <article className="cloth mx-auto my-6 w-full max-w-3xl px-5 pb-16 pt-10 sm:px-10 md:pb-20 md:my-10">
           <FadeIn>
             <header className="text-center">
               <Breadcrumbs
                 className="mb-5"
                 crumbs={[
-                  { name: 'Home', href: '/' },
-                  { name: article.category, href: `/category/${categoryMeta[article.category].slug}` },
+                  { name: 'Archive', href: '/' },
+                  { name: article.category },
                   { name: article.title },
                 ]}
               />
@@ -158,7 +159,7 @@ export default async function PostedArticlePage({ params }: Params) {
             </header>
 
             {article.imageUrl && (
-              <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl border border-hairline">
+              <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-sm border border-hairline">
                 <Image
                   src={article.imageUrl}
                   alt={article.title}
@@ -188,7 +189,7 @@ export default async function PostedArticlePage({ params }: Params) {
                 <ShareRow title={article.title} className="mt-8" />
                 <div className="mt-10 flex justify-center">
                   <Link
-                    href="/articles"
+                    href="/"
                     className="group inline-flex items-center gap-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
                   >
                     <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />

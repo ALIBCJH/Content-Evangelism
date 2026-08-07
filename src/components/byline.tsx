@@ -58,7 +58,7 @@ export function AuthorAvatar({
       aria-hidden
       className={cn(
         'grid shrink-0 place-items-center rounded-full border font-display font-semibold',
-        'border-gold/40 bg-gradient-to-br from-flagship-deep/70 to-navy-200 text-gold-light',
+        'on-navy border-gold/40 bg-gradient-to-br from-flagship-deep/70 to-navy-200 text-gold-light',
         'h-11 w-11 text-sm',
         ringClassName,
         className
