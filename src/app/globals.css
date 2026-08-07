@@ -3,151 +3,110 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────────────────────────────
-   The Altar Herald — theme tokens.
-   Ported from the Altar Reporting App so both products share one brand.
-   Dark is the default (deep navy broadsheet by candlelight); html.light
-   flips to the warm paper edition. Gold is the shared sacred accent.
+   Prepare the Way — theme tokens.
+
+   One palette: the paper edition. Linen ground, cloth-white article
+   surfaces, navy chrome, and gold used as a rule rather than as paint.
+   There is no dark mode — every colour below is the colour that ships.
+
+   Gold has two values on purpose. --gold (#D4A017) is PAINT: it only ever
+   sits on the navy chrome, where it has contrast to spare. --gold-ink
+   (#8A6410) is INK: the same hue darkened until it clears 4.5:1 on linen,
+   for any gold text or rule on the page body. Never swap them.
    ────────────────────────────────────────────────────────────────────── */
-:root,
-html.dark {
-  color-scheme: dark;
+:root {
+  color-scheme: light;
 
-  /* Brand (shared across themes) */
-  --navy: #0F172A;
-  --navy-100: #1A243F;
-  --navy-200: #141B2E;
-  --navy-900: #070B16;
-  --gold: #D4A017;
-  --gold-dark: #B8860B;
+  /* ── Reference palette ─────────────────────────────────────────── */
+  --linen: #F1F2F4;   /* page ground */
+  --sand: #E4E7EC;    /* hover / alternate surface */
+  --cloth: #FFFFFF;   /* article surface */
+  --thread: #D6DAE1;  /* hairline */
+  --blue: #123563;    /* nav, buttons, footer */
+  --deep: #0C1E3A;    /* pressed chrome, deepest navy */
+  --sky: #8FB4DE;     /* text on navy */
+  --gold: #D4A017;    /* paint — navy chrome only */
+  --gold-ink: #8A6410; /* ink — gold on paper */
   --gold-light: #E8B923;
-  --flagship-rgb: 124 196 255;      /* #7CC4FF - readable blue on dark */
-  --flagship-deep-rgb: 31 69 133;   /* #1F4585 ministry flagship blue */
-  --flagship-soft-rgb: 170 214 255;
-  --orchid-rgb: 139 124 246;        /* #8B7CF6 - pastel violet for dark */
+  --gold-dark: #B8860B;
 
-  /* Status accents */
-  --success-rgb: 110 231 183;
-  --warning-rgb: 252 211 77;
-  --danger-rgb: 253 164 175;
+  /* Reading measure. The reference sets every shell to this width. */
+  --shell: 62rem;
+
+  /* ── Semantic tokens ───────────────────────────────────────────── */
+
+  /* Chrome, as RGB triplets so Tailwind can apply opacity. */
+  --flagship-rgb: 18 53 99;        /* --blue */
+  --flagship-deep-rgb: 12 30 58;   /* --deep */
+  --flagship-soft-rgb: 143 180 222;/* --sky */
+  --orchid-rgb: 109 40 217;        /* #6D28D9 — prophecy accent, paper-safe */
+
+  /* Status accents, all weighted for a light ground. */
+  --success-rgb: 4 120 87;
+  --warning-rgb: 146 64 14;
+  --danger-rgb: 190 18 60;
   --info-rgb: var(--flagship-rgb);
 
   /* Text */
-  --ink-rgb: 232 238 247;        /* #E8EEF7 */
-  --ink-muted-rgb: 160 176 196;  /* #A0B0C4 */
-  --ink-subtle-rgb: 110 126 148; /* #6E7E94 */
-  --ink-strong-rgb: 255 255 255; /* #FFFFFF */
+  --ink-rgb: 22 29 40;        /* #161D28 — body */
+  --ink-muted-rgb: 86 96 110; /* #56606E — deks, meta */
+  --ink-subtle-rgb: 110 120 135; /* #6E7887 — kickers, timestamps */
+  --ink-strong-rgb: 12 18 32; /* #0C1220 — headlines */
 
-  /* Translucent surfaces (white-on-dark glass) */
-  --surface-1: rgba(255, 255, 255, 0.025);
-  --surface-2: rgba(255, 255, 255, 0.05);
-  --surface-3: rgba(255, 255, 255, 0.10);
+  /* Layered surfaces, tinted from --sand rather than pure grey. */
+  --surface-1: rgba(18, 53, 99, 0.035);
+  --surface-2: rgba(18, 53, 99, 0.065);
+  --surface-3: rgba(18, 53, 99, 0.11);
 
-  /* Hairline borders */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  /* Hairlines */
+  --border: #D6DAE1;
+  --border-strong: #BCC3CE;
   --hairline: var(--border);
   --hairline-strong: var(--border-strong);
 
   /* Solid raised panels */
-  --panel-rgb: 12 32 70;         /* #0c2046 */
+  --panel-rgb: 255 255 255;   /* --cloth */
 
-  /* App background base */
-  --app-bg-rgb: 10 29 62;        /* #0a1d3e */
-  --ring-offset: #0a1d3e;
+  /* Page ground */
+  --app-bg-rgb: 241 242 244;  /* --linen */
+  --ring-offset: #F1F2F4;
 
-  /* Card surface */
-  --card-bg: rgba(255,255,255,0.035);
-  --card-bg-hover: rgba(255,255,255,0.06);
-  --card-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -10px rgba(0,0,0,0.55);
-  --card-shadow-hover: 0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 36px -14px rgba(0,0,0,0.65);
-  --shadow-panel: 0 1px 0 rgba(255,255,255,0.05) inset, 0 18px 60px -24px rgba(0,0,0,0.78);
+  /* Cards. Flat cloth on linen — the separation is the hairline and a
+     whisper of shadow, not a glass blur. */
+  --card-bg: #FFFFFF;
+  --card-bg-hover: #FFFFFF;
+  --card-shadow: 0 1px 2px rgba(12, 30, 58, 0.05);
+  --card-shadow-hover: 0 2px 4px rgba(12, 30, 58, 0.07), 0 14px 32px -18px rgba(12, 30, 58, 0.28);
+  --shadow-panel: 0 1px 2px rgba(12, 30, 58, 0.06), 0 20px 50px -30px rgba(12, 30, 58, 0.25);
 
-  /* Glass surfaces */
-  --glass-bg: rgba(255,255,255,0.035);
-  --glass-strong-bg: rgba(26,36,63,0.88);
+  /* Glass — retained for the sticky nav only. */
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-strong-bg: rgba(255, 255, 255, 0.94);
 
-  /* Utility colors */
-  --scrollbar: rgba(255, 255, 255, 0.10);
-  --scrollbar-hover: rgba(255, 255, 255, 0.20);
-  --shimmer-base: rgba(255, 255, 255, 0.04);
-  --shimmer-mid: rgba(255, 255, 255, 0.08);
-  --selection-bg: rgba(212, 160, 23, 0.35);
-  --selection-fg: #ffffff;
-  --grain-opacity: 0.5;
-  --grain-image: url("data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23ffffff' fill-opacity='0.06'/%3E%3C/svg%3E");
-
-  /* App background gradient — candlelit navy with the flagship blue rising
-     from the top corner, like dawn behind a sanctuary. */
-  --body-overlay:
-    linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.22) 100%),
-    radial-gradient(60% 55% at 78% 0%, #1f4585 0%, rgba(31,69,133,0.55) 22%, rgba(31,69,133,0.18) 45%, rgba(31,69,133,0) 70%);
-  --mesh-blobs:
-    radial-gradient(32% 26% at 82% 74%, rgba(31,69,133,0.55) 0%, rgba(31,69,133,0) 65%),
-    radial-gradient(26% 22% at 28% 82%, rgba(124,196,255,0.12) 0%, rgba(124,196,255,0) 70%),
-    radial-gradient(28% 22% at 18% 28%, rgba(31,69,133,0.40) 0%, rgba(31,69,133,0) 65%);
+  /* Utility */
+  --scrollbar: rgba(18, 53, 99, 0.20);
+  --scrollbar-hover: rgba(18, 53, 99, 0.34);
+  --shimmer-base: rgba(18, 53, 99, 0.05);
+  --shimmer-mid: rgba(18, 53, 99, 0.10);
+  --selection-bg: rgba(212, 160, 23, 0.30);
+  --selection-fg: #161D28;
 }
 
-html.light {
-  color-scheme: light;
-
-  --flagship-rgb: 15 38 140;      /* #0F268C ministry flagship blue */
-  --flagship-deep-rgb: 15 38 140;
-  --flagship-soft-rgb: 15 38 140;
-  --orchid-rgb: 109 40 217;       /* #6D28D9 */
-
-  --success-rgb: 4 120 87;
-  --warning-rgb: 180 83 9;
-  --danger-rgb: 190 18 60;
-  --info-rgb: var(--flagship-rgb);
-
-  --ink-rgb: 15 38 71;
-  --ink-muted-rgb: 56 70 100;
-  --ink-subtle-rgb: 96 111 139;
-  --ink-strong-rgb: 8 19 38;
-
-  --surface-1: rgba(15, 23, 42, 0.045);
-  --surface-2: rgba(15, 23, 42, 0.075);
-  --surface-3: rgba(15, 23, 42, 0.12);
-
-  --border: rgba(15, 23, 42, 0.14);
-  --border-strong: rgba(15, 23, 42, 0.24);
-  --hairline: var(--border);
-  --hairline-strong: var(--border-strong);
-
-  --panel-rgb: 255 255 255;
-
-  /* Paper edition: a warmer off-white than the reporting app, so long
-     reading feels like newsprint rather than a dashboard. */
-  --app-bg-rgb: 250 249 245;     /* #FAF9F5 */
-  --ring-offset: #FAF9F5;
-
-  --card-bg: #ffffff;
-  --card-bg-hover: #FFFDF8;
-  --card-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 10px 28px -20px rgba(15,23,42,0.22);
-  --card-shadow-hover: 0 2px 6px rgba(15,23,42,0.08), 0 18px 42px -24px rgba(15,23,42,0.28);
-  --shadow-panel: 0 1px 2px rgba(15,23,42,0.07), 0 22px 60px -30px rgba(15,23,42,0.30);
-
-  --glass-bg: rgba(255,255,255,0.75);
-  --glass-strong-bg: rgba(255,255,255,0.92);
-
-  --scrollbar: rgba(15, 23, 42, 0.18);
-  --scrollbar-hover: rgba(15, 23, 42, 0.30);
-  --shimmer-base: rgba(15, 23, 42, 0.04);
-  --shimmer-mid: rgba(15, 23, 42, 0.09);
-  --selection-bg: rgba(212, 160, 23, 0.28);
-  --selection-fg: #0F2647;
-  --grain-opacity: 0.10;
-  --grain-image: url("data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%230f268c' fill-opacity='0.045'/%3E%3C/svg%3E");
-
-  --body-overlay: none;
-  --mesh-blobs: none;
+/* Gold as text is always the darkened ink value. Utilities that paint gold
+   (bg-gold, border-gold) keep the bright --gold and are untouched. */
+.text-gold,
+.text-gold-light,
+.text-gold-dark,
+.group:hover .group-hover\:text-gold,
+.group:hover .group-hover\:text-gold-light {
+  color: var(--gold-ink);
 }
-
-/* Light mode: gold reads as ink, not paint (~5:1 bronze on paper). */
-html.light .text-gold,
-html.light .text-gold-light,
-html.light .group:hover .group-hover\:text-gold-light {
-  color: #8C6A0A;
+/* …except on the navy chrome, where bright gold is the correct value. */
+.on-navy .text-gold,
+.on-navy .text-gold-light,
+.on-navy .group:hover .group-hover\:text-gold,
+.on-navy .group:hover .group-hover\:text-gold-light {
+  color: var(--gold);
 }
 
 * {
@@ -161,87 +120,61 @@ html.light .group:hover .group-hover\:text-gold-light {
 html {
   scroll-behavior: smooth;
   overflow-x: clip;
+  /* Sticky headings clear the fixed nav when jumped to from a link. */
+  scroll-padding-top: 5rem;
 }
 
 body {
   overflow-x: clip;
   color: rgb(var(--ink-rgb));
   background-color: rgb(var(--app-bg-rgb));
-  background-image: var(--body-overlay);
-  background-repeat: no-repeat, no-repeat;
-  background-attachment: fixed, fixed;
   min-height: 100vh;
-  font-family: var(--font-montserrat), 'Segoe UI', system-ui, sans-serif;
-  transition: background-color 300ms ease, color 300ms ease;
+  font-family: var(--font-gentium), Georgia, 'Times New Roman', serif;
+  font-size: 1.0625rem;
+  line-height: 1.7;
 }
 
-/* Ambient mesh lives on the canvas, behind everything. */
-body::after {
-  content: '';
-  position: fixed;
-  inset: -20%;
-  pointer-events: none;
-  z-index: 0;
-  background-image: var(--mesh-blobs);
-  filter: blur(8px);
+/* ── Layout primitives ────────────────────────────────────────────── */
+
+/* The reading shell — one measure, shared by every page. */
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+@media (max-width: 40rem) {
+  .shell { padding-inline: 1.25rem; }
 }
 
-/* Site-wide grain — the "paper tooth". */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--grain-image);
-  opacity: var(--grain-opacity);
-  z-index: 0;
-}
-
-/* Phones: fixed full-viewport overlays force whole-screen composites on
-   every scroll frame. Pin them to the top of the document instead — the
-   texture reads the same above the fold and scrolling stays cheap. */
-@media (max-width: 768px) {
-  /* Unlike position:fixed, absolute overflow widens the scroll area, so
-     the mesh must not bleed past the viewport edges here. */
-  body::after {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 140lvh;
-    filter: none;
-  }
-  body::before {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 120lvh;
-  }
-}
-body > * {
-  position: relative;
-  z-index: 1;
+/* Cloth: a white article surface sitting on the linen ground. */
+.cloth {
+  background: var(--cloth);
+  border: 1px solid var(--border);
 }
 
 /* ── Editorial primitives ─────────────────────────────────────────── */
 
 /* Kicker: the small caps label above every headline. */
 .kicker {
+  font-family: var(--font-plex), system-ui, sans-serif;
   font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-weight: 500;
+  letter-spacing: 0.19em;
   text-transform: uppercase;
 }
 
 /* Drop cap for lead paragraphs. */
 .dropcap::first-letter {
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-newsreader), Georgia, serif;
   float: left;
   font-size: 3.4em;
   line-height: 0.82;
   padding-right: 0.09em;
   padding-top: 0.05em;
-  font-weight: 600;
-  color: var(--gold);
+  font-weight: 400;
+  color: var(--gold-ink);
 }
-html.light .dropcap::first-letter { color: #8C6A0A; }
 
 /* Thin newspaper column rule between grid children (desktop only). */
 @media (min-width: 1024px) {
@@ -260,7 +193,7 @@ html.light .dropcap::first-letter { color: #8C6A0A; }
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  color: var(--gold);
+  color: var(--gold-ink);
 }
 .ornament::before,
 .ornament::after {
@@ -271,7 +204,143 @@ html.light .dropcap::first-letter { color: #8C6A0A; }
 }
 .ornament::before { --orn-dir: left; }
 
-/* Glass surfaces */
+/* A pulled scripture quotation, ruled in gold on its opening edge. */
+.verse {
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  border-inline-start: 2px solid var(--gold-ink);
+  padding-inline-start: 1.1rem;
+  color: rgb(var(--ink-rgb));
+}
+
+/* ── The opener teaser ────────────────────────────────────────────
+   The newest piece opens in place and then falls away: the tail of the
+   text blurs, fades into the cloth, and hands off to one Read button.
+   The full text is server-rendered inside — the fade is purely visual,
+   so crawlers still receive every word.
+   ──────────────────────────────────────────────────────────────── */
+.excerpt {
+  position: relative;
+  max-height: 19rem;
+  overflow: hidden;
+  /* Whatever surface the teaser sits on, it must fade into that colour.
+     Cloth is the default; .excerpt-on-linen switches it to the ground. */
+  --excerpt-fade-rgb: 255 255 255;
+}
+.excerpt-on-linen { --excerpt-fade-rgb: var(--app-bg-rgb); }
+.excerpt > * + * { margin-top: 1.05rem; }
+
+/* …settling into the surface beneath it. */
+.excerpt::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 9rem;
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--excerpt-fade-rgb) / 0) 0%,
+    rgb(var(--excerpt-fade-rgb) / 0.85) 55%,
+    rgb(var(--excerpt-fade-rgb)) 100%
+  );
+  pointer-events: none;
+}
+/* …blurring as it goes. */
+.excerpt::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 9rem;
+  backdrop-filter: blur(3.5px);
+  -webkit-backdrop-filter: blur(3.5px);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 55%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 55%);
+  pointer-events: none;
+  z-index: 1;
+}
+@media (max-width: 40rem) {
+  .excerpt { max-height: 22rem; }
+}
+
+/* ── Section reveal ───────────────────────────────────────────────
+   Paired with components/motion.tsx. Nothing here hides content until
+   JS has added data-reveal, so server-rendered markup is always visible.
+   ──────────────────────────────────────────────────────────────── */
+.reveal[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 20px));
+}
+.reveal[data-reveal='in'] {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
+}
+
+/* Children of a Stagger rise in sequence behind their parent. */
+.reveal-parent[data-reveal='pending'] .reveal-item {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 22px));
+}
+.reveal-parent[data-reveal='in'] .reveal-item {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-parent[data-reveal='in'] .reveal-item:nth-child(2) { transition-delay: 0.09s; }
+.reveal-parent[data-reveal='in'] .reveal-item:nth-child(3) { transition-delay: 0.18s; }
+.reveal-parent[data-reveal='in'] .reveal-item:nth-child(4) { transition-delay: 0.27s; }
+.reveal-parent[data-reveal='in'] .reveal-item:nth-child(n + 5) { transition-delay: 0.36s; }
+
+/* ── Archive rows ─────────────────────────────────────────────────
+   A gold wire draws down the leading edge on hover and the text steps
+   aside to meet it. Both are decorative, so both sit behind the
+   reduced-motion guard at the foot of this file.
+   ──────────────────────────────────────────────────────────────── */
+.piece { position: relative; }
+.piece::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 2px;
+  background: var(--gold);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.piece:hover::before,
+.piece:focus-visible::before { transform: scaleY(1); }
+
+.piece [data-shift] {
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.3, 1), color 0.25s ease;
+}
+.piece:hover [data-shift='lead'],
+.piece:focus-visible [data-shift='lead'] { transform: translateX(10px); }
+.piece:hover [data-shift='trail'],
+.piece:focus-visible [data-shift='trail'] { transform: translateX(5px); }
+
+/* Scroll reveal — rows arrive as they enter the viewport. The class is
+   added by JS, so rows stay visible when JS never runs. */
+.piece[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.piece[data-reveal='in'] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece::before { transition: none; }
+  .piece[data-reveal='pending'] { opacity: 1; transform: none; }
+}
+
+/* Glass surfaces — the sticky nav. */
 .glass {
   background: var(--glass-bg);
   border: 1px solid var(--border);
@@ -285,19 +354,13 @@ html.light .dropcap::first-letter { color: #8C6A0A; }
   -webkit-backdrop-filter: blur(18px);
 }
 
-/* Card — glassmorphic surface */
+/* Card — flat cloth, hairline edge. */
 .card {
   position: relative;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border-radius: 4px;
   box-shadow: var(--card-shadow);
-}
-html.light .card {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 .card-interactive {
@@ -310,7 +373,6 @@ html.light .card {
 @media (hover: hover) {
   .card-interactive:hover {
     border-color: var(--border-strong);
-    background: var(--card-bg-hover);
     box-shadow: var(--card-shadow-hover);
     transform: translateY(-2px);
   }
@@ -355,7 +417,11 @@ html.light .card {
 /* Focus ring */
 .focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--ring-offset), 0 0 0 4px rgba(212,160,23,0.7);
+  box-shadow: 0 0 0 2px var(--ring-offset), 0 0 0 4px rgba(212, 160, 23, 0.9);
+}
+:focus-visible {
+  outline: 2px solid var(--gold-ink);
+  outline-offset: 3px;
 }
 
 /* Scrollbar */

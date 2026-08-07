@@ -31,7 +31,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <>
-      <main className="mx-auto max-w-5xl px-4 pb-20 pt-4 sm:px-6 md:pb-28 lg:px-8">
+      <main className="mx-auto max-w-5xl px-5 pb-20 pt-4 sm:px-6 md:pb-28">
         <div className="mx-auto max-w-xl text-center">
           <p className="kicker text-gold">The archive</p>
           <h1 className="mt-2 font-display text-3xl font-semibold text-ink-strong md:text-4xl">
