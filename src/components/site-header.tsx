@@ -3,36 +3,95 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Menu, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { navSections, radioChannel, whatsappChannel, youtubeChannel } from '@/lib/content'
-import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
-
-/** The pulsing on-air dot for the Listen Live affordances. */
-function LiveDot({ className }: { className?: string }) {
-  return (
-    <span className={cn('relative flex h-2 w-2', className)} aria-hidden>
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
-      <span className="relative inline-flex h-2 w-2 rounded-full bg-status-danger" />
-    </span>
-  )
-}
+import { navSections } from '@/lib/content'
 
 /**
- * The masthead is the navigation. One navy bar under a gold rule carries the
- * wordmark, the sections, and the live-radio link — no separate banner, so a
- * phone spends its first screen on the article rather than on chrome.
+ * The masthead: one navy bar under a gold rule carrying the wordmark, search,
+ * and the menu button — at every width.
+ *
+ * The menu is a drawer that slides in from the right over the page, rather
+ * than an accordion that pushes it down. Because it is now the *only*
+ * navigation on the site, it is built to full dialog standards: focus moves
+ * into it on open and returns to the button on close, Tab is trapped inside
+ * it, Escape and the backdrop both dismiss it, and the page behind it cannot
+ * scroll while it is open.
  */
 export function SiteHeader() {
-  const [menuOpen, setMenuOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
+  const reduce = useReducedMotion()
 
-  // A tapped link navigates without unmounting the nav, so close the panel
-  // ourselves whenever the route changes.
+  const panelRef = React.useRef<HTMLDivElement>(null)
+  const buttonRef = React.useRef<HTMLButtonElement>(null)
+  // Remembers what to focus once the drawer closes.
+  const wasOpen = React.useRef(false)
+
+  // A tapped link navigates without unmounting the header, so close on route change.
   React.useEffect(() => {
-    setMenuOpen(false)
+    setOpen(false)
   }, [pathname])
+
+  /* Escape to dismiss, and Tab confined to the panel while it is open. */
+  React.useEffect(() => {
+    if (!open) return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])'
+      )
+      if (!focusable?.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
+
+  /* Hold the page still behind the drawer. Replacing the scrollbar with an
+     equivalent padding stops the layout jumping as it is removed. */
+  React.useEffect(() => {
+    if (!open) return
+    const { body } = document
+    const gap = window.innerWidth - document.documentElement.clientWidth
+    const overflow = body.style.overflow
+    const padding = body.style.paddingRight
+    body.style.overflow = 'hidden'
+    if (gap > 0) body.style.paddingRight = `${gap}px`
+    return () => {
+      body.style.overflow = overflow
+      body.style.paddingRight = padding
+    }
+  }, [open])
+
+  /* Move focus in on open; hand it back to the button on close. */
+  React.useEffect(() => {
+    if (open) {
+      wasOpen.current = true
+      panelRef.current?.querySelector<HTMLElement>('a[href], button')?.focus()
+    } else if (wasOpen.current) {
+      wasOpen.current = false
+      buttonRef.current?.focus()
+    }
+  }, [open])
 
   // "Articles" is the archive at /, and an article page belongs to it too.
   const isCurrent = (href: string) =>
@@ -41,48 +100,19 @@ export function SiteHeader() {
       : pathname.startsWith(href)
 
   return (
-    <nav
-      className="on-navy sticky top-0 z-50 border-b-2 border-gold bg-navy"
-      aria-label="Primary"
-    >
-      <div className="mx-auto flex max-w-shell items-center gap-6 px-5 py-4 sm:px-6">
-        <Link
-          href="/"
-          className="mr-auto min-w-0 truncate font-display text-[1.0625rem] font-normal text-linen sm:text-[1.3rem]"
-        >
-          Repent <span className="italic text-sky">and</span> Prepare the Way
-        </Link>
-
-        {/* Desktop + tablet sections */}
-        <div className="hidden items-center gap-7 md:flex">
-          {navSections.map((section) => (
-            <Link
-              key={section.href}
-              href={section.href}
-              aria-current={isCurrent(section.href) ? 'page' : undefined}
-              className={cn(
-                'whitespace-nowrap border-b-2 pb-[3px] font-sans text-[0.8125rem] tracking-[0.04em] transition-colors',
-                isCurrent(section.href)
-                  ? 'border-gold text-linen'
-                  : 'border-transparent text-sky hover:text-linen'
-              )}
-            >
-              {section.label}
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-1">
-          <a
-            href={radioChannel.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="focus-ring hidden h-8 items-center gap-2 whitespace-nowrap rounded-full border border-sky/40 px-3 font-sans text-[0.6875rem] font-medium uppercase tracking-kicker text-sky transition-colors hover:border-gold hover:text-gold lg:inline-flex"
-            title={`${radioChannel.name} — ${radioChannel.cta}`}
+    <>
+      <nav
+        className="on-navy sticky top-0 z-50 border-b-2 border-gold bg-navy"
+        aria-label="Primary"
+      >
+        <div className="mx-auto flex max-w-shell items-center gap-4 px-5 py-4 sm:px-6">
+          <Link
+            href="/"
+            className="mr-auto min-w-0 truncate font-display text-[1.0625rem] font-normal text-linen sm:text-[1.3rem]"
           >
-            <LiveDot />
-            Listen Live
-          </a>
+            Repent <span className="italic text-sky">and</span> Prepare the Way
+          </Link>
+
           <Link
             href="/search"
             aria-label="Search the archive"
@@ -91,79 +121,93 @@ export function SiteHeader() {
             <Search className="h-4 w-4" />
           </Link>
           <button
+            ref={buttonRef}
             type="button"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-            aria-controls="site-menu"
-            onClick={() => setMenuOpen((open) => !open)}
-            className="focus-ring icon-only grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen md:hidden"
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-haspopup="dialog"
+            onClick={() => setOpen(true)}
+            className="focus-ring icon-only grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen"
           >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <Menu className="h-5 w-5" />
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile menu */}
-      <AnimatePresence initial={false}>
-        {menuOpen && (
-          <motion.div
-            id="site-menu"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-white/15 bg-navy md:hidden"
-          >
-            <div className="mx-auto max-w-shell px-5 pb-5 pt-2 sm:px-6">
-              {navSections.map((section) => (
-                <Link
-                  key={section.href}
-                  href={section.href}
-                  aria-current={isCurrent(section.href) ? 'page' : undefined}
-                  className={cn(
-                    'block py-3 font-sans text-[0.95rem] transition-colors',
-                    isCurrent(section.href) ? 'text-gold' : 'text-sky hover:text-linen'
-                  )}
-                >
-                  {section.label}
-                </Link>
-              ))}
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Menu">
+            {/* The page dims and recedes behind the panel. */}
+            <motion.button
+              type="button"
+              tabIndex={-1}
+              aria-hidden
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduce ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0 h-full w-full cursor-default bg-navy-900/70 backdrop-blur-[2px]"
+            />
 
-              {/* Official channels — the mobile menu is where most readers
-                  will reach for them. */}
-              <div className="mt-2 border-t border-white/15 pt-3">
-                <a
-                  href={radioChannel.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 py-3 font-sans text-[0.8125rem] text-sky transition-colors hover:text-gold"
+            <motion.div
+              ref={panelRef}
+              initial={{ x: reduce ? 0 : '100%', opacity: reduce ? 0 : 1 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: reduce ? 0 : '100%', opacity: reduce ? 0 : 1 }}
+              transition={{ duration: reduce ? 0.01 : 0.38, ease: [0.22, 1, 0.36, 1] }}
+              className="on-navy absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col border-l-2 border-gold bg-navy shadow-[-24px_0_60px_-20px_rgba(12,30,58,0.65)]"
+            >
+              <div className="flex items-center justify-between px-7 py-4">
+                <span className="kicker text-sky/70">Menu</span>
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  onClick={() => setOpen(false)}
+                  className="focus-ring icon-only -mr-2 grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen"
                 >
-                  <LiveDot />
-                  Listen Live · {radioChannel.name}
-                </a>
-                <a
-                  href={youtubeChannel.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 py-3 font-sans text-[0.8125rem] text-sky transition-colors hover:text-[#FF6B6B]"
-                >
-                  <YouTubeIcon className="h-4 w-4" />
-                  Watch on YouTube
-                </a>
-                <a
-                  href={whatsappChannel.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 py-3 font-sans text-[0.8125rem] text-sky transition-colors hover:text-[#25D366]"
-                >
-                  <WhatsAppIcon className="h-4 w-4" />
-                  Share on WhatsApp
-                </a>
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-            </div>
-          </motion.div>
+
+              <ul className="flex-1 overflow-y-auto px-7 pt-2">
+                {navSections.map((section) => {
+                  const current = isCurrent(section.href)
+                  return (
+                    <li key={section.href} className="border-b border-white/10 last:border-b-0">
+                      <Link
+                        href={section.href}
+                        aria-current={current ? 'page' : undefined}
+                        className={cn(
+                          'group flex items-baseline gap-3 py-5 font-display text-[1.7rem] font-light leading-none transition-colors',
+                          current ? 'text-gold' : 'text-linen hover:text-sky'
+                        )}
+                      >
+                        {/* A gold marker sits beside the section you are in. */}
+                        <span
+                          aria-hidden
+                          className={cn(
+                            'h-1.5 w-1.5 shrink-0 rounded-full bg-gold transition-opacity',
+                            current ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        {section.label}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              <p className="border-t border-white/10 px-7 py-6 font-display text-[0.95rem] font-light italic leading-snug text-sky/80">
+                Prepare ye the way of the LORD.
+                <span className="mt-1.5 block font-sans text-[0.625rem] font-medium uppercase not-italic tracking-[0.2em] text-gold">
+                  Isaiah 40:3
+                </span>
+              </p>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   )
 }
