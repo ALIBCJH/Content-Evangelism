@@ -9,15 +9,20 @@ import { cn } from '@/lib/utils'
 import { navSections } from '@/lib/content'
 
 /**
- * The masthead: one navy bar under a gold rule carrying the wordmark, search,
- * and the menu button — at every width.
+ * The masthead: one navy bar under a gold rule carrying the wordmark, the
+ * sections, and search.
+ *
+ * From `lg` up the sections are laid out inline as a rail, so the whole site
+ * is one click away without opening anything. Below that the wordmark alone
+ * fills the bar, the rail is withdrawn, and the menu button takes over — the
+ * four sections would otherwise wrap or crush the masthead.
  *
  * The menu is a drawer that slides in from the right over the page, rather
- * than an accordion that pushes it down. Because it is now the *only*
- * navigation on the site, it is built to full dialog standards: focus moves
- * into it on open and returns to the button on close, Tab is trapped inside
- * it, Escape and the backdrop both dismiss it, and the page behind it cannot
- * scroll while it is open.
+ * than an accordion that pushes it down. Since it is the only navigation at
+ * those widths, it is built to full dialog standards: focus moves into it on
+ * open and returns to the button on close, Tab is trapped inside it, Escape
+ * and the backdrop both dismiss it, and the page behind it cannot scroll
+ * while it is open.
  */
 export function SiteHeader() {
   const [open, setOpen] = React.useState(false)
@@ -33,6 +38,17 @@ export function SiteHeader() {
   React.useEffect(() => {
     setOpen(false)
   }, [pathname])
+
+  /* Widening to the rail hides the menu button. Close the drawer with it, so
+     the panel is never left open with no visible control to dismiss it. */
+  React.useEffect(() => {
+    const rail = window.matchMedia('(min-width: 1024px)')
+    const onChange = (event: MediaQueryListEvent) => {
+      if (event.matches) setOpen(false)
+    }
+    rail.addEventListener('change', onChange)
+    return () => rail.removeEventListener('change', onChange)
+  }, [])
 
   /* Escape to dismiss, and Tab confined to the panel while it is open. */
   React.useEffect(() => {
@@ -113,6 +129,39 @@ export function SiteHeader() {
             Repent <span className="italic text-sky">and</span> Prepare the Way
           </Link>
 
+          {/* The sections, inline. Below `lg` they live in the drawer instead. */}
+          <ul className="hidden items-center lg:flex">
+            {navSections.map((section) => {
+              const current = isCurrent(section.href)
+              return (
+                <li key={section.href}>
+                  <Link
+                    href={section.href}
+                    aria-current={current ? 'page' : undefined}
+                    className={cn(
+                      'focus-ring group block rounded-sm px-3 py-2 font-sans text-[0.78rem] font-medium uppercase tracking-[0.16em] transition-colors',
+                      current ? 'text-gold' : 'text-sky hover:text-linen'
+                    )}
+                  >
+                    {/* A gold rule under the section you are in — the rail's
+                        answer to the gold marker the drawer uses. It sits well
+                        clear of the bar's own bottom rule. */}
+                    <span
+                      className={cn(
+                        'block border-b-2 pb-1 transition-colors',
+                        current ? 'border-gold' : 'border-transparent group-hover:border-sky/40'
+                      )}
+                    >
+                      {section.label}
+                    </span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+
+          <span aria-hidden className="hidden h-5 w-px bg-white/15 lg:block" />
+
           <Link
             href="/search"
             aria-label="Search the archive"
@@ -127,7 +176,7 @@ export function SiteHeader() {
             aria-expanded={open}
             aria-haspopup="dialog"
             onClick={() => setOpen(true)}
-            className="focus-ring icon-only grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen"
+            className="focus-ring icon-only grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
