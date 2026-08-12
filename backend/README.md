@@ -136,14 +136,40 @@ curl https://rptw-api.herokuapp.com/health    # {"status":"ok"}
 
 Heroku specifics already handled by the code:
 
-- `Procfile` binds uvicorn to Heroku's `$PORT`.
-- `DATABASE_URL` arrives as `postgres://` with no `sslmode` param;
+- **Port** — `Procfile` binds uvicorn to Heroku's `$PORT`.
+- **TLS behind the router** — Heroku terminates TLS and forwards plain HTTP
+  from an internal address, so uvicorn's default of trusting only
+  `127.0.0.1` would discard `X-Forwarded-Proto` and answer a redirect with
+  an `http://` URL, which the browser then blocks as mixed content on an
+  `https://` page. `--proxy-headers --forwarded-allow-ips='*'` fixes it;
+  trusting `*` is safe here because a dyno is reachable only through that
+  router.
+- **Keep-alive** — the router holds idle connections open for around 90s.
+  `--timeout-keep-alive 95` keeps the dyno from closing first, which races
+  with an in-flight request and surfaces as an H13.
+- **Database URL** — arrives as `postgres://` with no `sslmode` param;
   `normalize_database_url` upgrades the scheme for asyncpg and defaults
-  remote hosts to `ssl=require` (Heroku refuses plain TCP).
-- Tables are created on boot, so no release phase is needed yet — add
-  one (`release: alembic upgrade head`) when Alembic arrives.
-- Seeding a fresh database: `DATABASE_URL="$(heroku config:get DATABASE_URL -a rptw-api)" python -m scripts.seed`.
-- Dyno restarts happen daily; state lives only in Postgres, so this is safe.
+  remote hosts to `ssl=require` (Heroku refuses plain TCP, and its
+  certificate is self-signed, which is exactly what `require` — encrypt,
+  don't verify — allows).
+- **Connection pool** — Heroku derives `WEB_CONCURRENCY` from the dyno size
+  and uvicorn honours it, so a bigger dyno silently multiplies the pool by
+  the worker count. `pool_plan` in `app/config.py` divides
+  `DB_CONNECTION_LIMIT` (default 20, the Essential-0 cap) across those
+  workers instead. Raise it when you upgrade the database plan.
+- **Schema** — `release: python -m scripts.release` creates tables once per
+  deploy, before any dyno takes traffic. Web dynos skip the boot-time DDL
+  whenever `DYNO` is set, because several uvicorn workers running
+  `create_all` at once race on the GIN index. A failing release aborts the
+  deploy. Swap the command for `alembic upgrade head` when Alembic arrives.
+- **Seeding** — `data/articles.json` is gitignored, so it never reaches the
+  dyno; seed from a local checkout against the hosted database:
+  `DATABASE_URL="$(heroku config:get DATABASE_URL -a rptw-api)" python -m scripts.seed`.
+- **`app.json`** — declares the buildpack, the Postgres add-on, and the
+  config vars (with `ADMIN_TOKEN` generated as a secret), so review apps and
+  `heroku create --manifest` provision the same shape.
+- **Restarts** — dynos restart daily; state lives only in Postgres, so this
+  is safe.
 
 Any other always-on Python host (Render, Railway, Fly.io) works the same
 way: build `pip install -r requirements.txt`, start

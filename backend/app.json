@@ -1,0 +1,26 @@
+{
+  "name": "rptw-publication-api",
+  "description": "FastAPI backend for Repent and Prepare the Way: articles, full-text search and categories.",
+  "repository": "https://github.com/ALIBCJH/Content-Evangelism",
+  "keywords": ["fastapi", "python", "postgres", "publishing"],
+  "buildpacks": [{ "url": "heroku/python" }],
+  "addons": [{ "plan": "heroku-postgresql:essential-0" }],
+  "env": {
+    "ADMIN_TOKEN": {
+      "description": "Bearer token required for POST/PATCH/DELETE. The frontend's ADMIN_TOKEN must be set to the same value.",
+      "generator": "secret"
+    },
+    "CORS_ORIGINS": {
+      "description": "Comma-separated origins allowed to call this API from a browser.",
+      "value": "https://repentandpreparetheway.org,https://www.repentandpreparetheway.org"
+    },
+    "DB_CONNECTION_LIMIT": {
+      "description": "Connections the database plan allows in total (Essential-0: 20, Essential-1: 40). The per-worker pool is divided to stay under it.",
+      "value": "20",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": { "quantity": 1, "size": "basic" }
+  }
+}

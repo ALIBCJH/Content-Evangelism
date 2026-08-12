@@ -11,10 +11,13 @@ from app.routers.articles import router as articles_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables on boot. Enough while the schema is one table;
-    # switch to Alembic migrations when it grows.
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Create tables on boot in development — enough while the schema is one
+    # table; switch to Alembic migrations when it grows. On Heroku the
+    # release phase (scripts/release.py) owns this instead: a web dyno may
+    # boot several uvicorn workers at once, and they would race on the DDL.
+    if settings.tables_on_boot:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
     yield
     await engine.dispose()
 

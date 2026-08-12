@@ -39,12 +39,57 @@ def normalize_database_url(url: str) -> str:
     return urlunsplit((scheme, parts.netloc, parts.path, urlencode(params), parts.fragment))
 
 
+def pool_plan(
+    pool_size: int, max_overflow: int, limit: int, workers: int
+) -> tuple[int, int]:
+    """Split a database's total connection budget across worker processes.
+
+    Each uvicorn worker is its own process with its own pool, and on Heroku
+    the worker count comes from the dyno size rather than from us — so the
+    configured pool is a ceiling, trimmed to the share a worker may spend.
+    A worker always keeps at least one connection: with absurd worker counts
+    that is the floor, and the dyno needs shrinking instead.
+    """
+    workers = max(1, workers)
+    share = max(1, limit // workers)
+    size = max(1, min(pool_size, share))
+    overflow = max(0, min(max_overflow, share - size))
+    return size, overflow
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str
     admin_token: str = "change-me"
     cors_origins: str = "http://localhost:3000"
+
+    # Set by the platform, not by us: Heroku exports DYNO ("web.1") on every
+    # dyno and derives WEB_CONCURRENCY from the dyno's memory. uvicorn reads
+    # WEB_CONCURRENCY by itself, so the worker count is only ours to size
+    # the connection pool against. Both stay unset off-Heroku.
+    dyno: str = ""
+    web_concurrency: int = 1
+
+    # Connections the database plan allows in total — Heroku Postgres
+    # Essential-0 caps at 20. pool_plan divides it across the workers.
+    db_pool_size: int = 5
+    db_max_overflow: int = 5
+    db_connection_limit: int = 20
+
+    # Left unset, schema creation follows the host: on boot in development,
+    # in the release phase on Heroku (see scripts/release.py).
+    create_tables_on_boot: bool | None = None
+
+    @property
+    def on_heroku(self) -> bool:
+        return bool(self.dyno)
+
+    @property
+    def tables_on_boot(self) -> bool:
+        if self.create_tables_on_boot is not None:
+            return self.create_tables_on_boot
+        return not self.on_heroku
 
     @property
     def sqlalchemy_url(self) -> str:
