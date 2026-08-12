@@ -112,8 +112,8 @@ const siteGraph = {
       logo: {
         '@type': 'ImageObject',
         url: `${siteUrl}/logo.png`,
-        width: 512,
-        height: 512,
+        width: 256,
+        height: 256,
       },
       founder: { '@type': 'Person', name: siteInfo.head },
       description:

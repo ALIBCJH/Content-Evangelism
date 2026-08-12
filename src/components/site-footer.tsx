@@ -32,6 +32,7 @@ export function SiteFooter() {
               alt=""
               width={34}
               height={34}
+              unoptimized
               className="h-[34px] w-[34px] rounded-full"
             />
             <span className="block max-w-[160px] font-display text-[0.9375rem] font-semibold leading-[1.15] text-ground">

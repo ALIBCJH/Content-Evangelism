@@ -142,6 +142,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               width={34}
               height={34}
               priority
+              unoptimized
               className="h-[34px] w-[34px] rounded-full"
             />
             <span className="block max-w-[150px] font-display text-[0.9375rem] font-semibold leading-[1.15] tracking-[0.01em] text-navy">
