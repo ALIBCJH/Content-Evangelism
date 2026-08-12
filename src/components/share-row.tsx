@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { WhatsAppIcon } from '@/components/brand-icons'
 
 const pill =
-  'focus-ring inline-flex h-9 items-center gap-2 rounded-full border border-hairline-strong px-4 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold'
+  'focus-ring inline-flex h-10 items-center gap-2 rounded-chip border border-rule bg-card px-4 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:border-gold hover:text-navy'
 
 /** Share bar for article pages: WhatsApp first — it is the distribution channel. */
 export function ShareRow({ title, className }: { title: string; className?: string }) {
@@ -56,7 +56,7 @@ export function ShareRow({ title, className }: { title: string; className?: stri
         </button>
       )}
       <button type="button" onClick={copyLink} className={pill} aria-live="polite">
-        {copied ? <Check className="h-4 w-4 text-status-success" /> : <Link2 className="h-4 w-4" />}
+        {copied ? <Check className="h-4 w-4 text-fulfilled" /> : <Link2 className="h-4 w-4" />}
         {copied ? 'Copied' : 'Copy link'}
       </button>
     </div>

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
 import { siteUrl } from '@/lib/content'
 import { JsonLd } from '@/components/json-ld'
 
@@ -11,9 +10,10 @@ export interface Crumb {
 }
 
 /**
- * Visible breadcrumb trail + matching BreadcrumbList structured data.
- * Google reads the JSON-LD for the result-page trail; the visible nav is
- * the mobile-friendly affordance that must agree with it.
+ * The breadcrumb trail — mono, uppercase, slash-separated, with the page
+ * you are on set in gold — and the matching BreadcrumbList structured
+ * data. Google reads the JSON-LD for the trail it prints in a result; the
+ * visible nav is the affordance that has to agree with it.
  */
 export function Breadcrumbs({ crumbs, className = '' }: { crumbs: Crumb[]; className?: string }) {
   const data = {
@@ -29,17 +29,24 @@ export function Breadcrumbs({ crumbs, className = '' }: { crumbs: Crumb[]; class
   return (
     <>
       <JsonLd data={data} />
-      <nav aria-label="Breadcrumb" className={`font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle ${className}`}>
-        <ol className="flex flex-wrap items-center justify-center gap-1.5">
+      <nav
+        aria-label="Breadcrumb"
+        className={`font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-subtle ${className}`}
+      >
+        <ol className="flex flex-wrap items-center gap-2">
           {crumbs.map((crumb, index) => (
-            <li key={index} className="flex items-center gap-1.5">
-              {index > 0 && <ChevronRight aria-hidden className="h-3 w-3 text-ink-subtle/60" />}
+            <li key={index} className="flex items-center gap-2">
+              {index > 0 && (
+                <span aria-hidden className="text-ink-subtle/60">
+                  /
+                </span>
+              )}
               {crumb.href ? (
                 <Link href={crumb.href} className="py-1 transition-colors hover:text-gold">
                   {crumb.name}
                 </Link>
               ) : (
-                <span aria-current="page" className="max-w-[14rem] truncate text-ink-muted">
+                <span aria-current="page" className="max-w-[16rem] truncate text-gold">
                   {crumb.name}
                 </span>
               )}

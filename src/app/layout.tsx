@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Gentium_Book_Plus, IBM_Plex_Sans, Newsreader } from 'next/font/google'
+import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google'
 import { siteInfo, siteUrl } from '@/lib/content'
 import {
   contactEmail,
@@ -11,29 +11,30 @@ import {
 import { JsonLd } from '@/components/json-ld'
 import './globals.css'
 
-/* Display: mastheads, headlines, and pulled scripture. */
-const newsreader = Newsreader({
+/* Display: every headline, standfirst, card title, and pull quote. */
+const fraunces = Fraunces({
   subsets: ['latin'],
-  style: ['normal', 'italic'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-newsreader',
+  /* Variable across weight and optical size — the design sets headlines
+     at 500 and runs them from 19px to 84px, which is exactly the range
+     `opsz` exists to keep even. */
+  axes: ['opsz'],
+  variable: '--font-fraunces',
   display: 'swap',
 })
 
-/* Reading face: every paragraph of running text on the site. */
-const gentium = Gentium_Book_Plus({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
-  weight: ['400', '700'],
-  variable: '--font-gentium',
-  display: 'swap',
-})
-
-/* Utility: kickers, navigation, buttons, timestamps. */
-const plex = IBM_Plex_Sans({
+/* Text: running copy, deks, navigation, and every piece of UI. */
+const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-plex',
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+/* Mono: kickers, datelines, record IDs, and Scripture references. */
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-mono',
   display: 'swap',
 })
 
@@ -93,7 +94,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   colorScheme: 'light',
-  themeColor: '#123563',
+  themeColor: '#123B5D',
 }
 
 /* Site-wide knowledge graph, server-rendered so every crawler — including
@@ -155,7 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${newsreader.variable} ${gentium.variable} ${plex.variable}`}
+      className={`${fraunces.variable} ${inter.variable} ${mono.variable}`}
     >
       <body>
         <JsonLd data={siteGraph} />

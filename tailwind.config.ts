@@ -1,5 +1,10 @@
 import type { Config } from 'tailwindcss'
 
+/* The palette, the type, and the geometry all come from the Ministry
+   Platform design — see docs/design/ministry-platform.md. Token names in
+   the old scheme (linen, sand, cloth, thread, sky, hairline…) are kept as
+   aliases so nothing renders unstyled, but new work should use the names
+   below: ground / raised / card / rule / chip, navy, gold, ink. */
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,82 +14,102 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // Editorial pairing: Newsreader carries the masthead & headlines,
-        // Gentium Book Plus carries running text (it is the reading face,
-        // and therefore the body default), IBM Plex Sans carries kickers,
-        // navigation, and UI chrome.
-        display: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
-        serif: ['var(--font-gentium)', 'Georgia', 'serif'],
-        sans: ['var(--font-plex)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        // Fraunces carries every headline, standfirst, and pull quote;
+        // Inter carries running text and UI; JetBrains Mono carries the
+        // kickers, datelines, and scripture references.
+        display: ['var(--font-fraunces)', 'Georgia', 'Times New Roman', 'serif'],
+        serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {
-        // Navy chrome: the nav, the footer, and the solid buttons.
+        /* ── Paper ─────────────────────────────────────────────── */
+        ground: '#F7F4EC',
+        raised: '#FBF9F3',
+        card: '#FFFDF8',
+        rule: { DEFAULT: '#E4DED0', soft: '#EDE7DA', strong: '#D8CFBA' },
+        chip: { DEFAULT: '#F1EDE1', blue: '#EAF0F6', gold: '#F4EBD3' },
+
+        /* ── Navy ──────────────────────────────────────────────── */
         navy: {
-          DEFAULT: '#123563', // --blue
+          DEFAULT: '#123B5D',
+          deep: '#0D2C46',
+          rule: '#1D4568',
+          soft: '#9FB4C8',
+          pale: '#C8D6E4',
           50: '#2A4E7E',
           100: '#1B4177',
-          200: '#123563',
-          300: '#0F2A50',
-          900: '#0C1E3A', // --deep
+          200: '#123B5D',
+          300: '#0D2C46',
+          900: '#0D2C46',
         },
-        // Gold is paint at DEFAULT and ink at .ink — see globals.css.
+
+        /* ── Gold ──────────────────────────────────────────────── */
         gold: {
-          DEFAULT: '#D4A017',
-          ink: '#8A6410',
-          dark: '#B8860B',
-          light: '#E8B923',
-          50: '#FBF7E8',
-          400: '#E8B923',
-          500: '#D4A017',
-          600: '#B8860B',
+          DEFAULT: '#B8944A',
+          light: '#C9A961',
+          pale: '#D8C48E',
+          sand: '#E3CE96',
+          ink: '#7A5F1E',
+          dark: '#7A5F1E',
+          50: '#F4EBD3',
         },
-        flagship: {
-          DEFAULT: 'rgb(var(--flagship-rgb) / <alpha-value>)',
-          deep: 'rgb(var(--flagship-deep-rgb) / <alpha-value>)',
-          soft: 'rgb(var(--flagship-soft-rgb) / <alpha-value>)',
-        },
-        orchid: 'rgb(var(--orchid-rgb) / <alpha-value>)',
-        status: {
-          success: 'rgb(var(--success-rgb) / <alpha-value>)',
-          warning: 'rgb(var(--warning-rgb) / <alpha-value>)',
-          danger: 'rgb(var(--danger-rgb) / <alpha-value>)',
-          info: 'rgb(var(--info-rgb) / <alpha-value>)',
-        },
+
+        /* ── Ink ───────────────────────────────────────────────── */
         ink: {
-          DEFAULT: 'rgb(var(--ink-rgb) / <alpha-value>)',
-          muted: 'rgb(var(--ink-muted-rgb) / <alpha-value>)',
-          subtle: 'rgb(var(--ink-subtle-rgb) / <alpha-value>)',
-          strong: 'rgb(var(--ink-strong-rgb) / <alpha-value>)',
+          DEFAULT: '#14202B',
+          strong: '#123B5D',
+          900: '#26333F',
+          700: '#40505E',
+          muted: '#5C6B7A',
+          500: '#5C6B7A',
+          subtle: '#8B98A5',
+          400: '#8B98A5',
         },
-        surface: {
-          DEFAULT: 'var(--surface-1)',
-          2: 'var(--surface-2)',
-          3: 'var(--surface-3)',
+
+        fulfilled: { DEFAULT: '#1E7A4E', navy: '#23935E' },
+
+        status: {
+          success: '#1E7A4E',
+          warning: '#7A5F1E',
+          danger: '#BE123C',
+          info: '#123B5D',
         },
-        hairline: {
-          DEFAULT: 'var(--hairline)',
-          strong: 'var(--hairline-strong)',
-        },
-        // Paper: the linen ground and the cloth an article is printed on.
-        linen: '#F1F2F4',
-        sand: '#E4E7EC',
-        cloth: '#FFFFFF',
-        thread: '#D6DAE1',
-        sky: '#8FB4DE',
-        panel: 'rgb(var(--panel-rgb) / <alpha-value>)',
-        canvas: 'rgb(var(--app-bg-rgb) / <alpha-value>)',
+
+        /* Aliases from the previous theme. */
+        linen: '#F7F4EC',
+        sand: '#F1EDE1',
+        cloth: '#FFFDF8',
+        thread: '#E4DED0',
+        sky: '#9FB4C8',
+        panel: '#FFFDF8',
+        canvas: '#F7F4EC',
+        flagship: { DEFAULT: '#123B5D', deep: '#0D2C46', soft: '#9FB4C8' },
+        orchid: '#6D28D9',
+        surface: { DEFAULT: 'var(--surface-1)', 2: 'var(--surface-2)', 3: 'var(--surface-3)' },
+        hairline: { DEFAULT: '#E4DED0', strong: '#D8CFBA' },
       },
       maxWidth: {
         shell: 'var(--shell)',
         measure: 'var(--measure)',
       },
+      borderRadius: {
+        chip: '999px',
+        tile: '12px',
+        figure: '14px',
+        panel: '16px',
+      },
+      spacing: {
+        stick: 'var(--stick)',
+      },
       boxShadow: {
-        'glow-gold': '0 1px 2px rgba(12,30,58,0.10), 0 8px 22px -12px rgba(12,30,58,0.35)',
+        'glow-gold': '0 2px 8px rgba(184,148,74,0.30)',
         'glow-soft': 'var(--shadow-panel)',
-        card: 'var(--card-shadow)',
+        card: 'var(--card-shadow-hover)',
+        drawer: '-24px 0 60px -20px rgba(13,44,70,0.65)',
       },
       letterSpacing: {
-        kicker: '0.19em',
+        kicker: '0.14em',
         masthead: '0.01em',
       },
       animation: {

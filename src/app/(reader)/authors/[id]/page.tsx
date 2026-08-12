@@ -106,7 +106,7 @@ export default async function AuthorPage({ params }: Params) {
         emptyMessage="Nothing published here yet."
         filter={(row) => row.authorName === author.name}
         crumbs={[
-          { name: 'Archive', href: '/' },
+          { name: 'Articles', href: '/articles' },
           { name: `${author.name} · ${count} ${count === 1 ? 'piece' : 'pieces'}` },
         ]}
         collection={{

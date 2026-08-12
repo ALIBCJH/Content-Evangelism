@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { authorByName, authorHref, siteUrl, topicHref } from '@/lib/content'
+import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
 import { absoluteUrl } from '@/lib/seo'
 
@@ -7,9 +8,6 @@ import { absoluteUrl } from '@/lib/seo'
  * Every page worth crawling, and nothing else.
  *
  * Deliberately absent:
- *   /teachings, /prophecies, /about — still Coming Soon placards. Asking
- *     Google to crawl three near-empty pages daily is a site-quality drag,
- *     and they carry noindex to match. Add them back the day they open.
  *   /search — a utility, noindex; its result pages are thin duplicates.
  *   /admin — noindex and disallowed.
  *
@@ -56,6 +54,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority,
     }))
 
+  /* The prophecy archive and its records. Publication dates that are still
+     to be confirmed against the source are left unstamped rather than
+     guessed at. */
+  const records: MetadataRoute.Sitemap = prophecyRecords.map((record) => ({
+    url: `${siteUrl}${recordHref(record)}`,
+    ...(record.published !== 'To confirm' ? { lastModified: record.published } : {}),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  const sections: MetadataRoute.Sitemap = [
+    { url: `${siteUrl}/articles`, priority: 0.9, changeFrequency: 'daily' as const, lastModified: newest },
+    { url: `${siteUrl}/prophecies`, priority: 0.8, changeFrequency: 'weekly' as const },
+    { url: `${siteUrl}/teachings`, priority: 0.7, changeFrequency: 'weekly' as const },
+    { url: `${siteUrl}/about`, priority: 0.6, changeFrequency: 'monthly' as const },
+  ]
+
   return [
     {
       url: siteUrl,
@@ -63,7 +78,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 1,
     },
+    ...sections,
     ...articles,
+    ...records,
     ...derived(topics, 0.7),
     ...derived(authorPages, 0.5),
   ]

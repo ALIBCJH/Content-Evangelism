@@ -125,9 +125,9 @@ function Subhead({ chapter }: { chapter: (typeof CHAPTERS)[number] }) {
   return (
     <h2
       id={headingId(chapter.text)}
-      className="mt-14 flex scroll-mt-28 items-baseline gap-4 text-balance font-display text-[1.6rem] font-semibold leading-snug text-ink-strong md:text-[1.85rem]"
+      className="mb-5 mt-14 flex scroll-mt-stick items-baseline gap-4 text-balance font-display text-[1.625rem] font-medium leading-[1.15] text-navy md:text-[2.125rem]"
     >
-      <span aria-hidden className="font-display text-xl font-semibold text-gold">
+      <span aria-hidden className="font-mono text-base text-gold">
         {chapter.numeral}
       </span>
       {chapter.text}
@@ -140,7 +140,7 @@ function Subhead({ chapter }: { chapter: (typeof CHAPTERS)[number] }) {
 function P({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <p
-      className={`mt-7 font-serif text-[1.1875rem] leading-[1.78] text-ink text-pretty ${className}`}
+      className={`mt-5 text-[1.0625rem] leading-[1.8] text-ink-700 text-pretty sm:text-[1.125rem] ${className}`}
     >
       {children}
     </p>
@@ -150,7 +150,7 @@ function P({ children, className = '' }: { children: React.ReactNode; className?
 /** Inline scripture reference, set in the house small-caps style. */
 function Ref({ children }: { children: React.ReactNode }) {
   return (
-    <span className="whitespace-nowrap font-sans text-[0.8em] font-bold uppercase tracking-kicker text-gold">
+    <span className="whitespace-nowrap font-mono text-[0.8em] text-gold">
       {children}
     </span>
   )
@@ -182,13 +182,21 @@ export default async function CrossArticlePage() {
           : {})}
         headings={headings}
         related={related}
+        scriptures={[
+          'Isaiah 53:5',
+          '1 Corinthians 1:18',
+          'Galatians 6:14',
+          'Romans 5:8',
+          'Hebrews 9:22',
+          'John 19:30',
+        ]}
         colophon={
-          <p className="text-center font-sans text-[0.6875rem] font-semibold uppercase tracking-kicker text-ink-subtle">
+          <p className="text-center font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-subtle">
             Isaiah 53:5 · 1 Corinthians 1:18 · Galatians 6:14
           </p>
         }
       >
-        <P className="dropcap !mt-0">
+        <P className="!mt-0 !text-[1.125rem] !leading-[1.75] !text-ink-900 sm:!text-[1.1875rem]">
           Every movement in history has chosen its symbol. Empires took the eagle;
           dynasties took the lion; revolutions took the rising sun. The church of
           Jesus Christ, with all of heaven&rsquo;s imagery at her disposal, took an
@@ -234,7 +242,7 @@ export default async function CrossArticlePage() {
           <div className="ornament mx-auto max-w-xs">
             <Cross className="h-3.5 w-3.5" strokeWidth={1.5} />
           </div>
-          <p className="mt-6 text-center font-display text-2xl font-normal italic leading-snug text-ink-strong md:text-[1.7rem]">
+          <p className="mt-6 text-center font-display text-2xl font-normal leading-snug text-navy md:text-[1.7rem]">
             &ldquo;Justice was not suspended at Calvary — it was spent there.&rdquo;
           </p>
         </blockquote>

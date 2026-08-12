@@ -1,28 +1,130 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import {
+  articleSubjects,
+  CATEGORIES,
+  categoryBlurb,
+  siteUrl,
+  topicHref,
+} from '@/lib/content'
+import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
-import { ComingSoon } from '@/components/coming-soon'
+import { Breadcrumbs } from '@/components/breadcrumbs'
+import { JsonLd } from '@/components/json-ld'
 
-/* A placard is not a page. Until this section opens it carries noindex
-   and stays out of the sitemap: three near-empty URLs crawled daily drag
-   on how the whole site is assessed. Delete the robots line the day it
-   opens — nothing else here needs to change. */
+/**
+ * The teaching library, arranged by subject rather than by date.
+ *
+ * The archive answers "what was published"; this page answers "what is
+ * taught". Sections that actually hold something link to their own page;
+ * the subjects beneath them hand off to search, which is the honest thing
+ * to do until a subject has a pillar page of its own.
+ */
+
 export const metadata: Metadata = {
   title: 'Teachings',
   description:
-    'Expositions and sermons from the Ministry of Repentance and Holiness — the Scriptures opened for the church. Opening soon.',
+    'The teaching library of the Ministry of Repentance and Holiness, arranged by subject — repentance, holiness, the rapture, the second coming, and the preparation of the Church.',
   alternates: { canonical: '/teachings', types: rssAlternate },
-  robots: { index: false, follow: true },
 }
 
-export default function TeachingsPage() {
+export const revalidate = 300
+
+export default async function TeachingsPage() {
+  const rows = await listRealRows()
+  const sections = CATEGORIES.map((category) => ({
+    category,
+    count: rows.filter((row) => row.category === category).length,
+  })).filter(({ count }) => count > 0)
+
   return (
-    <ComingSoon
-      kicker="The desk"
-      title="Teachings"
-      blurb="Expositions and sermons — the Scriptures opened for the church."
-      verse="Preach the word; be instant in season, out of season; reprove, rebuke, exhort with all longsuffering and doctrine."
-      reference="2 Timothy 4:2"
-    />
+    <main>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          '@id': `${siteUrl}/teachings`,
+          url: `${siteUrl}/teachings`,
+          name: 'Teachings',
+          description:
+            'The teaching library of the Ministry of Repentance and Holiness, arranged by subject.',
+          isPartOf: { '@id': `${siteUrl}/#website` },
+          inLanguage: 'en',
+        }}
+      />
+
+      <section className="border-b border-rule bg-raised">
+        <div className="shell pb-14 pt-11">
+          <Breadcrumbs
+            className="mb-6"
+            crumbs={[{ name: 'Home', href: '/' }, { name: 'Teachings' }]}
+          />
+          <h1 className="mb-4 font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
+            Teachings
+          </h1>
+          <p className="max-w-[660px] text-[1.0625rem] leading-[1.7] text-ink-700">
+            The Scriptures opened for the Church, arranged by what they are about.
+            Every teaching is filed under a section and carries the passages it rests
+            on.
+          </p>
+        </div>
+      </section>
+
+      <div className="shell pb-24 pt-14">
+        {sections.length > 0 && (
+          <>
+            <h2 className="rule-heading mb-7 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">
+              Sections
+            </h2>
+            <ul className="mb-16 grid gap-5 md:grid-cols-2">
+              {sections.map(({ category, count }) => (
+                <li key={category}>
+                  <Link
+                    href={topicHref(category)}
+                    className="card card-interactive flex h-full flex-col p-6 sm:p-8"
+                  >
+                    <span className="kicker mb-3.5 text-gold">
+                      {count} {count === 1 ? 'piece' : 'pieces'}
+                    </span>
+                    <span className="mb-3 block font-display text-[1.625rem] font-medium leading-[1.15] text-navy">
+                      {category}
+                    </span>
+                    <span className="mb-5 block flex-1 text-[0.9375rem] leading-[1.75] text-ink-700">
+                      {categoryBlurb[category]}
+                    </span>
+                    <span className="block border-t border-rule-soft pt-4 font-mono text-[0.6875rem] text-navy">
+                      READ THE SECTION →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        <h2 className="rule-heading mb-7 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">
+          Subjects
+        </h2>
+        <ul className="flex flex-wrap gap-2.5">
+          {articleSubjects.map((subject) => (
+            <li key={subject}>
+              <Link
+                href={`/search?q=${encodeURIComponent(subject)}`}
+                className="focus-ring inline-block rounded-chip border border-rule bg-card px-4 py-2.5 text-[0.875rem] text-ink-700 transition-colors hover:border-gold hover:text-navy"
+              >
+                {subject}
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        <p className="mt-10 border-t border-rule pt-8 text-[0.9375rem] leading-[1.75] text-ink-muted">
+          A subject opens the archive filtered to it. Once a subject has enough
+          filed under it to carry a page of its own — the studies, the Scriptures,
+          and the questions readers ask about it — that page takes its place here.
+        </p>
+      </div>
+    </main>
   )
 }

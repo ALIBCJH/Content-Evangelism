@@ -1,31 +1,34 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { format, parseISO } from 'date-fns'
-import { CATEGORIES, siteUrl, topicHref, type Category } from '@/lib/content'
+import {
+  articleSubjects,
+  CATEGORIES,
+  siteUrl,
+  topicHref,
+  type Category,
+} from '@/lib/content'
 import { listRealRows, type RealRow } from '@/lib/rows'
 import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
-import { Opener } from '@/components/archive/opener'
-import {
-  ArchiveMonths,
-  type ArchiveMonth,
-  type ArchivePiece,
-} from '@/components/archive/archive-months'
+import { ArticleRow } from '@/components/archive/article-row'
+import { FeaturedArticle } from '@/components/featured-article'
 
 /**
- * The archive: every published piece, newest first, grouped by month with
- * the newest opened in place at its head.
+ * A listing of writing: the whole archive at /articles, and the same
+ * component filtered to a section or an author.
  *
- * Only `/` renders this today — the section pages carry Coming Soon banners
- * until they open — but it stays a component so the page file says what the
- * page is rather than how the list is built.
+ * The design sets it as a cream band carrying the title and the subjects,
+ * then the newest piece as a full card, then the rest as rows with a
+ * sticky rail beside them. Nothing is paginated — the archive is small
+ * enough to read in one page, and a reader who wants a specific thing has
+ * search.
  */
 
 export interface ArchiveViewProps {
   /** Small caps label above the title. */
   kicker: string
   title: string
-  /** The italic line under the title. */
+  /** The line under the title. */
   purpose?: string
   /** Shown when nothing has been published yet. */
   emptyMessage: string
@@ -41,82 +44,52 @@ export interface ArchiveViewProps {
   collection?: { name: string; description: string; path: string }
 }
 
-/**
- * Links to every section that has something filed under it.
- *
- * The topic pages are the only ranking surface the five off-menu sections
- * have, and nothing on the site linked to them except a breadcrumb on an
- * article a reader had already found. The archive is the most linked page
- * here, so this is where they belong.
- */
-function TopicStrip({ categories }: { categories: Category[] }) {
-  if (categories.length < 2) return null
-  return (
-    /* A ruled band rather than a paragraph of links: it reads as the
-       section bar of a publication, and it closes the masthead in one
-       rule instead of the two that used to stack here. */
-    <nav aria-label="Sections" className="mb-10 border-y border-thread py-3.5">
-      <ul className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-        <li className="kicker text-ink-subtle">Sections</li>
-        {categories.map((category) => (
-          <li key={category}>
-            <Link
-              href={topicHref(category)}
-              className="focus-ring font-sans text-[0.8125rem] tracking-[0.04em] text-ink-muted transition-colors hover:text-gold"
-            >
-              {category}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
-}
-
-/** The opening line of a piece — what the reader sees in the archive. */
-function openingLine(body: string | undefined, dek: string): string {
-  if (!body) return dek
-  const first = body
-    .split(/\n\s*\n/)
-    .map((block) => block.trim())
-    .find((block) => block && !block.startsWith('## ') && !block.startsWith('> '))
-  return first ?? dek
-}
-
-function Shell({
-  kicker,
-  title,
-  purpose,
-  count,
-  crumbs,
-  children,
+/** The rail: what else is filed here, and the way into the other archive. */
+function Rail({
+  counts,
+  showSubjects,
 }: {
-  kicker: string
-  title: string
-  purpose?: string
-  count?: number
-  crumbs?: Crumb[]
-  children: React.ReactNode
+  counts: { category: Category; count: number }[]
+  showSubjects: boolean
 }) {
   return (
-    <main className="shell pb-8">
-      <header className="pt-12 md:pt-16">
-        {crumbs && <Breadcrumbs className="mb-5 [&_ol]:justify-start" crumbs={crumbs} />}
-        <p className="kicker mb-4 text-ink-subtle">
-          {kicker}
-          {count !== undefined && ` · ${count} ${count === 1 ? 'piece' : 'pieces'}`}
-        </p>
-        <h1 className="mb-4 max-w-[18ch] text-balance font-display text-[2.4rem] font-light leading-[1.04] tracking-[-0.02em] text-ink-strong sm:text-[3rem] md:text-[3.4rem]">
-          {title}
-        </h1>
-        {purpose && (
-          <p className="mb-9 max-w-[46ch] text-pretty font-display text-lg font-light italic leading-[1.5] text-ink-muted sm:text-xl">
-            {purpose}
+    <aside className="flex flex-col gap-8 self-start lg:sticky lg:top-stick">
+      {counts.length > 1 && (
+        <nav aria-label="Sections">
+          <p className="kicker mb-1.5 border-b border-rule pb-3 text-ink-subtle">Sections</p>
+          {counts.map(({ category, count }) => (
+            <Link
+              key={category}
+              href={topicHref(category)}
+              className="block border-b border-dotted border-rule py-3 transition-colors hover:text-gold"
+            >
+              <span className="block font-display text-[1.125rem] leading-snug text-navy">
+                {category}
+              </span>
+              <span className="font-mono text-[0.625rem] text-ink-subtle">
+                {count} {count === 1 ? 'piece' : 'pieces'}
+              </span>
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {showSubjects && (
+        <div className="rounded-panel border border-rule bg-raised p-6">
+          <p className="kicker mb-3 text-ink-subtle">From the archive</p>
+          <p className="mb-4 text-sm leading-[1.7] text-ink-700">
+            Prophetic messages are held separately, each with its original recording
+            and publication date.
           </p>
-        )}
-      </header>
-      {children}
-    </main>
+          <Link
+            href="/prophecies"
+            className="font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
+          >
+            PROPHECY ARCHIVE →
+          </Link>
+        </div>
+      )}
+    </aside>
   )
 }
 
@@ -131,19 +104,8 @@ export async function ArchiveView({
 }: ArchiveViewProps) {
   /* listRealRows already returns real, published pieces newest first. */
   const source = await listRealRows()
-  const rows = (filter ? source.filter(filter) : source).map((r) => ({
-    slug: r.slug,
-    href: r.href,
-    title: r.title,
-    dek: r.dek,
-    category: r.category as string,
-    publishedAt: r.publishedAt,
-    readMinutes: r.readMinutes,
-    body: r.body,
-  }))
+  const rows = filter ? source.filter(filter) : source
 
-  /* The listing, as structured data: what this page collects and the
-     order it collects it in. */
   const collectionLd = collection && {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -166,88 +128,122 @@ export async function ArchiveView({
     },
   }
 
-  if (rows.length === 0) {
-    return (
-      <Shell kicker={kicker} title={title} purpose={purpose} crumbs={crumbs}>
-        <p className="border-t border-thread pb-10 pt-10 font-display text-lg font-light italic text-ink-muted">
-          {emptyMessage}
-        </p>
-        <div className="border-t border-thread py-10 text-center">
-          <Link
-            href="/"
-            className="border-b border-gold-ink pb-0.5 font-sans text-[0.8125rem] font-medium tracking-[0.05em] text-gold transition-colors hover:text-ink"
-          >
-            Read the whole archive
-          </Link>
-        </div>
-      </Shell>
-    )
-  }
-
   const [lead, ...rest] = rows
 
-  /* Group the remainder by month, newest month first. Insertion order is
-     already correct because `rows` is sorted, so a Map preserves it.
-
-     The lead's own month is seeded first even when every other piece in it
-     has been consumed by the opener — otherwise a lone newest article would
-     lose its month heading. */
-  const leadDate = parseISO(lead.publishedAt)
-  const grouped = new Map<string, ArchivePiece[]>([[format(leadDate, 'MMMM yyyy'), []]])
-  for (const row of rest) {
-    const date = parseISO(row.publishedAt)
-    const label = format(date, 'MMMM yyyy')
-    const piece: ArchivePiece = {
-      key: row.slug,
-      href: row.href,
-      dateLabel: format(date, 'EEEE d MMMM'),
-      publishedAt: row.publishedAt,
-      title: row.title,
-      open: openingLine(row.body, row.dek),
-      ref: row.category,
-      readMinutes: row.readMinutes,
-    }
-    const bucket = grouped.get(label)
-    if (bucket) bucket.push(piece)
-    else grouped.set(label, [piece])
-  }
-
-  const months: ArchiveMonth[] = Array.from(grouped, ([label, pieces]) => ({ label, pieces }))
-
-  /* Only on the whole archive: a topic page linking to its siblings adds
-     nothing a reader wants, and the breadcrumb already goes back up. */
-  const liveCategories = filter
-    ? []
-    : CATEGORIES.filter((category) => source.some((row) => row.category === category))
+  /* Only the whole archive lists its siblings; a filtered listing already
+     says what it is, and the breadcrumb goes back up. */
+  const whole = !filter
+  const counts = whole
+    ? CATEGORIES.map((category) => ({
+        category,
+        count: source.filter((row) => row.category === category).length,
+      })).filter(({ count }) => count > 0)
+    : []
 
   return (
-    <Shell kicker={kicker} title={title} purpose={purpose} count={rows.length} crumbs={crumbs}>
+    <main>
       {collectionLd && <JsonLd data={collectionLd} />}
-      <TopicStrip categories={liveCategories} />
-      {/* ── The archive, newest piece opened at its head ─────────── */}
-      <ArchiveMonths
-        months={months}
-        opener={
-          <Opener
-            href={lead.href}
-            dateLabel={format(leadDate, 'EEEE d MMMM')}
-            publishedAt={lead.publishedAt}
-            title={lead.title}
-            body={lead.body ?? lead.dek}
-            scriptureRef={lead.category}
-            readMinutes={lead.readMinutes}
-          />
-        }
-      />
 
-      <div className="mt-8 border-t border-thread py-12 text-center">
-        <Link
-          href="/search"
-          className="border-b border-gold-ink pb-0.5 font-sans text-[0.8125rem] font-medium tracking-[0.05em] text-gold transition-colors hover:text-ink"
-        >
-          Search the whole archive
-        </Link>
-      </div>
-    </Shell>
+      {/* ── The band ─────────────────────────────────────────────── */}
+      <section className="border-b border-rule bg-raised">
+        <div className="shell pb-14 pt-11">
+          {crumbs ? (
+            <Breadcrumbs className="mb-6" crumbs={crumbs} />
+          ) : (
+            <p className="kicker-lg mb-6 text-ink-subtle">
+              {kicker}
+              {rows.length > 0 && ` · ${rows.length} ${rows.length === 1 ? 'piece' : 'pieces'}`}
+            </p>
+          )}
+
+          <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-[72px]">
+            <div>
+              <h1 className="mb-4 font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
+                {title}
+              </h1>
+              {purpose && (
+                <p className="max-w-[660px] text-pretty text-[1.0625rem] leading-[1.7] text-ink-700">
+                  {purpose}
+                </p>
+              )}
+            </div>
+
+            {whole && (
+              <nav aria-label="Subjects" className="lg:border-l lg:border-rule lg:pl-10">
+                <p className="kicker mb-3.5 text-ink-subtle">Browse by subject</p>
+                <ul className="flex flex-wrap gap-2">
+                  {articleSubjects.map((subject) => (
+                    <li key={subject}>
+                      <Link
+                        href={`/search?q=${encodeURIComponent(subject)}`}
+                        className="focus-ring inline-block rounded-chip bg-chip px-3.5 py-2 text-[0.8125rem] text-ink-700 transition-colors hover:bg-navy hover:text-card"
+                      >
+                        {subject}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {rows.length === 0 ? (
+        <div className="shell py-20 text-center">
+          <p className="font-display text-xl text-ink-muted">{emptyMessage}</p>
+          <p className="mt-6">
+            <Link
+              href="/articles"
+              className="font-mono text-[0.6875rem] tracking-[0.08em] text-navy transition-colors hover:text-gold"
+            >
+              READ THE WHOLE ARCHIVE →
+            </Link>
+          </p>
+        </div>
+      ) : (
+        <section className="shell pb-24 pt-12">
+          {/* The filter row: the sections that actually hold something. */}
+          <div className="mb-10 flex flex-wrap items-center justify-between gap-6 border-b border-rule pb-5">
+            <div className="flex flex-wrap gap-2.5">
+              <Link
+                href="/articles"
+                className="focus-ring rounded-chip border border-rule bg-card px-4 py-2.5 text-[0.8125rem] font-medium text-ink-700 transition-colors hover:border-gold hover:text-navy"
+              >
+                All Articles
+              </Link>
+              {counts.map(({ category }) => (
+                <Link
+                  key={category}
+                  href={topicHref(category)}
+                  className="focus-ring rounded-chip border border-rule bg-card px-4 py-2.5 text-[0.8125rem] font-medium text-ink-700 transition-colors hover:border-gold hover:text-navy"
+                >
+                  {category}
+                </Link>
+              ))}
+            </div>
+            <span className="kicker-lg text-ink-subtle">Newest first</span>
+          </div>
+
+          <div className="mb-12">
+            <FeaturedArticle row={lead} kind="Featured" priority />
+          </div>
+
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
+            <div>
+              {rest.length > 0 ? (
+                rest.map((row) => <ArticleRow key={row.slug} row={row} />)
+              ) : (
+                <p className="border-t border-rule pt-8 text-[0.9375rem] text-ink-muted">
+                  This is everything filed here so far. The next piece will appear
+                  above the moment it is published.
+                </p>
+              )}
+            </div>
+            <Rail counts={counts} showSubjects={whole} />
+          </div>
+        </section>
+      )}
+    </main>
   )
 }

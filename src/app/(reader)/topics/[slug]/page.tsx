@@ -69,7 +69,7 @@ export default async function TopicPage({ params }: Params) {
       purpose={categoryBlurb[category]}
       emptyMessage="Nothing is filed here yet."
       filter={(row) => row.category === category}
-      crumbs={[{ name: 'Archive', href: '/' }, { name: category }]}
+      crumbs={[{ name: 'Articles', href: '/articles' }, { name: category }]}
       collection={{
         name: category,
         description: categoryBlurb[category],
