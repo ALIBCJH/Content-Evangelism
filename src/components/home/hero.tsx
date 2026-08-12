@@ -14,11 +14,19 @@ import { homeHero } from '@/lib/content'
  * Nothing else changes when a photograph does arrive: drop it behind this
  * block with the scrim the design specifies, and the type is already
  * placed for it.
+ *
+ * `data-hero` is how the masthead knows it is standing on this block: it
+ * renders transparent over the navy and turns to paper the moment the hero
+ * leaves the top of the window. The top padding therefore has to clear the
+ * masthead's own height as well as the design's spacing.
  */
 export function HomeHero() {
   return (
-    <section className="flex min-h-[420px] items-end overflow-hidden bg-navy-deep sm:min-h-[560px] lg:min-h-[660px]">
-      <div className="mx-auto w-full max-w-shell px-5 pb-14 pt-24 sm:px-8 lg:pb-[72px] lg:pt-[120px]">
+    <section
+      data-hero
+      className="flex min-h-[480px] items-end overflow-hidden bg-navy-deep sm:min-h-[620px] lg:min-h-[720px]"
+    >
+      <div className="mx-auto w-full max-w-shell px-5 pb-14 pt-[8.5rem] sm:px-8 lg:pb-[72px] lg:pt-[12rem]">
         <p className="mb-5 flex items-center gap-3">
           <span aria-hidden className="h-px w-[26px] bg-gold-pale" />
           <span className="kicker-lg text-gold-sand">{homeHero.kicker}</span>
