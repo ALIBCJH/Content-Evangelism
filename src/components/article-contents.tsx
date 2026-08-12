@@ -4,10 +4,9 @@ import type { Heading } from '@/lib/toc'
 /**
  * The chapter list, set in flow above the body.
  *
- * The study margin carries this on a wide screen, but the margin is a
- * desktop rail — below `xl` there was previously no way to see the shape
- * of a teaching before reading it, and no way to jump within it. This is
- * that, for every other width.
+ * The rail carries this from `lg` up. Below that there would otherwise be
+ * no way to see the shape of a teaching before reading it, and no way to
+ * jump within it. This is that, for every narrower width.
  *
  * It is plain server-rendered anchors on purpose. A chapter list is
  * navigation, so it has to work as navigation does: crawlable, openable
@@ -25,23 +24,23 @@ export function ArticleContents({
 
   return (
     <nav aria-labelledby="in-this-teaching" className={className}>
-      <p id="in-this-teaching" className="kicker text-gold">
-        In this teaching
+      <p id="in-this-teaching" className="kicker text-ink-subtle">
+        On this page
       </p>
-      <ol className="mt-4 border-t border-hairline">
+      <ol className="mt-3 border-t border-rule-soft">
         {headings.map((heading, index) => (
-          <li key={heading.id} className="border-b border-hairline">
+          <li key={heading.id} className="border-b border-rule-soft last:border-b-0">
             <a
               href={`#${heading.id}`}
-              className="focus-ring group flex items-baseline gap-3.5 py-3 pr-2 transition-colors hover:text-ink-strong"
+              className="focus-ring group flex items-baseline gap-3.5 py-3 pr-2 transition-colors"
             >
               <span
                 aria-hidden
-                className="tabular font-sans text-[0.6875rem] font-medium tracking-[0.08em] text-gold"
+                className="tabular font-mono text-[0.6875rem] text-gold"
               >
                 {String(index + 1).padStart(2, '0')}
               </span>
-              <span className="font-display text-[1.0625rem] font-normal leading-snug text-ink-muted transition-colors group-hover:text-ink-strong">
+              <span className="text-[0.9375rem] leading-snug text-ink-700 transition-colors group-hover:text-navy">
                 {heading.text}
               </span>
             </a>

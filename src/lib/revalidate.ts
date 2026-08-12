@@ -10,7 +10,9 @@ import { revalidatePath } from 'next/cache'
  * publishing is still immediate.
  */
 export function revalidatePublished(slug?: string): void {
-  revalidatePath('/') // the archive, and its opener
+  revalidatePath('/') // the front page, and the piece it leads with
+  revalidatePath('/articles') // the archive
+  revalidatePath('/teachings') // the section counts
   revalidatePath('/feed.xml')
   revalidatePath('/sitemap.xml')
   revalidatePath('/topics/[slug]', 'page') // every section listing

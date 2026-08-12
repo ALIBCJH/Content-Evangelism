@@ -164,13 +164,52 @@ export const crossArticle: Article = {
 
 /* ── Site chrome ─────────────────────────────────────────────────── */
 
-/* Articles is the whole archive at /; Teachings and Prophecies are the
-   same archive filtered to one section. */
-export const navSections = [
-  { label: 'Articles', href: '/' },
-  { label: 'Teachings', href: '/teachings' },
-  { label: 'Prophecies', href: '/prophecies' },
-  { label: 'About', href: '/about' },
+/**
+ * The four sections, in the order the design sets them.
+ *
+ * `items` is what each section holds. The drawer prints the first few
+ * under the section name, so a reader on a phone can see what is behind a
+ * link before opening it.
+ */
+export interface NavSection {
+  label: string
+  href: string
+  items: string[]
+}
+
+export const navSections: NavSection[] = [
+  {
+    label: 'Articles',
+    href: '/articles',
+    items: [
+      'Latest Articles', 'Bible Studies', 'Scripture Explained',
+      'Questions Answered', 'Series', 'By Subject', 'Archive by Year',
+    ],
+  },
+  {
+    label: 'Prophecy Archive',
+    href: '/prophecies',
+    items: [
+      'Recent Prophecies', 'Earthquakes', 'Nations',
+      'Global Events', 'Historical Records', 'By Year',
+    ],
+  },
+  {
+    label: 'Teachings',
+    href: '/teachings',
+    items: [
+      'Repentance', 'Holiness', 'Rapture', 'Second Coming',
+      'End Times', 'Salvation', 'Righteousness', 'Preparation',
+    ],
+  },
+  {
+    label: 'About',
+    href: '/about',
+    items: [
+      'The Ministry', 'History', 'Mission', 'Leadership',
+      'Statement of Faith', 'What We Believe', 'Locations',
+    ],
+  },
 ]
 
 export const siteUrl = 'https://repentandpreparetheway.org'
@@ -278,3 +317,151 @@ export const authorByName = (name: string): Author | undefined =>
   authors.find((author) => author.name === name)
 
 export const authorHref = (author: Author): string => `/authors/${author.id}`
+
+/* ── The home page ───────────────────────────────────────────────── */
+
+/**
+ * What the front page says. The hero is one claim and two ways in; the
+ * vision and the mission are the ministry's own statements, each carrying
+ * the Scriptures it is drawn from.
+ */
+export const homeHero = {
+  kicker: 'Since 2003 · Nairobi, Kenya',
+  title: ['Prepare the Way.', 'The Messiah Is Coming.'],
+  dek: 'Biblical teachings, Scripture studies, prophetic messages, sermons, and resources from the Ministry of Repentance and Holiness.',
+  primary: { label: 'Read the Articles', href: '/articles' },
+  secondary: { label: 'Watch the Prophecies', href: '/prophecies' },
+  image: {
+    src: '/images/the-cross-of-jesus.png',
+    alt: 'A rugged wooden cross draped with white cloth against a golden sunrise',
+  },
+}
+
+export interface Statement {
+  kicker: string
+  title: string
+  body: string
+  refs: string[]
+}
+
+export const visionStatement: Statement = {
+  kicker: 'Our Vision',
+  title: 'The Messiah is coming.',
+  body:
+    'Drawn from the promises the Lord Jesus made to the Church in John 14:1–4, and from the desire of the ministry to warn the whole Church of Christ about the fulfilment of the signs that bring the Messiah, so that it is not caught unaware at His coming.',
+  refs: [
+    'John 14:1–4',
+    'Isaiah 26:19–21',
+    '1 Thessalonians 4:16–17',
+    'Matthew 24',
+    'Matthew 25',
+    'Malachi 4:5',
+    '1 Thessalonians 5:4',
+  ],
+}
+
+export const missionStatement: Statement = {
+  kicker: 'Our Mission',
+  title: 'To prepare the way for the coming of the Messiah.',
+  body:
+    'Derived from Isaiah 40:3–5: “The voice of him that crieth in the wilderness, Prepare ye the way of the LORD, make straight in the desert a highway for our God.”',
+  refs: ['Isaiah 40:3–5'],
+}
+
+/* ── The articles index ──────────────────────────────────────────── */
+
+/** The subjects a reader can browse the writing by. */
+export const articleSubjects = [
+  'Repentance',
+  'Holiness',
+  'Rapture',
+  'Second Coming',
+  'End Times',
+  'Salvation',
+  'Prayer',
+  'Preparation',
+]
+
+/* ── About the ministry ──────────────────────────────────────────── */
+
+/**
+ * The one figure on the About page that is not counted from the site's own
+ * content. Everything else in that row is derived, so it cannot drift out
+ * of date or overstate what the archive actually holds.
+ */
+export const foundingYear = '2005'
+
+/** The sections of the About page that exist, in the order they appear. */
+export const aboutSections = [
+  { label: 'The Ministry', href: '#ministry' },
+  { label: 'Mission', href: '#mission' },
+  { label: 'Statement of Faith', href: '#faith' },
+  { label: 'Locations', href: '#locations' },
+]
+
+export const faithArticles = [
+  { num: '01', title: 'Scripture', refs: '2 Timothy 3:16 · 2 Peter 1:21' },
+  { num: '02', title: 'Repentance and Holiness', refs: 'Acts 3:19 · Hebrews 12:14' },
+  { num: '03', title: 'The Rapture of the Church', refs: '1 Thessalonians 4:16–17 · Matthew 24' },
+  { num: '04', title: 'The Second Coming of the Messiah', refs: 'Revelation 19 · Zechariah 14' },
+]
+
+export const locations = [
+  { city: 'Nairobi', detail: 'Kenya · Main altar' },
+  { city: 'Kisumu', detail: 'Kenya' },
+  { city: 'Bogotá', detail: 'Colombia' },
+  { city: 'Kampala', detail: 'Uganda' },
+]
+
+/* ── The footer ──────────────────────────────────────────────────── */
+
+export interface FooterColumn {
+  title: string
+  links: { label: string; href: string }[]
+}
+
+export const footerColumns: FooterColumn[] = [
+  {
+    title: 'Ministry',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Mission', href: '/about#mission' },
+      { label: 'Statement of Faith', href: '/about#faith' },
+      { label: 'Locations', href: '/about#locations' },
+    ],
+  },
+  {
+    title: 'Teachings',
+    links: [
+      { label: 'All Teachings', href: '/teachings' },
+      { label: 'Repentance', href: '/topics/teachings' },
+      { label: 'Prophecy', href: '/topics/prophecy' },
+      { label: 'Devotional', href: '/topics/devotional' },
+    ],
+  },
+  {
+    title: 'Articles',
+    links: [
+      { label: 'The Archive', href: '/articles' },
+      { label: 'Doctrine', href: '/topics/doctrine' },
+      { label: 'Church History', href: '/topics/church-history' },
+      { label: 'Testimony', href: '/topics/testimony' },
+    ],
+  },
+  {
+    title: 'Archive',
+    links: [
+      { label: 'Prophecy Archive', href: '/prophecies' },
+      { label: 'Search', href: '/search' },
+      { label: 'RSS', href: '/feed.xml' },
+    ],
+  },
+  {
+    title: 'Media',
+    links: [
+      { label: 'Jesus is LORD Radio', href: radioChannel.href },
+      { label: 'YouTube', href: youtubeChannel.href },
+      { label: 'Share on WhatsApp', href: whatsappChannel.href },
+    ],
+  },
+]

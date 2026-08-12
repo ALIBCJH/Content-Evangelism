@@ -3,21 +3,26 @@
 The publication desk of the Ministry of Repentance and Holiness (headed by
 Prophet Dr. David Owuor).
 
-The site is deliberately one thing: **an archive of articles**. The landing
-page (`/`) is the archive itself — the newest piece opens in place, and
-everything published sits beneath it, grouped by month. Each piece has its
-own page at `/articles/<slug>`. There is no homepage above the archive, no
-section landing pages, and no marketing furniture; the reader arrives
-already reading.
+The site holds two archives and the ministry's own account of itself. `/`
+is the front page — the proclamation, the piece being led with, and the
+vision and mission. `/articles` is the writing, newest first. `/prophecies`
+is the prophetic record: every message with its original recording, held so
+that a **source**, an **event**, and an **interpretation** of that event are
+never printed as one another.
+
+The whole design is transcribed from the Ministry Platform prototype —
+see [`docs/design/ministry-platform.md`](docs/design/ministry-platform.md),
+which is the source of truth for the type, the palette, and the geometry.
+Where a component and that file disagree, the file is right.
 
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
-- Tailwind CSS 3 on the paper palette (linen ground, cloth articles, navy
-  chrome, gold as a rule) — see **Theming**
+- Tailwind CSS 3 on the paper palette (cream ground, raised card surfaces,
+  navy chrome, gold as a rule) — see **Theming**
 - Lucide icons, shadcn/ui-style primitives (`src/components/ui`)
-- Fonts: Newsreader (masthead & headlines), Gentium Book Plus (running
-  text), IBM Plex Sans (kickers, nav, UI chrome)
+- Fonts: Fraunces (headlines, standfirsts, pull quotes), Inter (running
+  text and UI), JetBrains Mono (kickers, datelines, Scripture references)
 
 ## Run it
 
@@ -43,23 +48,30 @@ they share the `.next` directory and will corrupt each other. If you see
 
 | Route | What it is |
 | --- | --- |
-| `/` | The archive — the whole site |
+| `/` | The front page — hero, the featured piece, vision and mission |
+| `/articles` | The archive of writing, newest first |
 | `/articles/<slug>` | One article |
+| `/prophecies` | The prophecy archive, on a dated rail |
+| `/prophecies/<id>` | One record: source, timeline, independent record, interpretation |
+| `/teachings` | The teaching library, arranged by subject |
+| `/about` | The ministry: what it works from, holds to, and where it meets |
 | `/topics/<slug>` | One section, e.g. `/topics/oracles` |
 | `/authors/<id>` | A byline and everything under it |
-| `/teachings`, `/prophecies`, `/about` | Coming Soon placards |
-| `/search` | Search across published pieces |
+| `/search` | Search across everything, with content-type facets |
 | `/admin` | The posting desk |
 | `/feed.xml`, `/sitemap.xml`, `/robots.txt` | For machines |
 
-`/articles` is a permanent redirect to `/`, and `/category/*` redirects to
-the matching `/topics/*`.
+`/category/*` redirects to the matching `/topics/*`.
+
+Search is also a sheet over any page: press `/` anywhere, or the Search
+button in the masthead. The index is built once per render of the reader
+shell and handed to the client, so a keystroke is answered without a
+request.
 
 Topic and author pages exist only while something is actually filed under
 them, and 404 otherwise — so the sitemap never advertises an empty page.
-The three Coming Soon placards carry `noindex` and stay out of the
-sitemap; delete the `robots` line in each page's metadata the day it
-opens.
+`/search` carries `noindex`: its result pages are thin, query-shaped
+duplicates of the pages they list.
 
 Everything reader-facing is statically cached and refreshed every five
 minutes, and the posting desk revalidates on publish, so a new article is
@@ -70,14 +82,19 @@ live immediately.
 - `src/lib/content.ts` — the content model plus site chrome (categories,
   channels, nav, `siteInfo`). Articles themselves live in the store, not
   here; the one exception is `crossArticle`, which has a hand-built page.
-- `src/components/article-art.tsx` — the "illuminated plate" generator: a
-  piece published without a photograph gets deterministic art (palette +
-  emblem + halo rings) instead.
-- `src/components/archive/*` — the Articles archive: `opener.tsx` (the
-  newest piece, opened in place and faded out into one Read button) and
-  `archive-months.tsx` (months down the left, pieces down the right).
+- `src/lib/prophecies.ts` — the prophecy archive: every record with its
+  recording, publication date, timeline, and independent sources.
+- `src/lib/scripture.ts` — pulls Scripture references out of a teaching's
+  own text, so the chips on a card and the rail beside an article never
+  drift from the prose they came from.
+- `src/lib/search-docs.ts` / `search-index.ts` — the search document shape
+  and the pure helpers over it (client-safe), and the server-only builder
+  that reads the store. Keep them apart: importing the builder from a
+  client component drags the filesystem store into the browser bundle.
+- `src/components/archive/*` — the listing: `archive-view.tsx` (the band,
+  the filters, the featured card, and the rail) and `article-row.tsx`.
 - `src/app/globals.css` — the theme tokens plus editorial primitives
-  (kicker, drop cap, column rules, ornament, verse, excerpt, reveal).
+  (kicker, chip, scripture figure, ornament, rule heading, excerpt).
 
 ## The light CMS backend
 
@@ -163,13 +180,20 @@ Structured data lives in `src/app/layout.tsx` (Organization + WebSite),
 
 ## Theming
 
-One palette: the paper edition. Linen ground, cloth-white article
-surfaces, navy chrome, gold as a rule rather than as paint. There is no
-dark mode and no toggle — every colour in `globals.css` is the colour that
-ships. The Oracle and Prophecy sections stay on navy; they are the paper's
-reverent rooms, and they carry `on-navy` so gold reads bright there.
+One palette, transcribed from the design. A warm paper ground (`#F7F4EC`),
+raised surfaces for cards (`#FFFDF8`) and bands (`#FBF9F3`), navy chrome
+(`#123B5D`), and gold (`#B8944A`) used as a rule, a chip, and an accent —
+never as a field of paint except on the primary button. There is no dark
+mode and no toggle: every colour in `globals.css` is the colour that ships.
 
-Gold has two values on purpose. `--gold` (#D4A017) is **paint** and only
-sits on navy chrome. `--gold-ink` (#8A6410) is **ink** — the same hue
-darkened until it clears 4.5:1 on linen — and `.text-gold` resolves to it
-automatically. Never swap them.
+Two golds. `--gold` (#B8944A) is the design's accent — rules, chips, the
+button, and kicker-sized labels. `--gold-ink` (#7A5F1E) is the darker value
+for gold text at reading size and on gold chips. Note that `--gold` on the
+cream ground is a ~2.7:1 contrast; the design uses it for small mono labels,
+so prefer `--gold-ink` for anything a reader has to *read* rather than
+merely notice.
+
+Token names from the previous theme (`linen`, `cloth`, `sand`, `thread`,
+`sky`, `hairline`) are kept as aliases pointing at the new palette, so
+nothing renders unstyled — but new work should use `ground` / `raised` /
+`card` / `rule` / `chip`, `navy`, `gold`, `ink`.

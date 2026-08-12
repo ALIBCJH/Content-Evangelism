@@ -2,34 +2,29 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Cross } from 'lucide-react'
 import { topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
+import { scriptureRefs } from '@/lib/scripture'
 import type { Heading } from '@/lib/toc'
 import { ArticleContents } from '@/components/article-contents'
+import { ArticleRail } from '@/components/article-rail'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { ContinueReading } from '@/components/continue-reading'
-import { FadeIn } from '@/components/motion'
 import { ReadingProgress } from '@/components/progress-bar'
 import { ShareRow } from '@/components/share-row'
-import { StudyMargin } from '@/components/study-margin'
 
 /**
  * One article page, for every article.
  *
- * There are two routes that render a teaching — the posted articles at
- * /articles/[slug] and the hand-set piece at /articles/the-cross-of-jesus
- * — and they had drifted into two different designs: different headline
- * weights, one with a byline component and one without, and a study
- * margin on only one of them. The routes stay exactly as they are; what
- * they share is this shell, so a change to how a teaching is presented is
- * made once and both pages are it.
+ * The design sets it in two parts. First a cream band: the breadcrumb, the
+ * headline and its standfirst on the left, the photograph on the right —
+ * so a reader knows what the piece is and what it looks like before
+ * scrolling at all. Then the reading column, 760px wide, with a 280px rail
+ * beside it carrying the chapters and the Scriptures the teaching rests on.
  *
- * The layout is three zones on a wide screen: the reading companion on
- * the left, the teaching in the middle, and a matching empty column on
- * the right so the text stays optically centred in the viewport. The
- * right column is deliberately empty — pushing related links into it
- * narrows the reading column, and the reading column is the product.
+ * Two routes render a teaching — the posted articles at /articles/[slug]
+ * and the hand-set piece at /articles/the-cross-of-jesus — and both are
+ * this shell, so a change to how a teaching is presented is made once.
  */
 
 export interface ArticleLayoutProps {
@@ -42,10 +37,17 @@ export interface ArticleLayoutProps {
   publishedAt: string
   readMinutes: number
   hero?: { src: string; alt: string; caption?: string }
-  /** Chapters, for the study margin and the in-flow contents list. */
+  /** Chapters, for the rail and the in-flow contents list. */
   headings: Heading[]
   /** What to read next — see `relatedRows`. */
   related: RealRow[]
+  /**
+   * The teaching's own text, so the rail can list the Scriptures it cites.
+   * Omitted when the body is not plain text (the hand-set article).
+   */
+  body?: string
+  /** Overrides the derived list, for a teaching set in JSX rather than text. */
+  scriptures?: string[]
   /** Set at the close, above the ornament: a scripture list, a note. */
   colophon?: React.ReactNode
   /** The body of the teaching. */
@@ -62,78 +64,63 @@ export function ArticleLayout({
   hero,
   headings,
   related,
+  body,
+  scriptures,
   colophon,
   children,
 }: ArticleLayoutProps) {
+  const refs = scriptures ?? scriptureRefs(body, 12)
+
   return (
     <>
       <ReadingProgress />
-      <main className="xl:mx-auto xl:grid xl:max-w-[88rem] xl:grid-cols-[15rem_minmax(0,1fr)_15rem] xl:gap-6 xl:px-8">
-        {/* The study margin fills the once-empty left column on desktop. */}
-        <aside className="hidden xl:block" aria-label="Study margin">
-          <div className="sticky top-24 pt-10">
-            <StudyMargin headings={headings} title={title} />
-          </div>
-        </aside>
 
-        {/* An article is printed on cloth, the way the archive shows it. */}
-        <article className="cloth mx-auto my-6 w-full max-w-[52rem] px-5 pb-16 pt-10 sm:px-10 md:my-10 md:pb-20">
-          <FadeIn>
-            <header className="text-center">
-              <Breadcrumbs className="mb-6" crumbs={[
-                { name: 'Archive', href: '/' },
+      <main>
+        {/* ── The band ───────────────────────────────────────────── */}
+        <section className="border-b border-rule bg-raised">
+          <div className="shell pt-10">
+            <Breadcrumbs
+              className="mb-8"
+              crumbs={[
+                { name: 'Home', href: '/' },
+                { name: 'Articles', href: '/articles' },
                 { name: category, href: topicHref(category) },
-                { name: title },
-              ]} />
+              ]}
+            />
+          </div>
 
-              {/* The section, as a kicker rather than a pill. A badge sat
-                  in the title's light; a small caps line hands off to it. */}
-              <Link
-                href={topicHref(category)}
-                className="focus-ring kicker inline-block text-gold transition-colors hover:text-ink"
-              >
-                {category}
-              </Link>
-
-              <h1 className="mx-auto mt-4 max-w-measure text-balance font-display text-[2.1rem] font-normal leading-[1.08] tracking-[-0.018em] text-ink-strong sm:text-[2.6rem] md:text-[3.1rem]">
+          <div className="shell grid items-end gap-10 pb-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:gap-14">
+            <div>
+              <h1 className="mb-5 text-balance font-display text-[2.125rem] font-medium leading-[1.04] tracking-[-0.02em] text-navy sm:text-[2.75rem] lg:text-[3.5rem]">
                 {title}
               </h1>
-
-              <p className="mx-auto mt-6 max-w-[38rem] text-pretty font-display text-[1.2rem] font-light italic leading-[1.5] text-ink-muted sm:text-[1.35rem]">
+              <p className="mb-6 text-pretty font-display text-[1.1875rem] leading-[1.45] text-ink-700 sm:text-[1.375rem]">
                 {dek}
               </p>
-
-              {/* Metadata is the quietest line in the header: one size,
-                  one colour, the name the only part set in ink. */}
-              <p className="mt-7 font-sans text-[0.8125rem] text-ink-subtle">
+              <p className="font-mono text-[0.6875rem] tracking-[0.06em] text-ink-subtle">
                 {author.href ? (
                   <Link
                     href={author.href}
                     rel="author"
-                    className="font-medium text-ink-muted transition-colors hover:text-gold"
+                    className="transition-colors hover:text-gold"
                   >
                     {author.name}
                   </Link>
                 ) : (
-                  <span className="font-medium text-ink-muted">{author.name}</span>
+                  <span>{author.name}</span>
                 )}
-                <span aria-hidden className="mx-2 text-hairline-strong">·</span>
+                <span aria-hidden className="mx-2">·</span>
                 <time dateTime={publishedAt}>
                   {format(parseISO(publishedAt), 'd MMMM yyyy')}
                 </time>
-                <span aria-hidden className="mx-2 text-hairline-strong">·</span>
-                <span className="tabular">{readMinutes} min read</span>
+                <span aria-hidden className="mx-2">·</span>
+                <span className="tabular">{readMinutes} MIN READ</span>
               </p>
-
-              <ShareRow title={title} className="mt-6" />
-            </header>
+            </div>
 
             {hero && (
-              /* Full-bleed to the edges of the cloth. Inset inside a
-                 border it read as an illustration dropped into the page;
-                 carried to the edge it reads as the page. */
-              <figure className="-mx-5 mt-10 sm:-mx-10">
-                <div className="relative aspect-[16/9] overflow-hidden bg-surface-2">
+              <figure className="m-0">
+                <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
                   <Image
                     src={hero.src}
                     /* What the photograph shows — not the headline again,
@@ -142,56 +129,54 @@ export function ArticleLayout({
                     alt={hero.alt}
                     fill
                     priority
-                    sizes="(min-width: 1280px) 52rem, (min-width: 640px) 90vw, 100vw"
+                    sizes="(min-width: 1024px) 42vw, 100vw"
                     className="object-cover"
                   />
                 </div>
                 {hero.caption && (
-                  <figcaption className="mx-auto mt-3 max-w-measure px-5 text-center font-sans text-xs leading-snug text-ink-subtle sm:px-0">
+                  <figcaption className="mt-3 text-xs leading-snug text-ink-subtle">
                     {hero.caption}
                   </figcaption>
                 )}
               </figure>
             )}
-          </FadeIn>
+          </div>
+        </section>
 
-          <div className="mx-auto mt-12 max-w-measure">
-            {/* The chapter list, for every width the study margin does not
-                reach. Above the body, so it is read before the teaching
-                rather than found after it. */}
+        {/* ── The reading column ─────────────────────────────────── */}
+        <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-[72px]">
+          <article className="max-w-measure">
+            {/* The chapter list, for every width the rail does not reach. */}
             <ArticleContents
               headings={headings}
-              className="mb-12 border-y border-hairline-strong py-6 xl:hidden"
+              className="mb-10 rounded-panel border border-rule bg-card px-6 py-5 lg:hidden"
             />
 
             {children}
 
-            <div className="mt-16 border-t border-hairline pt-8">
+            <div className="mt-16 border-t border-rule pt-8">
               {colophon}
               <div className="ornament mx-auto mt-8 max-w-xs">
-                <Cross className="h-4 w-4" strokeWidth={1.5} />
+                <span aria-hidden className="text-base leading-none">✦</span>
               </div>
               <ShareRow title={title} className="mt-8" />
-              <div className="mt-10 text-center">
+              <p className="mt-10 text-center">
                 <Link
-                  href="/"
-                  className="group inline-flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
+                  href="/articles"
+                  className="font-mono text-[0.6875rem] tracking-[0.08em] text-navy transition-colors hover:text-gold"
                 >
-                  <ArrowLeft
-                    aria-hidden
-                    className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1"
-                  />
-                  Back to the archive
+                  ← ALL ARTICLES
                 </Link>
-              </div>
+              </p>
             </div>
 
             <ContinueReading rows={related} category={category} />
-          </div>
-        </article>
+          </article>
 
-        {/* Right spacer mirrors the rail so the reading column stays centered. */}
-        <div aria-hidden className="hidden xl:block" />
+          <div className="hidden lg:block">
+            <ArticleRail headings={headings} scriptures={refs} />
+          </div>
+        </div>
       </main>
     </>
   )

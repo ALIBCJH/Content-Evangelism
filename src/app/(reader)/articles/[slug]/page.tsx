@@ -141,6 +141,7 @@ export default async function PostedArticlePage({ params }: Params) {
           : {})}
         headings={headings}
         related={related}
+        body={article.body}
       >
         <ArticleProse body={article.body} />
       </ArticleLayout>

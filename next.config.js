@@ -19,7 +19,13 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
-    remotePatterns: imageHosts.map((hostname) => ({ protocol: 'https', hostname })),
+    /* i.ytimg.com is not a configurable host: it is where the poster frame
+       of every prophecy recording comes from, and the archive cannot draw
+       its own thumbnails without it. */
+    remotePatterns: [
+      { protocol: 'https', hostname: 'i.ytimg.com' },
+      ...imageHosts.map((hostname) => ({ protocol: 'https', hostname })),
+    ],
     formats: ['image/avif', 'image/webp'],
     // A year: the URL carries a content hash, so a changed image is a
     // changed URL and there is nothing to invalidate.
@@ -28,16 +34,13 @@ const nextConfig = {
     contentDispositionType: 'attachment',
   },
   async redirects() {
-    // The archive moved to the landing page. /articles/<slug> still serves
-    // individual pieces, so only the bare index redirects.
+    // The archive lives at /articles again and the front page is the
+    // ministry's own landing page, so the old /articles → / redirect is
+    // gone; leaving it would bounce the index off itself.
     //
-    // The old /category/* URLs now land on the topic pages, which are the
-    // real thing they described — sending them to the two Coming Soon
-    // placards would have retired a live URL onto an empty one.
-    return [
-      { source: '/articles', destination: '/', permanent: true },
-      { source: '/category/:slug', destination: '/topics/:slug', permanent: true },
-    ]
+    // The old /category/* URLs land on the topic pages, which are the real
+    // thing they described.
+    return [{ source: '/category/:slug', destination: '/topics/:slug', permanent: true }]
   },
   async headers() {
     return [

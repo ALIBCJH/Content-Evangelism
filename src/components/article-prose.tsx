@@ -21,7 +21,7 @@ import { parseBody, type Inline } from '@/lib/article-body'
 
 /* One class, used by the paragraph and by every list item, so a bullet
    and the sentence above it are set in the same type. */
-const RUNNING_TEXT = 'font-serif text-[1.1875rem] leading-[1.78] text-ink text-pretty'
+const RUNNING_TEXT = 'text-[1.0625rem] leading-[1.8] text-ink-700 text-pretty sm:text-[1.125rem]'
 
 function Inlines({ inlines }: { inlines: Inline[] }) {
   return (
@@ -42,7 +42,7 @@ function Inlines({ inlines }: { inlines: Inline[] }) {
                lightening — the earlier treatment moved to bright gold,
                which on white is the lower-contrast direction. */
             const className =
-              'border-b border-gold-ink/45 pb-px text-ink transition-colors hover:border-gold-ink hover:text-gold-ink'
+              'border-b border-gold/50 pb-px text-ink-900 transition-colors hover:border-gold hover:text-gold-ink'
             // Internal links go through next/link so the next teaching is
             // already fetched by the time the reader decides to open it.
             return inline.href.startsWith('/') || inline.href.startsWith('#') ? (
@@ -84,33 +84,33 @@ export function ArticleProse({ body }: { body: string }) {
               <h2
                 key={index}
                 id={block.id}
-                className="mt-14 scroll-mt-28 text-balance font-display text-[1.6rem] font-semibold leading-snug text-ink-strong md:text-[1.85rem]"
+                className="mb-5 mt-14 scroll-mt-stick text-balance font-display text-[1.625rem] font-medium leading-[1.15] text-navy md:text-[2.125rem]"
               >
                 {block.text}
               </h2>
             )
 
           case 'quote':
+            /* Scripture is set apart on the page, not merely indented:
+               a cream figure ruled in gold, with the citation beneath it
+               in the mono face every reference on this site is set in. */
             return (
-              <blockquote
-                key={index}
-                className="my-10 border-l-2 border-gold-ink/60 pl-6 font-display text-[1.3rem] font-light italic leading-[1.55] text-ink-strong md:pl-7"
-              >
-                <p>
+              <figure key={index} className="scripture my-9">
+                <blockquote className="mb-3.5 font-display text-[1.3125rem] font-normal leading-[1.45] text-navy sm:text-[1.5625rem]">
                   <Inlines inlines={block.inlines} />
-                </p>
+                </blockquote>
                 {block.cite && (
-                  <cite className="mt-3 block font-sans text-[0.6875rem] uppercase not-italic tracking-kicker text-ink-subtle">
+                  <figcaption className="font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-subtle">
                     {block.cite}
-                  </cite>
+                  </figcaption>
                 )}
-              </blockquote>
+              </figure>
             )
 
           case 'list': {
             /* marker:text-gold would paint the bright chrome gold on
                white; on paper the marker takes the darkened ink value. */
-            const className = `mt-7 space-y-3 pl-6 ${RUNNING_TEXT} marker:text-gold-ink`
+            const className = `mt-7 space-y-3 pl-6 ${RUNNING_TEXT} marker:text-gold`
             const items = block.items.map((item, i) => (
               <li key={i} className="pl-1.5">
                 <Inlines inlines={item} />
@@ -133,7 +133,11 @@ export function ArticleProse({ body }: { body: string }) {
             return (
               <p
                 key={index}
-                className={`mt-7 ${RUNNING_TEXT} ${isFirst ? 'dropcap mt-0' : ''}`}
+                className={
+                  isFirst
+                    ? 'text-pretty text-[1.125rem] leading-[1.75] text-ink-900 sm:text-[1.1875rem]'
+                    : `mt-5 ${RUNNING_TEXT}`
+                }
               >
                 <Inlines inlines={block.inlines} />
               </p>

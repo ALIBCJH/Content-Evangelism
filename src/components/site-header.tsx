@@ -1,46 +1,47 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Menu, Search, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { navSections } from '@/lib/content'
+import { navSections, siteInfo } from '@/lib/content'
+import type { SearchDoc } from '@/lib/search-docs'
+import { SearchOverlay } from '@/components/search-overlay'
 
 /**
- * The masthead: one navy bar under a gold rule carrying the wordmark, the
- * sections, and search.
+ * The masthead: the seal and the wordmark on the left, the four sections
+ * on the right, search beside them, and the gold rule closing the bar.
  *
- * From `lg` up the sections are laid out inline as a rail, so the whole site
- * is one click away without opening anything. Below that the wordmark alone
- * fills the bar, the rail is withdrawn, and the menu button takes over — the
- * four sections would otherwise wrap or crush the masthead.
+ * From `lg` up the sections are laid out inline, so the whole site is one
+ * click away without opening anything. Below that the wordmark alone fills
+ * the bar and the menu button takes over — four sections would otherwise
+ * crush the masthead on a phone.
  *
- * The menu is a drawer that slides in from the right over the page, rather
- * than an accordion that pushes it down. Since it is the only navigation at
- * those widths, it is built to full dialog standards: focus moves into it on
- * open and returns to the button on close, Tab is trapped inside it, Escape
- * and the backdrop both dismiss it, and the page behind it cannot scroll
- * while it is open.
+ * The drawer is built to full dialog standards, because at those widths it
+ * is the only navigation there is: focus moves into it on open and back to
+ * the button on close, Tab is trapped inside, Escape and the backdrop both
+ * dismiss it, and the page behind it cannot scroll. Pressing "/" anywhere
+ * opens search.
  */
-export function SiteHeader() {
+export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
   const [open, setOpen] = React.useState(false)
+  const [searching, setSearching] = React.useState(false)
   const pathname = usePathname()
-  const reduce = useReducedMotion()
 
   const panelRef = React.useRef<HTMLDivElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  // Remembers what to focus once the drawer closes.
+  const searchButtonRef = React.useRef<HTMLButtonElement>(null)
   const wasOpen = React.useRef(false)
 
-  // A tapped link navigates without unmounting the header, so close on route change.
   React.useEffect(() => {
     setOpen(false)
+    setSearching(false)
   }, [pathname])
 
-  /* Widening to the rail hides the menu button. Close the drawer with it, so
-     the panel is never left open with no visible control to dismiss it. */
+  /* Widening to the rail hides the menu button; close the drawer with it
+     so the panel is never left open with no visible way to dismiss it. */
   React.useEffect(() => {
     const rail = window.matchMedia('(min-width: 1024px)')
     const onChange = (event: MediaQueryListEvent) => {
@@ -50,10 +51,27 @@ export function SiteHeader() {
     return () => rail.removeEventListener('change', onChange)
   }, [])
 
-  /* Escape to dismiss, and Tab confined to the panel while it is open. */
+  /* "/" opens search — unless the reader is already typing somewhere. */
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      const typing =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.isContentEditable
+      if (event.key === '/' && !typing) {
+        event.preventDefault()
+        setOpen(false)
+        setSearching(true)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  /* Escape to dismiss the drawer, and Tab confined to it while it is open. */
   React.useEffect(() => {
     if (!open) return
-
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
@@ -61,14 +79,12 @@ export function SiteHeader() {
         return
       }
       if (event.key !== 'Tab') return
-
       const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
         'a[href], button:not([disabled])'
       )
       if (!focusable?.length) return
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
-
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault()
         last.focus()
@@ -77,13 +93,12 @@ export function SiteHeader() {
         first.focus()
       }
     }
-
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open])
 
-  /* Hold the page still behind the drawer. Replacing the scrollbar with an
-     equivalent padding stops the layout jumping as it is removed. */
+  /* Hold the page still behind the drawer, replacing the scrollbar with an
+     equivalent padding so the layout does not jump as it is removed. */
   React.useEffect(() => {
     if (!open) return
     const { body } = document
@@ -98,7 +113,6 @@ export function SiteHeader() {
     }
   }, [open])
 
-  /* Move focus in on open; hand it back to the button on close. */
   React.useEffect(() => {
     if (open) {
       wasOpen.current = true
@@ -109,154 +123,163 @@ export function SiteHeader() {
     }
   }, [open])
 
-  // "Articles" is the archive at /, and an article page belongs to it too.
   const isCurrent = (href: string) =>
-    href === '/'
-      ? pathname === '/' || pathname.startsWith('/articles')
+    href === '/articles'
+      ? pathname === '/articles' || pathname.startsWith('/articles/')
       : pathname.startsWith(href)
 
   return (
     <>
-      <nav
-        className="on-navy sticky top-0 z-50 border-b-2 border-gold bg-navy"
-        aria-label="Primary"
-      >
-        <div className="mx-auto flex max-w-shell items-center gap-4 px-5 py-4 sm:px-6">
+      <header className="sticky top-0 z-50 border-b border-rule bg-raised">
+        <div className="mx-auto flex h-[72px] max-w-shell items-center gap-6 px-5 sm:px-8 lg:gap-10">
           <Link
             href="/"
-            className="mr-auto min-w-0 truncate font-display text-[1.0625rem] font-normal text-linen sm:text-[1.3rem]"
+            className="focus-ring flex shrink-0 items-center gap-3 rounded-md"
           >
-            Repent <span className="italic text-sky">and</span> Prepare the Way
+            <Image
+              src="/logo.png"
+              alt=""
+              width={34}
+              height={34}
+              priority
+              className="h-[34px] w-[34px] rounded-full"
+            />
+            <span className="block max-w-[150px] font-display text-[0.9375rem] font-semibold leading-[1.15] tracking-[0.01em] text-navy">
+              Ministry of Repentance &amp; Holiness
+            </span>
           </Link>
 
-          {/* The sections, inline. Below `lg` they live in the drawer instead. */}
-          <ul className="hidden items-center lg:flex">
+          {/* The sections, inline. Below `lg` they live in the drawer. */}
+          <nav aria-label="Primary" className="hidden flex-1 items-center justify-end gap-1 lg:flex">
             {navSections.map((section) => {
               const current = isCurrent(section.href)
               return (
-                <li key={section.href}>
-                  <Link
-                    href={section.href}
-                    aria-current={current ? 'page' : undefined}
-                    className={cn(
-                      'focus-ring group block rounded-sm px-3 py-2 font-sans text-[0.78rem] font-medium uppercase tracking-[0.16em] transition-colors',
-                      current ? 'text-gold' : 'text-sky hover:text-linen'
-                    )}
-                  >
-                    {/* A gold rule under the section you are in — the rail's
-                        answer to the gold marker the drawer uses. It sits well
-                        clear of the bar's own bottom rule. */}
-                    <span
-                      className={cn(
-                        'block border-b-2 pb-1 transition-colors',
-                        current ? 'border-gold' : 'border-transparent group-hover:border-sky/40'
-                      )}
-                    >
-                      {section.label}
-                    </span>
-                  </Link>
-                </li>
+                <Link
+                  key={section.href}
+                  href={section.href}
+                  aria-current={current ? 'page' : undefined}
+                  className={cn(
+                    'focus-ring rounded-lg px-3.5 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors',
+                    current ? 'bg-chip text-navy' : 'text-navy hover:bg-chip'
+                  )}
+                >
+                  {section.label}
+                </Link>
               )
             })}
-          </ul>
+          </nav>
 
-          <span aria-hidden className="hidden h-5 w-px bg-white/15 lg:block" />
-
-          <Link
-            href="/search"
-            aria-label="Search the archive"
-            className="focus-ring icon-only grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen"
-          >
-            <Search className="h-4 w-4" />
-          </Link>
-          <button
-            ref={buttonRef}
-            type="button"
-            aria-label="Open menu"
-            aria-expanded={open}
-            aria-haspopup="dialog"
-            onClick={() => setOpen(true)}
-            className="focus-ring icon-only grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        </div>
-      </nav>
-
-      <AnimatePresence>
-        {open && (
-          <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Menu">
-            {/* The page dims and recedes behind the panel. */}
-            <motion.button
+          <div className="ml-auto flex shrink-0 items-center gap-2.5 lg:ml-0">
+            <button
+              ref={searchButtonRef}
               type="button"
-              tabIndex={-1}
-              aria-hidden
-              onClick={() => setOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: reduce ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 h-full w-full cursor-default bg-navy-900/70 backdrop-blur-[2px]"
-            />
-
-            <motion.div
-              ref={panelRef}
-              initial={{ x: reduce ? 0 : '100%', opacity: reduce ? 0 : 1 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: reduce ? 0 : '100%', opacity: reduce ? 0 : 1 }}
-              transition={{ duration: reduce ? 0.01 : 0.38, ease: [0.22, 1, 0.36, 1] }}
-              className="on-navy absolute inset-y-0 right-0 flex w-[min(22rem,88vw)] flex-col border-l-2 border-gold bg-navy shadow-[-24px_0_60px_-20px_rgba(12,30,58,0.65)]"
+              onClick={() => setSearching(true)}
+              aria-label="Search the archive"
+              className="focus-ring icon-only flex h-11 w-11 items-center justify-center gap-2 rounded-tile border border-rule bg-card text-ink-500 transition-colors hover:border-gold hover:text-navy lg:h-10 lg:w-auto lg:px-3.5"
             >
-              <div className="flex items-center justify-between px-7 py-4">
-                <span className="kicker text-sky/70">Menu</span>
-                <button
-                  type="button"
-                  aria-label="Close menu"
-                  onClick={() => setOpen(false)}
-                  className="focus-ring icon-only -mr-2 grid h-10 w-10 place-items-center rounded-full text-sky transition-colors hover:bg-white/10 hover:text-linen"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+              <Search aria-hidden className="h-4 w-4" strokeWidth={1.75} />
+              <span className="hidden text-[0.8125rem] lg:inline">Search</span>
+            </button>
 
-              <ul className="flex-1 overflow-y-auto px-7 pt-2">
-                {navSections.map((section) => {
-                  const current = isCurrent(section.href)
-                  return (
-                    <li key={section.href} className="border-b border-white/10 last:border-b-0">
-                      <Link
-                        href={section.href}
-                        aria-current={current ? 'page' : undefined}
-                        className={cn(
-                          'group flex items-baseline gap-3 py-5 font-display text-[1.7rem] font-light leading-none transition-colors',
-                          current ? 'text-gold' : 'text-linen hover:text-sky'
-                        )}
-                      >
-                        {/* A gold marker sits beside the section you are in. */}
-                        <span
-                          aria-hidden
-                          className={cn(
-                            'h-1.5 w-1.5 shrink-0 rounded-full bg-gold transition-opacity',
-                            current ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                        {section.label}
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              <p className="border-t border-white/10 px-7 py-6 font-display text-[0.95rem] font-light italic leading-snug text-sky/80">
-                Prepare ye the way of the LORD.
-                <span className="mt-1.5 block font-sans text-[0.625rem] font-medium uppercase not-italic tracking-[0.2em] text-gold">
-                  Isaiah 40:3
-                </span>
-              </p>
-            </motion.div>
+            <button
+              ref={buttonRef}
+              type="button"
+              aria-label="Open menu"
+              aria-expanded={open}
+              aria-haspopup="dialog"
+              onClick={() => setOpen(true)}
+              className="focus-ring icon-only flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-tile border border-rule bg-card lg:hidden"
+            >
+              <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
+              <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
+              <span aria-hidden className="h-[1.75px] w-3 bg-navy" />
+            </button>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+        <div className="gold-rule opacity-[0.55]" />
+      </header>
+
+      {/* ── The drawer ───────────────────────────────────────────── */}
+      {open && (
+        <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Menu">
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 h-full w-full cursor-default bg-navy-deep/60 backdrop-blur-[2px]"
+          />
+          <div
+            ref={panelRef}
+            className="absolute inset-y-0 right-0 flex w-[min(24rem,92vw)] flex-col bg-raised shadow-drawer"
+          >
+            <div className="flex items-center justify-between border-b border-rule px-5 py-3.5">
+              <span className="kicker text-ink-subtle">Menu</span>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={() => setOpen(false)}
+                className="focus-ring icon-only grid h-11 w-11 place-items-center rounded-tile border border-rule bg-card text-navy"
+              >
+                <X aria-hidden className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-5">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  setSearching(true)
+                }}
+                className="focus-ring mb-5 flex w-full items-center gap-2.5 rounded-tile border border-rule bg-card px-4 py-3.5 text-left text-[0.9375rem] text-ink-subtle"
+              >
+                <Search aria-hidden className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                Search the archive…
+              </button>
+
+              <nav aria-label="Sections">
+                {navSections.map((section) => (
+                  <Link
+                    key={section.href}
+                    href={section.href}
+                    aria-current={isCurrent(section.href) ? 'page' : undefined}
+                    className="flex min-h-[60px] items-center justify-between gap-4 border-b border-rule-soft py-3.5"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-display text-[1.5rem] leading-tight text-navy">
+                        {section.label}
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-ink-subtle">
+                        {section.items.slice(0, 3).join(' · ')}
+                      </span>
+                    </span>
+                    <span aria-hidden className="font-mono text-base text-gold">
+                      →
+                    </span>
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="mt-6 rounded-figure bg-navy p-5">
+                <p className="kicker mb-2 text-gold-pale">The ministry</p>
+                <p className="font-display text-[1.3125rem] leading-tight text-card">
+                  {siteInfo.mission}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <SearchOverlay
+        docs={docs}
+        open={searching}
+        onClose={() => {
+          setSearching(false)
+          searchButtonRef.current?.focus()
+        }}
+      />
     </>
   )
 }

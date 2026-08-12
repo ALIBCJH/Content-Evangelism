@@ -1,8 +1,9 @@
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { RadioTower, Rss } from 'lucide-react'
+import { RadioTower } from 'lucide-react'
 import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
-import { channels, navSections, siteInfo } from '@/lib/content'
+import { channels, footerColumns, siteInfo } from '@/lib/content'
 
 const channelIcons = {
   radio: RadioTower,
@@ -10,99 +11,110 @@ const channelIcons = {
   whatsapp: WhatsAppIcon,
 } as const
 
-/* Brand hover colors so each channel reads instantly. */
-const channelHover: Record<string, string> = {
-  radio: 'hover:border-gold/60 hover:text-gold',
-  youtube: 'hover:border-[#FF6B6B]/50 hover:text-[#FF6B6B]',
-  whatsapp: 'hover:border-[#25D366]/50 hover:text-[#25D366]',
-}
-
 /**
- * The footer is the ministry's three channels, and a hairline of links.
+ * The footer: the gold rule, the seal and what the site is, five columns
+ * of where to go, the three official channels, and the legal bar.
  *
- * The epigraph, the brand column, and the stacked list of sections stay
- * gone: the archive says what the site is far better than a paragraph
- * about it, and each channel keeps a full card rather than a line in a
- * list. What came back is one quiet row of text in the legal bar.
- *
- * It earns its place. Without it the masthead was the only internal
- * linking on the entire site, so every page had exactly one route onward
- * and link equity had nowhere to circulate. A single row of small type
- * costs the design nothing and gives every page a second way out.
+ * The columns are the site's own internal linking — without them the
+ * masthead is the only route onward from any page, and link equity has
+ * nowhere to circulate.
  */
 export function SiteFooter() {
   return (
-    <footer className="on-navy bg-navy text-sky">
-      <div className="shell py-12 md:py-16">
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-          {channels.map((channel) => {
-            const Icon = channelIcons[channel.key]
-            return (
-              <li key={channel.key}>
-                <a
-                  href={channel.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`focus-ring flex h-full items-center gap-4 rounded-sm border border-white/12 px-4 py-4 transition-colors hover:bg-white/5 sm:flex-col sm:items-start sm:gap-3 sm:px-5 sm:py-6 ${channelHover[channel.key]}`}
-                >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-sm border border-white/15 bg-white/5">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="flex items-center gap-2 font-sans text-[0.9375rem] font-medium text-linen">
+    <footer className="mt-auto bg-navy text-navy-pale">
+      <div className="gold-rule" />
+
+      <div className="shell grid gap-10 pb-10 pt-16 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_repeat(5,minmax(0,1fr))]">
+        <div>
+          <div className="mb-4 flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt=""
+              width={34}
+              height={34}
+              className="h-[34px] w-[34px] rounded-full"
+            />
+            <span className="block max-w-[160px] font-display text-[0.9375rem] font-semibold leading-[1.15] text-ground">
+              Ministry of Repentance &amp; Holiness
+            </span>
+          </div>
+          <p className="max-w-[260px] text-[0.8125rem] leading-relaxed text-navy-soft">
+            The ministry&rsquo;s digital record of what it believes, teaches, has preached,
+            and has documented.
+          </p>
+
+          {/* The three official channels. */}
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {channels.map((channel) => {
+              const Icon = channelIcons[channel.key]
+              return (
+                <li key={channel.key}>
+                  <a
+                    href={channel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={channel.tagline}
+                    className="focus-ring flex h-11 w-11 items-center justify-center rounded-tile border border-white/15 bg-white/5 text-navy-pale transition-colors hover:border-gold-pale hover:text-gold-pale"
+                  >
+                    <Icon aria-hidden className="h-5 w-5" />
+                    <span className="sr-only">
                       {channel.name}
-                      {channel.live && (
-                        <span className="relative flex h-1.5 w-1.5" aria-label="On air">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-75" />
-                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-danger" />
-                        </span>
-                      )}
+                      {channel.live ? ' — live now' : ''}
                     </span>
-                    <span className="mt-1 block font-sans text-xs leading-snug text-sky/80">
-                      {channel.cta}
-                    </span>
-                  </span>
-                </a>
-              </li>
-            )
-          })}
-        </ul>
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+
+        {footerColumns.map((column) => (
+          <nav key={column.title} aria-label={column.title}>
+            <p className="kicker mb-4 text-gold-pale">{column.title}</p>
+            <ul className="flex flex-col gap-2.5">
+              {column.links.map((link) => (
+                <li key={`${column.title}-${link.label}`}>
+                  {link.href.startsWith('http') ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="focus-ring text-[0.8125rem] text-navy-pale transition-colors hover:text-gold-pale"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.href}
+                      className="focus-ring text-[0.8125rem] text-navy-pale transition-colors hover:text-gold-pale"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
       </div>
 
-      <div className="shell border-t border-sky/20 pb-10 pt-6 font-sans text-xs tracking-[0.04em]">
-        <nav aria-label="Footer">
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            {navSections.map((section) => (
-              <li key={section.href}>
-                <Link
-                  href={section.href}
-                  className="focus-ring text-sky/85 transition-colors hover:text-gold"
-                >
-                  {section.label}
-                </Link>
-              </li>
-            ))}
-            <li>
-              <Link href="/search" className="focus-ring text-sky/85 transition-colors hover:text-gold">
-                Search
-              </Link>
-            </li>
-            <li>
-              <a
-                href="/feed.xml"
-                className="focus-ring inline-flex items-center gap-1.5 text-sky/85 transition-colors hover:text-gold"
-              >
-                <Rss aria-hidden className="h-3 w-3" />
-                RSS
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <div className="mt-6 flex flex-wrap gap-4 border-t border-sky/12 pt-5">
-          <span>
-            © {new Date().getFullYear()} {siteInfo.ministry}
-          </span>
-          <span className="text-gold sm:ms-auto">#PrepareTheWayTheMessiahIsComing</span>
+      <div className="shell flex flex-wrap items-center justify-between gap-6 border-t border-navy-rule pb-10 pt-6">
+        <span className="text-xs text-navy-soft">
+          © {new Date().getFullYear()} {siteInfo.ministry}. All rights reserved.
+        </span>
+        <div className="flex flex-wrap gap-5 text-xs">
+          <Link href="/about" className="focus-ring text-navy-soft transition-colors hover:text-gold-pale">
+            About
+          </Link>
+          <Link href="/search" className="focus-ring text-navy-soft transition-colors hover:text-gold-pale">
+            Search
+          </Link>
+          <a href="/feed.xml" className="focus-ring text-navy-soft transition-colors hover:text-gold-pale">
+            RSS
+          </a>
+          <a href="/sitemap.xml" className="focus-ring text-navy-soft transition-colors hover:text-gold-pale">
+            Sitemap
+          </a>
         </div>
       </div>
     </footer>

@@ -15,9 +15,11 @@ import { siteInfo } from '@/lib/content'
 
 export const OG_SIZE = { width: 1200, height: 630 }
 
-const GOLD = '#D4A72C'
-const NAVY = '#081226'
-const NAVY_PANEL = '#0D1B36'
+/* The card is the site's own palette: navy ground, gold rule, paper type. */
+const GOLD = '#B8944A'
+const NAVY = '#0D2C46'
+const NAVY_PANEL = '#123B5D'
+const PAPER = '#F7F4EC'
 
 /** The two faces the card is set in, read off disk for ImageResponse. */
 export async function ogFonts() {
@@ -75,7 +77,7 @@ export function OgCard({ kicker, title }: { kicker: string; title: string }) {
               fontFamily: 'Fraunces',
               fontSize: titleSize,
               lineHeight: 1.12,
-              color: '#F3EFE6',
+              color: PAPER,
               maxWidth: 1000,
             }}
           >
@@ -92,8 +94,8 @@ export function OgCard({ kicker, title }: { kicker: string; title: string }) {
               alignItems: 'center',
             }}
           >
-            <div style={{ fontFamily: 'Fraunces', fontSize: 30, color: '#E8E2D4' }}>
-              {siteInfo.name}
+            <div style={{ fontFamily: 'Fraunces', fontSize: 30, color: PAPER }}>
+              {siteInfo.ministry}
             </div>
             <div
               style={{
@@ -101,7 +103,7 @@ export function OgCard({ kicker, title }: { kicker: string; title: string }) {
                 fontSize: 20,
                 letterSpacing: 3,
                 textTransform: 'uppercase',
-                color: '#8FA0BF',
+                color: '#9FB4C8',
               }}
             >
               repentandpreparetheway.org
