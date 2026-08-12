@@ -331,10 +331,6 @@ export const homeHero = {
   dek: 'Biblical teachings, Scripture studies, prophetic messages, sermons, and resources from the Ministry of Repentance and Holiness.',
   primary: { label: 'Read the Articles', href: '/articles' },
   secondary: { label: 'Watch the Prophecies', href: '/prophecies' },
-  image: {
-    src: '/images/the-cross-of-jesus.png',
-    alt: 'A rugged wooden cross draped with white cloth against a golden sunrise',
-  },
 }
 
 export interface Statement {

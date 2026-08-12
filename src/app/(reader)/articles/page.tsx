@@ -21,7 +21,6 @@ export default function ArticlesPage() {
     <ArchiveView
       kicker="Articles"
       title="Articles"
-      purpose="Long-form writing from the Ministry of Repentance and Holiness. Scripture examined passage by passage, with the questions readers ask answered plainly and the ministry's position stated where it applies."
       emptyMessage="Nothing has been published yet. The first piece will open here."
       collection={{
         name: 'The Archive',

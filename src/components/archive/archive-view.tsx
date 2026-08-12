@@ -156,9 +156,21 @@ export async function ArchiveView({
             </p>
           )}
 
-          <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-[72px]">
+          {/* With a line under the title the two columns bottom out together,
+              which is how the design sets them. Without one the title would
+              be left floating at the foot of a taller column, so it goes to
+              the top instead. */}
+          <div
+            className={`grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-[72px] ${
+              purpose ? 'items-end' : 'items-start'
+            }`}
+          >
             <div>
-              <h1 className="mb-4 font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
+              <h1
+                className={`font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem] ${
+                  purpose ? 'mb-4' : ''
+                }`}
+              >
                 {title}
               </h1>
               {purpose && (
