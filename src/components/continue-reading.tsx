@@ -66,7 +66,7 @@ export function ContinueReading({
                   </span>
                   <span
                     data-shift="trail"
-                    className="mt-2 block text-[0.9375rem] leading-[1.7] text-ink-muted line-clamp-2"
+                    className="mt-2 text-[0.9375rem] leading-[1.7] text-ink-muted line-clamp-2"
                   >
                     {row.dek}
                   </span>

@@ -84,9 +84,15 @@ export default function PropheciesPage() {
 
         <ol>
           {records.map((record) => (
-            <li key={record.id} className="grid grid-cols-[52px_minmax(0,1fr)] sm:grid-cols-[92px_minmax(0,1fr)]">
-              {/* The rail: the year, the wire, and the marker. */}
-              <div className="relative pt-8">
+            <li
+              key={record.id}
+              className="grid grid-cols-1 sm:grid-cols-[92px_minmax(0,1fr)]"
+            >
+              {/* The rail: the year, the wire, and the marker. It is
+                  withdrawn on a phone — 92px of chronology is width the
+                  card needs more, and the dateline on each card already
+                  carries the year. */}
+              <div className="relative hidden pt-8 sm:block">
                 <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-gold">
                   {record.year}
                 </span>
@@ -102,7 +108,7 @@ export default function PropheciesPage() {
 
               <Link
                 href={recordHref(record)}
-                className="card card-interactive my-3 ml-4 flex flex-col items-start gap-6 p-6 sm:ml-8 sm:p-8 lg:flex-row lg:gap-7"
+                className="card card-interactive my-3 flex flex-col items-start gap-6 p-5 sm:ml-8 sm:p-8 lg:flex-row lg:gap-7"
               >
                 <span className="relative block aspect-[16/9] w-full shrink-0 overflow-hidden rounded-tile border border-rule bg-navy-deep lg:w-[260px]">
                   <Image

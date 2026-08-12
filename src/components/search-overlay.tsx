@@ -136,7 +136,7 @@ export function SearchOverlay({
                 <span className="block font-display text-[1.3125rem] font-medium leading-tight text-navy">
                   {doc.title}
                 </span>
-                <span className="mt-1 block text-[0.8125rem] leading-relaxed text-ink-500 line-clamp-2">
+                <span className="mt-1 text-[0.8125rem] leading-relaxed text-ink-500 line-clamp-2">
                   {doc.excerpt}
                 </span>
               </Link>
