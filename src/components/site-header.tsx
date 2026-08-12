@@ -32,8 +32,17 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
 
   const panelRef = React.useRef<HTMLDivElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const searchButtonRef = React.useRef<HTMLButtonElement>(null)
+  /* Search has no button of its own in the masthead any more — it opens
+     from the drawer or from the "/" key — so closing it hands focus back
+     to whatever had it when it opened, rather than to a fixed control. */
+  const searchOpener = React.useRef<HTMLElement | null>(null)
   const wasOpen = React.useRef(false)
+
+  const openSearch = React.useCallback(() => {
+    searchOpener.current = (document.activeElement as HTMLElement) ?? null
+    setOpen(false)
+    setSearching(true)
+  }, [])
 
   React.useEffect(() => {
     setOpen(false)
@@ -61,13 +70,12 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
         target?.isContentEditable
       if (event.key === '/' && !typing) {
         event.preventDefault()
-        setOpen(false)
-        setSearching(true)
+        openSearch()
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
+  }, [openSearch])
 
   /* Escape to dismiss the drawer, and Tab confined to it while it is open. */
   React.useEffect(() => {
@@ -170,18 +178,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
             })}
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-2.5 lg:ml-0">
-            <button
-              ref={searchButtonRef}
-              type="button"
-              onClick={() => setSearching(true)}
-              aria-label="Search the archive"
-              className="focus-ring icon-only flex h-11 w-11 items-center justify-center gap-2 rounded-tile border border-rule bg-card text-ink-500 transition-colors hover:border-gold hover:text-navy lg:h-10 lg:w-auto lg:px-3.5"
-            >
-              <Search aria-hidden className="h-4 w-4" strokeWidth={1.75} />
-              <span className="hidden text-[0.8125rem] lg:inline">Search</span>
-            </button>
-
+          <div className="ml-auto flex shrink-0 items-center lg:hidden">
             <button
               ref={buttonRef}
               type="button"
@@ -189,7 +186,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               aria-expanded={open}
               aria-haspopup="dialog"
               onClick={() => setOpen(true)}
-              className="focus-ring icon-only flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-tile border border-rule bg-card lg:hidden"
+              className="focus-ring icon-only flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-tile border border-rule bg-card"
             >
               <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
               <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
@@ -229,10 +226,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
             <div className="flex-1 overflow-y-auto px-5 py-5">
               <button
                 type="button"
-                onClick={() => {
-                  setOpen(false)
-                  setSearching(true)
-                }}
+                onClick={openSearch}
                 className="focus-ring mb-5 flex w-full items-center gap-2.5 rounded-tile border border-rule bg-card px-4 py-3.5 text-left text-[0.9375rem] text-ink-subtle"
               >
                 <Search aria-hidden className="h-[17px] w-[17px]" strokeWidth={1.75} />
@@ -278,7 +272,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
         open={searching}
         onClose={() => {
           setSearching(false)
-          searchButtonRef.current?.focus()
+          searchOpener.current?.focus()
         }}
       />
     </>

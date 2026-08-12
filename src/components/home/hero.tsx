@@ -1,43 +1,30 @@
 import * as React from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { homeHero } from '@/lib/content'
 
 /**
- * The hero: one photograph, one claim, and two ways in.
+ * The hero: one claim, and two ways in.
  *
- * The scrim is a three-stop gradient rather than a flat wash, so the top
- * of the photograph stays legible while the type at the foot sits on
- * something close to solid navy. Everything above the buttons is
- * pointer-transparent — the picture behind it is never a dead zone.
+ * It stands on the ministry's own navy rather than a photograph. That is
+ * the design as it is drawn, and it is also the honest state of the page —
+ * the ministry's own hero photograph has not been supplied, and borrowing
+ * an article's picture to fill the space made the front page say something
+ * about a teaching rather than about the ministry.
+ *
+ * Nothing else changes when a photograph does arrive: drop it behind this
+ * block with the scrim the design specifies, and the type is already
+ * placed for it.
  */
 export function HomeHero() {
   return (
-    <section className="relative flex min-h-[420px] items-end overflow-hidden bg-navy-deep sm:min-h-[560px] lg:min-h-[660px]">
-      <Image
-        src={homeHero.image.src}
-        alt={homeHero.image.alt}
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(13,34,54,0.20) 0%, rgba(13,34,54,0.42) 42%, rgba(13,34,54,0.88) 100%)',
-        }}
-      />
-
-      <div className="pointer-events-none relative mx-auto w-full max-w-shell px-5 pb-14 pt-24 sm:px-8 lg:pb-[72px] lg:pt-[120px]">
+    <section className="flex min-h-[420px] items-end overflow-hidden bg-navy-deep sm:min-h-[560px] lg:min-h-[660px]">
+      <div className="mx-auto w-full max-w-shell px-5 pb-14 pt-24 sm:px-8 lg:pb-[72px] lg:pt-[120px]">
         <p className="mb-5 flex items-center gap-3">
           <span aria-hidden className="h-px w-[26px] bg-gold-pale" />
           <span className="kicker-lg text-gold-sand">{homeHero.kicker}</span>
         </p>
 
-        <h1 className="mb-6 max-w-[900px] text-balance font-display text-[2.375rem] font-medium leading-[1.02] tracking-[-0.025em] text-[#FFFDF8] [text-shadow:0_2px_24px_rgba(6,20,34,0.45)] sm:text-[3.5rem] lg:text-[5.25rem] lg:leading-none">
+        <h1 className="mb-6 max-w-[900px] text-balance font-display text-[2.375rem] font-medium leading-[1.02] tracking-[-0.025em] text-[#FFFDF8] sm:text-[3.5rem] lg:text-[5.25rem] lg:leading-none">
           {homeHero.title.map((line, index) => (
             <React.Fragment key={line}>
               {index > 0 && <br />}
@@ -50,7 +37,7 @@ export function HomeHero() {
           {homeHero.dek}
         </p>
 
-        <div className="pointer-events-auto flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-3.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-3.5">
           <Link
             href={homeHero.primary.href}
             className="focus-ring rounded-tile bg-gold px-7 py-4 text-center text-[0.9375rem] font-bold text-[#1A1206] transition-colors hover:bg-gold-light"
