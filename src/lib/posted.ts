@@ -6,15 +6,23 @@ import { isAllowedImageHost } from '@/lib/seo'
 export { CATEGORIES }
 
 /**
- * The article store — a local JSON file (data/articles.json) read straight
- * off disk. This module is the only place the frontend talks to the store;
- * everything else imports from here.
+ * The article store. This module is the only place the frontend talks to
+ * the store; everything else imports from here.
  *
- * PROTOTYPING MODE. The FastAPI backend in backend/ is unplugged for now so
- * the UI can be built and run with nothing but `npm run dev` — no Postgres,
- * no API process, no ADMIN_TOKEN. The exported surface below is byte-for-byte
- * the same as the HTTP version it replaced, so re-attaching the server later
- * means restoring the fetch calls in this file and touching nothing else.
+ * There is no separate API process. The FastAPI service in backend/ is
+ * unplugged, so the site deploys as one Next.js app — route handlers call
+ * straight into the functions below.
+ *
+ * Two drivers sit behind one shape, chosen by what is in the environment:
+ *
+ *   - Upstash Redis, when the deployment has KV credentials. Serverless
+ *     hosts give you a read-only filesystem, so a published article has
+ *     to live somewhere off the instance.
+ *   - A JSON file at data/articles.json otherwise, so `npm run dev` needs
+ *     nothing but the repo.
+ *
+ * Both hold the same thing — the whole article array, newest first — so
+ * moving between them is a matter of copying one JSON document.
  */
 
 const STORE = path.join(process.cwd(), 'data', 'articles.json')
@@ -52,26 +60,82 @@ export interface WriteResult {
   error?: string
 }
 
-/* ── Disk access ──────────────────────────────────────────────────── */
+/* ── Upstash Redis ────────────────────────────────────────────────── */
+
+/**
+ * Vercel's own integration injects the `KV_REST_API_*` pair; attaching
+ * Upstash directly gives you `UPSTASH_REDIS_REST_*`. They address the
+ * same REST endpoint, so accept either rather than making the setup
+ * depend on which tab the store was created from.
+ */
+const KV_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? ''
+const KV_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN ?? ''
+const KV_KEY = 'articles'
+
+/** Both halves or neither — a URL with no token would fail on every call. */
+const usingKv = Boolean(KV_URL && KV_TOKEN)
+
+/**
+ * Upstash speaks Redis over HTTPS, so the whole driver is one fetch and
+ * no dependency. Commands go in the body as a JSON array rather than in
+ * the path: an article body is far longer than a URL may safely be.
+ */
+async function kvCommand(command: (string | number)[]): Promise<unknown> {
+  const response = await fetch(KV_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${KV_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(command),
+    cache: 'no-store',
+  })
+  if (!response.ok) {
+    throw new Error(`Upstash ${command[0]} returned ${response.status}.`)
+  }
+  const payload = (await response.json()) as { result?: unknown; error?: string }
+  if (payload.error) throw new Error(`Upstash ${command[0]}: ${payload.error}`)
+  return payload.result
+}
+
+/* ── Store access ─────────────────────────────────────────────────── */
+
+/** Anything that is not a well-formed array is treated as an empty store. */
+function parseArticles(raw: unknown): PostedArticle[] {
+  if (typeof raw === 'string') {
+    try {
+      return parseArticles(JSON.parse(raw))
+    } catch {
+      return []
+    }
+  }
+  return Array.isArray(raw) ? (raw as PostedArticle[]) : []
+}
 
 async function readStore(): Promise<PostedArticle[]> {
   try {
-    const raw = await fs.readFile(STORE, 'utf8')
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as PostedArticle[]) : []
+    if (usingKv) return parseArticles(await kvCommand(['GET', KV_KEY]))
+    return parseArticles(await fs.readFile(STORE, 'utf8'))
   } catch {
-    // No store yet, or malformed — the site still renders its built-in pieces.
+    // No store yet, malformed, or Upstash unreachable — the site still
+    // renders its built-in pieces rather than failing to render at all.
     return []
   }
 }
 
 async function writeStore(articles: PostedArticle[]): Promise<boolean> {
+  const serialized = `${JSON.stringify(articles, null, 2)}\n`
   try {
+    if (usingKv) {
+      await kvCommand(['SET', KV_KEY, serialized])
+      return true
+    }
     await fs.mkdir(path.dirname(STORE), { recursive: true })
-    await fs.writeFile(STORE, `${JSON.stringify(articles, null, 2)}\n`, 'utf8')
+    await fs.writeFile(STORE, serialized, 'utf8')
     return true
   } catch {
-    // Read-only filesystem (most production hosts). Reads keep working.
+    // A read-only filesystem (any serverless host, with no store attached)
+    // or an Upstash call that did not land. Reads keep working either way.
     return false
   }
 }

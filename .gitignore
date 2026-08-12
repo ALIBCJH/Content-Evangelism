@@ -5,7 +5,7 @@ node_modules/
 .next/
 out/
 
-# local CMS data (file-store fallback; production uses Vercel KV)
+# local CMS data (the file store; a deployment uses Upstash Redis instead)
 data/
 
 # env files

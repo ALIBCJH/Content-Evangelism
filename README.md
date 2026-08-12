@@ -110,14 +110,25 @@ API (same deployment, Next.js route handlers):
 - `GET  /api/articles/:slug` — single article (public)
 - `DELETE /api/articles/:slug` — remove; requires the same bearer token
 
-Storage is auto-detected in `src/lib/posted.ts`:
+Storage is chosen in `src/lib/posted.ts` by what is in the environment:
 
-- **Local development** — a JSON file at `data/articles.json` (created on
-  first publish; gitignored).
-- **Vercel** — attach an **Upstash Redis / KV** store to the project
-  (Storage tab → Create → Upstash Redis). Vercel injects
-  `KV_REST_API_URL` and `KV_REST_API_TOKEN`, and the store switches over
-  automatically — no code or dependency changes.
+- **Upstash Redis**, whenever the deployment carries REST credentials —
+  either `KV_REST_API_URL` / `KV_REST_API_TOKEN` (what Vercel's own
+  integration injects) or `UPSTASH_REDIS_REST_URL` /
+  `UPSTASH_REDIS_REST_TOKEN` (what attaching Upstash directly gives you).
+  Either pair works; both halves must be present or the file store is
+  used instead.
+- **A JSON file** at `data/articles.json` otherwise, created on first
+  publish and gitignored, so `npm run dev` needs nothing but the repo.
+
+Both hold the identical document — the whole article array, newest first
+— under the key `articles`, so moving between them is a copy-paste of one
+JSON blob. Upstash is reached over plain HTTPS, so this costs no
+dependency.
+
+Publishing with no store attached fails cleanly with *"The article store
+is not writable"* rather than appearing to succeed; reading is unaffected
+and the site keeps serving its built-in pieces.
 
 ### Deploying to Vercel
 
@@ -126,8 +137,11 @@ Storage is auto-detected in `src/lib/posted.ts`:
 2. In Project → Settings → Environment Variables, set
    `ADMIN_TOKEN` to a strong secret. This is the posting key typed
    into `/admin`. (Locally it defaults to `change-me`.)
-3. Attach an Upstash Redis store (Storage tab) so published articles
-   persist across deployments.
+3. Attach an Upstash Redis store (Storage tab → Create → Upstash Redis)
+   and let it inject its variables into the project. This is what makes
+   the posting desk able to save at all: Vercel's filesystem is
+   read-only, so without a store the site serves fine but publishing
+   returns an error.
 
 ## Search-engine configuration
 
