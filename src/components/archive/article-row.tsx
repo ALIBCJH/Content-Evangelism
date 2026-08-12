@@ -50,7 +50,7 @@ export function ArticleRow({ row }: { row: RealRow }) {
           <span className="headline-link">{row.title}</span>
         </span>
 
-        <span className="mb-3.5 block max-w-[660px] text-[0.9375rem] leading-[1.7] text-ink-muted line-clamp-3">
+        <span className="mb-3.5 max-w-[660px] text-[0.9375rem] leading-[1.7] text-ink-muted line-clamp-3">
           {openingLine(row.body, row.dek)}
         </span>
 
