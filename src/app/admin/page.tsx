@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { CATEGORIES } from '@/lib/content'
 import { cn } from '@/lib/utils'
+import { ArticleProse } from '@/components/article-prose'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +25,7 @@ interface ManagedArticle {
   authorName: string
   body: string
   imageUrl?: string
+  imageAlt?: string
   publishedAt: string
   readMinutes: number
 }
@@ -36,32 +38,6 @@ const textareaClass =
 
 function ago(iso: string): string {
   return formatDistanceToNowStrict(parseISO(iso), { addSuffix: true })
-}
-
-/** Client-side render of the body format: blank line = ¶, "## " = subheading. */
-function BodyPreview({ body }: { body: string }) {
-  const blocks = body.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
-  let seenParagraph = false
-  return (
-    <>
-      {blocks.map((block, index) => {
-        if (block.startsWith('## ')) {
-          return (
-            <h3 key={index} className="mt-8 font-display text-xl font-semibold text-ink-strong">
-              {block.slice(3)}
-            </h3>
-          )
-        }
-        const isFirst = !seenParagraph
-        seenParagraph = true
-        return (
-          <p key={index} className={cn('mt-4 font-serif text-base leading-[1.8] text-ink-muted', isFirst && 'dropcap')}>
-            {block}
-          </p>
-        )
-      })}
-    </>
-  )
 }
 
 function StatTile({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -94,6 +70,7 @@ export default function AdminPage() {
   const [body, setBody] = React.useState('')
   const [authorName, setAuthorName] = React.useState('')
   const [imageUrl, setImageUrl] = React.useState('')
+  const [imageAlt, setImageAlt] = React.useState('')
   const [showPreview, setShowPreview] = React.useState(false)
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'done'>('idle')
   const [error, setError] = React.useState<string | null>(null)
@@ -142,7 +119,7 @@ export default function AdminPage() {
 
   const clearForm = () => {
     setEditingSlug(null)
-    setTitle(''); setDek(''); setBody(''); setImageUrl(''); setAuthorName('')
+    setTitle(''); setDek(''); setBody(''); setImageUrl(''); setImageAlt(''); setAuthorName('')
     setPublishedUrl(null); setStatus('idle'); setError(null); setShowPreview(false)
   }
 
@@ -154,6 +131,7 @@ export default function AdminPage() {
     setBody(article.body)
     setAuthorName(article.authorName)
     setImageUrl(article.imageUrl ?? '')
+    setImageAlt(article.imageAlt ?? '')
     setStatus('idle'); setError(null); setPublishedUrl(null)
     setTab('write')
   }
@@ -179,7 +157,7 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${postingKey}`,
         },
-        body: JSON.stringify({ title, category, dek, body, authorName, imageUrl }),
+        body: JSON.stringify({ title, category, dek, body, authorName, imageUrl, imageAlt }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -468,9 +446,21 @@ export default function AdminPage() {
                   placeholder={'The opening paragraph…\n\n## A Subheading\n\nThe next paragraph…'}
                   className={textareaClass}
                 />
-                <p className="mt-2 font-sans text-xs text-ink-subtle">
-                  Blank line = new paragraph · start a line with <code className="text-gold">## </code> for a subheading.
-                </p>
+                {/* Linking out of a teaching — to another teaching, to a
+                    section — is most of what internal linking is on a site
+                    this size, so the syntax for it is spelled out here. */}
+                <div className="mt-2 space-y-1 font-sans text-xs leading-relaxed text-ink-subtle">
+                  <p>
+                    Blank line = new paragraph · <code className="text-gold">## </code> subheading ·
+                    <code className="text-gold"> &gt; </code> quoted Scripture (close with
+                    <code className="text-gold"> — Isaiah 40:3</code>) ·
+                    <code className="text-gold"> - </code> or <code className="text-gold">1. </code> for a list
+                  </p>
+                  <p>
+                    Link a phrase with <code className="text-gold">[the cross](/articles/the-cross-of-jesus)</code> ·
+                    emphasise with <code className="text-gold">*italic*</code> or <code className="text-gold">**bold**</code>
+                  </p>
+                </div>
               </div>
 
               {showPreview && (title || dek || body) && (
@@ -484,17 +474,35 @@ export default function AdminPage() {
                   {dek && (
                     <p className="mt-3 font-serif text-base italic leading-relaxed text-ink-muted">{dek}</p>
                   )}
-                  {body && <BodyPreview body={body} />}
+                  {body && <ArticleProse body={body} />}
                 </div>
               )}
 
-              <div>
-                <label htmlFor="a-image" className={fieldLabel}>Image URL (optional)</label>
-                <Input
-                  id="a-image" value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://… or /images/…" className="mt-2"
-                />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="a-image" className={fieldLabel}>Image URL (optional)</label>
+                  <Input
+                    id="a-image" value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://… or /images/…" className="mt-2"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="a-image-alt" className={fieldLabel}>What the image shows</label>
+                  <Input
+                    id="a-image-alt" value={imageAlt}
+                    required={Boolean(imageUrl)}
+                    onChange={(e) => setImageAlt(e.target.value)}
+                    placeholder="A rugged wooden cross against a golden sky"
+                    className="mt-2"
+                  />
+                  {/* Describing the photograph is what a screen reader
+                      reads out and what image search indexes. Repeating
+                      the headline here tells neither of them anything. */}
+                  <p className="mt-2 font-sans text-xs text-ink-subtle">
+                    Describe the picture itself — not the headline again.
+                  </p>
+                </div>
               </div>
 
               <div className="border-t border-hairline pt-6">

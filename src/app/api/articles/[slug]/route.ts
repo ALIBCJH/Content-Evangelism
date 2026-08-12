@@ -6,6 +6,7 @@ import {
   updatePostedArticle,
   validateInput,
 } from '@/lib/posted'
+import { revalidatePublished } from '@/lib/revalidate'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,13 +44,19 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json({ error: message }, { status: result.status })
   }
   const { slug } = result.article
+  revalidatePublished(slug)
+  // An edit that changes the slug leaves the old URL cached behind it.
+  if (slug !== params.slug) revalidatePublished(params.slug)
   return NextResponse.json({ ok: true, slug, url: `/articles/${slug}` })
 }
 
 /** DELETE /api/articles/[slug] — remove an article (requires posting key). */
 export async function DELETE(request: Request, { params }: Params) {
   const status = await deletePostedArticle(params.slug, bearerToken(request))
-  if (status === 204) return NextResponse.json({ ok: true })
+  if (status === 204) {
+    revalidatePublished(params.slug)
+    return NextResponse.json({ ok: true })
+  }
   const error =
     status === 401 ? 'Invalid posting key.' : status === 404 ? 'Not found.' : 'Delete failed.'
   return NextResponse.json({ error }, { status })

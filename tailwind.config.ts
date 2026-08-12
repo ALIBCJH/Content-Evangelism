@@ -76,6 +76,7 @@ const config: Config = {
       },
       maxWidth: {
         shell: 'var(--shell)',
+        measure: 'var(--measure)',
       },
       boxShadow: {
         'glow-gold': '0 1px 2px rgba(12,30,58,0.10), 0 8px 22px -12px rgba(12,30,58,0.35)',

@@ -30,6 +30,12 @@ export interface Author {
   bio: string
   articles: number
   accent: ArtPalette
+  /**
+   * The editorial desk is a masthead, not a person. Structured data has to
+   * say so: crediting an unsigned teaching to a Person that does not exist
+   * is exactly the kind of authorship claim Google is now checking.
+   */
+  kind?: 'person' | 'desk'
 }
 
 export type Category =
@@ -127,6 +133,7 @@ export const authors: Author[] = [
     bio: 'Unsigned teachings from the publication desk of the ministry.',
     articles: 12,
     accent: 'flame',
+    kind: 'desk',
   },
 ]
 
@@ -224,3 +231,50 @@ export const siteInfo = {
   readers: '84,000',
   nations: 61,
 }
+
+/* ── Topics ──────────────────────────────────────────────────────── */
+
+/**
+ * Every category is also a landing page at /topics/<slug>. These pages are
+ * the ranking surface for the five sections that have no place in the top
+ * navigation — Oracles, Devotional, Doctrine, Church History, Testimony —
+ * and they exist only while a category actually has published pieces.
+ */
+export const categorySlug = (category: Category): string =>
+  category.toLowerCase().replace(/\s+/g, '-')
+
+export const categoryFromSlug = (slug: string): Category | null =>
+  CATEGORIES.find((category) => categorySlug(category) === slug) ?? null
+
+export const topicHref = (category: Category): string =>
+  `/topics/${categorySlug(category)}`
+
+/** The one line a topic page leads with, and its meta description. */
+export const categoryBlurb: Record<Category, string> = {
+  Teachings:
+    'Expositions and sermons from the Ministry of Repentance and Holiness — the Scriptures opened for the church.',
+  Prophecy:
+    'The prophetic record of the ministry, read with sobriety — every word weighed and tested against Scripture.',
+  Oracles:
+    'The oracles of the LORD as they were given, set down plainly and kept on the record.',
+  Devotional:
+    'Short readings for the quiet hours — prayer, waiting, and the daily walk with the Lord.',
+  Doctrine:
+    'The creeds, the covenants, and the character of God, taught carefully for the whole church.',
+  'Church History':
+    'The two-thousand-year story of the church, told as though it happened yesterday.',
+  Testimony:
+    'What the Lord has done, in the words of the people He did it for.',
+}
+
+/* ── Authors ─────────────────────────────────────────────────────── */
+
+/**
+ * Articles store an author's display name, not an id, so the byline is the
+ * join key back to the author table. Returns undefined for a name that has
+ * no profile — the byline still renders, it simply does not link out.
+ */
+export const authorByName = (name: string): Author | undefined =>
+  authors.find((author) => author.name === name)
+
+export const authorHref = (author: Author): string => `/authors/${author.id}`

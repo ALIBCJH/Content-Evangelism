@@ -30,8 +30,14 @@
   --gold-light: #E8B923;
   --gold-dark: #B8860B;
 
-  /* Reading measure. The reference sets every shell to this width. */
-  --shell: 62rem;
+  /* Two widths, and only two.
+
+     --shell is the page: the masthead, the footer, and every listing sit
+     inside it, so those three always share one margin. --measure is the
+     reading column: the width running prose is set to, and nothing else.
+     Widening the page therefore never widens a paragraph. */
+  --shell: 68rem;
+  --measure: 44rem;
 
   /* ── Semantic tokens ───────────────────────────────────────────── */
 

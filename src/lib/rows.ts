@@ -17,6 +17,7 @@ export interface RealRow {
   publishedAt: string
   readMinutes: number
   imageUrl?: string
+  imageAlt?: string
   art: ArticleArtSpec
   /** Search haystack (body included for posted pieces). */
   text: string
@@ -37,6 +38,7 @@ export async function listRealRows(): Promise<RealRow[]> {
       publishedAt: a.publishedAt,
       readMinutes: a.readMinutes,
       imageUrl: a.imageUrl,
+      imageAlt: a.imageAlt,
       art: categoryArt[a.category],
       text: `${a.title}\n${a.dek}\n${a.body}`.toLowerCase(),
       body: a.body,
@@ -51,9 +53,32 @@ export async function listRealRows(): Promise<RealRow[]> {
       publishedAt: crossArticle.publishedAt,
       readMinutes: crossArticle.readMinutes,
       imageUrl: crossArticle.image?.src,
+      imageAlt: crossArticle.image?.alt,
       art: crossArticle.art,
       text: `${crossArticle.title}\n${crossArticle.dek}`.toLowerCase(),
     },
   ]
   return rows.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+}
+
+/**
+ * What to read after a given piece.
+ *
+ * Everything filed under the same section comes first, then the newest of
+ * the rest — both halves are already newest-first, because `listRealRows`
+ * sorted them. That is as much relatedness as the content model actually
+ * knows, and it is real: a reader who has just finished a teaching is
+ * offered the other teachings before the oracles.
+ */
+export function relatedRows(
+  rows: RealRow[],
+  slug: string,
+  category: Category,
+  limit = 3
+): RealRow[] {
+  const others = rows.filter((row) => row.slug !== slug)
+  return [
+    ...others.filter((row) => row.category === category),
+    ...others.filter((row) => row.category !== category),
+  ].slice(0, limit)
 }

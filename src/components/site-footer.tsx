@@ -1,7 +1,8 @@
 import * as React from 'react'
-import { RadioTower } from 'lucide-react'
+import Link from 'next/link'
+import { RadioTower, Rss } from 'lucide-react'
 import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
-import { channels, siteInfo } from '@/lib/content'
+import { channels, navSections, siteInfo } from '@/lib/content'
 
 const channelIcons = {
   radio: RadioTower,
@@ -17,13 +18,17 @@ const channelHover: Record<string, string> = {
 }
 
 /**
- * The footer is the ministry's three channels and nothing else.
+ * The footer is the ministry's three channels, and a hairline of links.
  *
- * The epigraph, the brand column, and the list of sections were all removed:
- * the sections are already in the menu, and the archive says what the site is
- * far better than a paragraph about it. What remains is the one thing the
- * footer is genuinely for — leaving for the radio, the videos, or a share —
- * so each channel gets a full card rather than a line in a list.
+ * The epigraph, the brand column, and the stacked list of sections stay
+ * gone: the archive says what the site is far better than a paragraph
+ * about it, and each channel keeps a full card rather than a line in a
+ * list. What came back is one quiet row of text in the legal bar.
+ *
+ * It earns its place. Without it the masthead was the only internal
+ * linking on the entire site, so every page had exactly one route onward
+ * and link equity had nowhere to circulate. A single row of small type
+ * costs the design nothing and gives every page a second way out.
  */
 export function SiteFooter() {
   return (
@@ -64,11 +69,41 @@ export function SiteFooter() {
         </ul>
       </div>
 
-      <div className="shell flex flex-wrap gap-4 border-t border-sky/20 pb-10 pt-6 font-sans text-xs tracking-[0.04em]">
-        <span>
-          © {new Date().getFullYear()} {siteInfo.ministry}
-        </span>
-        <span className="text-gold sm:ms-auto">#PrepareTheWayTheMessiahIsComing</span>
+      <div className="shell border-t border-sky/20 pb-10 pt-6 font-sans text-xs tracking-[0.04em]">
+        <nav aria-label="Footer">
+          <ul className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            {navSections.map((section) => (
+              <li key={section.href}>
+                <Link
+                  href={section.href}
+                  className="focus-ring text-sky/85 transition-colors hover:text-gold"
+                >
+                  {section.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/search" className="focus-ring text-sky/85 transition-colors hover:text-gold">
+                Search
+              </Link>
+            </li>
+            <li>
+              <a
+                href="/feed.xml"
+                className="focus-ring inline-flex items-center gap-1.5 text-sky/85 transition-colors hover:text-gold"
+              >
+                <Rss aria-hidden className="h-3 w-3" />
+                RSS
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <div className="mt-6 flex flex-wrap gap-4 border-t border-sky/12 pt-5">
+          <span>
+            © {new Date().getFullYear()} {siteInfo.ministry}
+          </span>
+          <span className="text-gold sm:ms-auto">#PrepareTheWayTheMessiahIsComing</span>
+        </div>
       </div>
     </footer>
   )

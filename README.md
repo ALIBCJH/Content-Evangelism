@@ -45,11 +45,25 @@ they share the `.next` directory and will corrupt each other. If you see
 | --- | --- |
 | `/` | The archive — the whole site |
 | `/articles/<slug>` | One article |
+| `/topics/<slug>` | One section, e.g. `/topics/oracles` |
+| `/authors/<id>` | A byline and everything under it |
+| `/teachings`, `/prophecies`, `/about` | Coming Soon placards |
 | `/search` | Search across published pieces |
 | `/admin` | The posting desk |
+| `/feed.xml`, `/sitemap.xml`, `/robots.txt` | For machines |
 
-`/articles`, `/about` and `/category/*` are permanent redirects to `/`;
-they were removed when the site was cut down to the archive.
+`/articles` is a permanent redirect to `/`, and `/category/*` redirects to
+the matching `/topics/*`.
+
+Topic and author pages exist only while something is actually filed under
+them, and 404 otherwise — so the sitemap never advertises an empty page.
+The three Coming Soon placards carry `noindex` and stay out of the
+sitemap; delete the `robots` line in each page's metadata the day it
+opens.
+
+Everything reader-facing is statically cached and refreshed every five
+minutes, and the posting desk revalidates on publish, so a new article is
+live immediately.
 
 ## Where things live
 
@@ -68,9 +82,26 @@ they were removed when the site was cut down to the archive.
 ## The light CMS backend
 
 Articles can be posted from the browser at **`/admin`** ("The Posting Desk") —
-title, category, summary, body (blank line = paragraph, `## ` = subheading),
-optional image URL, and the posting key. Published pieces appear at
-`/articles/<slug>` and at the top of the archive on `/`.
+title, category, summary, body, an optional image (with a description of
+what it shows, which is required once an image is set), and the posting
+key. Published pieces appear at `/articles/<slug>` and at the top of the
+archive on `/`.
+
+The body is plain text with a small grammar (`src/lib/article-body.ts`):
+
+```
+Blank line separates paragraphs.
+
+## A subheading
+
+> Quoted Scripture, one or more lines
+> — Isaiah 40:3
+
+- a bullet          1. or a numbered item
+
+Link a phrase with [the cross](/articles/the-cross-of-jesus),
+and emphasise with *italic* or **bold**.
+```
 
 API (same deployment, Next.js route handlers):
 
@@ -97,6 +128,24 @@ Storage is auto-detected in `src/lib/posted.ts`:
    into `/admin`. (Locally it defaults to `change-me`.)
 3. Attach an Upstash Redis store (Storage tab) so published articles
    persist across deployments.
+
+## Search-engine configuration
+
+All optional — each one is simply omitted when unset, because a guessed
+handle or an invented profile URL points crawlers at an account the
+ministry does not own.
+
+| Variable | What it does |
+| --- | --- |
+| `GOOGLE_SITE_VERIFICATION` | The token from Search Console. Set this first — nothing else can be measured until the property is verified and the sitemap submitted. |
+| `SOCIAL_PROFILES` | Comma-separated official profile URLs (Facebook, X, Instagram…). They join YouTube and the radio station in the Organization `sameAs` set, which is what ties this domain to the ministry as an entity. |
+| `TWITTER_HANDLE` | Including the `@`. Fills `twitter:site` / `twitter:creator`. |
+| `CONTACT_EMAIL` | Published as the Organization `contactPoint`. |
+| `IMAGE_HOSTS` | Comma-separated hostnames the image optimizer may resize for (`cdn.example.com`, or `*.example.com`). Empty by default: every image the site ships is local, and an optimizer open to everything is a free resizing service for the whole internet. The posting desk rejects an unlisted host up front. |
+
+Structured data lives in `src/app/layout.tsx` (Organization + WebSite),
+`src/components/breadcrumbs.tsx`, `src/components/archive/archive-view.tsx`
+(CollectionPage + ItemList), and each article and author page.
 
 ## Theming
 

@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { CATEGORIES, type Category } from '@/lib/content'
+import { isAllowedImageHost } from '@/lib/seo'
 
 export { CATEGORIES }
 
@@ -27,6 +28,8 @@ export interface PostedArticle {
   /** Plain text. Blank line = new paragraph; a line starting with "## " = subheading. */
   body: string
   imageUrl?: string
+  /** What the image shows, for screen readers and image search. */
+  imageAlt?: string
   publishedAt: string
   /** Set on every edit; absent from articles written before the field shipped. */
   updatedAt?: string
@@ -40,6 +43,7 @@ export interface ArticleInput {
   authorName: string
   body: string
   imageUrl?: string
+  imageAlt?: string
 }
 
 export interface WriteResult {
@@ -141,6 +145,7 @@ export async function createPostedArticle(
     authorName: input.authorName,
     body: input.body,
     imageUrl: input.imageUrl,
+    imageAlt: input.imageAlt,
     publishedAt: now,
     updatedAt: now,
     readMinutes: readMinutes(input.body),
@@ -206,6 +211,7 @@ export function validateInput(
   const authorName = String(payload.authorName ?? '').trim() || 'The Editorial Desk'
   const category = String(payload.category ?? '') as Category
   const imageUrl = String(payload.imageUrl ?? '').trim()
+  const imageAlt = String(payload.imageAlt ?? '').trim()
 
   if (title.length < 3) return { error: 'A title is required.' }
   if (dek.length < 10) return { error: 'A summary (dek) of at least 10 characters is required.' }
@@ -216,5 +222,22 @@ export function validateInput(
   if (imageUrl && !/^(https:\/\/|\/)/.test(imageUrl)) {
     return { error: 'Image URL must start with https:// (or / for a local image).' }
   }
-  return { input: { title, dek, category, authorName, body, imageUrl: imageUrl || undefined } }
+  // The optimizer only resizes allowlisted hosts, so an unlisted one would
+  // publish an article that 500s on load. Catch it here instead.
+  if (imageUrl.startsWith('https://') && !isAllowedImageHost(imageUrl)) {
+    return {
+      error:
+        'That image host is not allowed. Upload the image to /public/images instead, or add the host to IMAGE_HOSTS.',
+    }
+  }
+  if (imageUrl && !imageAlt) {
+    return { error: 'Describe the image in a few words so readers using a screen reader know what it shows.' }
+  }
+  return {
+    input: {
+      title, dek, category, authorName, body,
+      imageUrl: imageUrl || undefined,
+      imageAlt: imageAlt || undefined,
+    },
+  }
 }

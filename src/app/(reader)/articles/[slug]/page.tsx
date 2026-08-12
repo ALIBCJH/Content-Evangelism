@@ -1,25 +1,34 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Cross } from 'lucide-react'
-import { siteInfo, siteUrl } from '@/lib/content'
-import { getPostedArticle } from '@/lib/posted'
-import { listRealRows } from '@/lib/rows'
-import { extractHeadings, headingId } from '@/lib/toc'
-import { StudyMargin } from '@/components/study-margin'
-import { ArticleGate } from '@/components/article-gate'
-import { Breadcrumbs } from '@/components/breadcrumbs'
+import {
+  authorByName,
+  authorHref,
+  categoryBlurb,
+  siteInfo,
+  siteUrl,
+} from '@/lib/content'
+import { getPostedArticle, listPostedArticles } from '@/lib/posted'
+import { listRealRows, relatedRows } from '@/lib/rows'
+import { bodyToPlainText, wordCount } from '@/lib/article-body'
+import { schemaImage } from '@/lib/images'
+import { rssAlternate } from '@/lib/seo'
+import { extractHeadings } from '@/lib/toc'
+import { ArticleLayout } from '@/components/article-layout'
+import { ArticleProse } from '@/components/article-prose'
 import { JsonLd } from '@/components/json-ld'
-import { Badge } from '@/components/ui/badge'
-import { FadeIn } from '@/components/motion'
-import { ReadingProgress } from '@/components/progress-bar'
-import { ReadNext } from '@/components/read-next'
-import { ShareRow } from '@/components/share-row'
 
-export const dynamic = 'force-dynamic'
+/* Articles are rendered once and served from the cache, refreshed every
+   five minutes and immediately on publish or edit. Under force-dynamic
+   every crawler hit re-rendered the page and re-read the store from disk,
+   which is paid for in time-to-first-byte on every single request. */
+export const revalidate = 300
+
+/** Everything already published is built ahead of time; later pieces are
+ *  rendered on first request and then cached the same way. */
+export async function generateStaticParams() {
+  return (await listPostedArticles()).map((article) => ({ slug: article.slug }))
+}
 
 interface Params {
   params: { slug: string }
@@ -27,20 +36,27 @@ interface Params {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const article = await getPostedArticle(params.slug)
-  if (!article) return { title: 'Article not found' }
+  if (!article) return { title: 'Article not found', robots: { index: false, follow: false } }
+
+  const author = authorByName(article.authorName)
   return {
     title: article.title,
     description: article.dek,
-    alternates: { canonical: `/articles/${article.slug}` },
+    keywords: [article.category, 'Ministry of Repentance and Holiness', siteInfo.head],
+    authors: [
+      author ? { name: author.name, url: `${siteUrl}${authorHref(author)}` } : { name: article.authorName },
+    ],
+    alternates: { canonical: `/articles/${article.slug}`, types: rssAlternate },
     openGraph: {
       type: 'article',
       title: article.title,
       description: article.dek,
       url: `/articles/${article.slug}`,
       publishedTime: article.publishedAt,
-      ...(article.updatedAt ? { modifiedTime: article.updatedAt } : {}),
+      modifiedTime: article.updatedAt ?? article.publishedAt,
       authors: [article.authorName],
       section: article.category,
+      tags: [article.category],
     },
     twitter: {
       card: 'summary_large_image',
@@ -50,68 +66,59 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 }
 
-/** Renders the plain-text body: blank line = paragraph, "## " = subheading. */
-function ArticleBody({ body }: { body: string }) {
-  const blocks = body
-    .split(/\n\s*\n/)
-    .map((block) => block.trim())
-    .filter(Boolean)
-
-  let firstParagraphSeen = false
-  return (
-    <>
-      {blocks.map((block, index) => {
-        if (block.startsWith('## ')) {
-          const text = block.slice(3).trim()
-          return (
-            <h2
-              key={index}
-              id={headingId(text)}
-              className="mt-12 scroll-mt-24 font-display text-2xl font-semibold leading-snug text-ink-strong md:text-3xl"
-            >
-              {text}
-            </h2>
-          )
-        }
-        const isFirst = !firstParagraphSeen
-        firstParagraphSeen = true
-        return (
-          <p
-            key={index}
-            className={`mt-6 font-serif text-lg leading-[1.85] text-ink-muted ${isFirst ? 'dropcap' : ''}`}
-          >
-            {block}
-          </p>
-        )
-      })}
-    </>
-  )
-}
-
 export default async function PostedArticlePage({ params }: Params) {
   const article = await getPostedArticle(params.slug)
   if (!article) notFound()
 
-  const readNext = (await listRealRows())
-    .filter((row) => row.slug !== article.slug)
-    .slice(0, 3)
+  const related = relatedRows(await listRealRows(), article.slug, article.category)
+
+  const url = `${siteUrl}/articles/${article.slug}`
+  const author = authorByName(article.authorName)
+  const image = article.imageUrl
+    ? await schemaImage(article.imageUrl, article.imageAlt)
+    : null
 
   const articleLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    '@id': `${siteUrl}/articles/${article.slug}`,
-    mainEntityOfPage: `${siteUrl}/articles/${article.slug}`,
+    '@id': `${url}#article`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    url,
     headline: article.title,
     description: article.dek,
     articleSection: article.category,
+    /* The full text, so an AI engine answering a question about this
+       teaching quotes the teaching rather than the summary. */
+    articleBody: bodyToPlainText(article.body),
+    wordCount: wordCount(article.body),
+    keywords: [article.category, siteInfo.ministry].join(', '),
     datePublished: article.publishedAt,
-    ...(article.updatedAt ? { dateModified: article.updatedAt } : {}),
+    dateModified: article.updatedAt ?? article.publishedAt,
     timeRequired: `PT${article.readMinutes}M`,
-    author: { '@type': 'Person', name: article.authorName },
+    /* A named author with a profile to point at is what E-E-A-T rests on;
+       an unattributed piece is credited to the ministry itself. */
+    author:
+      author && author.kind !== 'desk'
+        ? {
+            '@type': 'Person',
+            '@id': `${siteUrl}${authorHref(author)}#person`,
+            name: author.name,
+            url: `${siteUrl}${authorHref(author)}`,
+            jobTitle: author.role,
+            worksFor: { '@id': `${siteUrl}/#ministry` },
+          }
+        : {
+            '@type': 'Organization',
+            '@id': `${siteUrl}/#ministry`,
+            name: siteInfo.ministry,
+            ...(author ? { url: `${siteUrl}${authorHref(author)}` } : {}),
+          },
     publisher: { '@id': `${siteUrl}/#ministry`, '@type': 'Organization', name: siteInfo.ministry },
     isPartOf: { '@id': `${siteUrl}/#website` },
     inLanguage: 'en',
-    ...(article.imageUrl ? { image: [`${siteUrl}${article.imageUrl}`] } : {}),
+    isAccessibleForFree: true,
+    about: { '@type': 'Thing', name: article.category, description: categoryBlurb[article.category] },
+    ...(image ? { image: [image], thumbnailUrl: image.url } : {}),
   }
 
   const headings = extractHeadings(article.body)
@@ -119,92 +126,24 @@ export default async function PostedArticlePage({ params }: Params) {
   return (
     <>
       <JsonLd data={articleLd} />
-      <ReadingProgress />
-      <main className="xl:mx-auto xl:grid xl:max-w-[88rem] xl:grid-cols-[15rem_minmax(0,1fr)_15rem] xl:gap-6 xl:px-8">
-        {/* The study margin fills the once-empty left column on desktop. */}
-        <aside className="hidden xl:block" aria-label="Study margin">
-          <div className="sticky top-24 pt-10">
-            <StudyMargin headings={headings} title={article.title} />
-          </div>
-        </aside>
-        {/* An article is printed on cloth, the way the archive shows it. */}
-        <article className="cloth mx-auto my-6 w-full max-w-3xl px-5 pb-16 pt-10 sm:px-10 md:pb-20 md:my-10">
-          <FadeIn>
-            <header className="text-center">
-              <Breadcrumbs
-                className="mb-5"
-                crumbs={[
-                  { name: 'Archive', href: '/' },
-                  { name: article.category },
-                  { name: article.title },
-                ]}
-              />
-              <Badge variant="gold" size="sm">{article.category}</Badge>
-              <h1 className="mx-auto mt-5 max-w-2xl font-display text-3xl font-semibold leading-[1.12] tracking-tight text-ink-strong sm:text-4xl md:text-5xl">
-                {article.title}
-              </h1>
-              <p className="mx-auto mt-6 max-w-2xl font-serif text-lg italic leading-relaxed text-ink-muted">
-                {article.dek}
-              </p>
-              <p className="mt-7 font-sans text-xs text-ink-subtle">
-                <span className="font-semibold text-ink-muted">{article.authorName}</span>
-                <span aria-hidden className="mx-2">·</span>
-                <time dateTime={article.publishedAt}>
-                  {format(parseISO(article.publishedAt), 'd MMM yyyy')}
-                </time>
-                <span aria-hidden className="mx-2">·</span>
-                <span className="tabular">{article.readMinutes} min read</span>
-              </p>
-              <ShareRow title={article.title} className="mt-6" />
-            </header>
-
-            {article.imageUrl && (
-              <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-sm border border-hairline">
-                <Image
-                  src={article.imageUrl}
-                  alt={article.title}
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 48rem, 100vw"
-                  className="object-cover"
-                />
-              </figure>
-            )}
-
-            <div className="mx-auto mt-12 max-w-2xl">
-              {/* Short pieces read straight through; longer ones open the
-                  reading gate — a taste, a blur, one Read More. */}
-              {article.body.length > 1200 ? (
-                <ArticleGate>
-                  <ArticleBody body={article.body} />
-                </ArticleGate>
-              ) : (
-                <ArticleBody body={article.body} />
-              )}
-
-              <div className="mt-14 border-t border-hairline pt-8">
-                <div className="ornament mx-auto max-w-xs">
-                  <Cross className="h-4 w-4" strokeWidth={1.5} />
-                </div>
-                <ShareRow title={article.title} className="mt-8" />
-                <div className="mt-10 flex justify-center">
-                  <Link
-                    href="/"
-                    className="group inline-flex items-center gap-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
-                  >
-                    <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
-                    All articles
-                  </Link>
-                </div>
-              </div>
-
-              <ReadNext rows={readNext} />
-            </div>
-          </FadeIn>
-        </article>
-        {/* Right spacer mirrors the rail so the reading column stays centered. */}
-        <div aria-hidden className="hidden xl:block" />
-      </main>
+      <ArticleLayout
+        category={article.category}
+        title={article.title}
+        dek={article.dek}
+        author={{
+          name: author?.name ?? article.authorName,
+          ...(author ? { href: authorHref(author) } : {}),
+        }}
+        publishedAt={article.publishedAt}
+        readMinutes={article.readMinutes}
+        {...(article.imageUrl
+          ? { hero: { src: article.imageUrl, alt: article.imageAlt ?? '' } }
+          : {})}
+        headings={headings}
+        related={related}
+      >
+        <ArticleProse body={article.body} />
+      </ArticleLayout>
     </>
   )
 }

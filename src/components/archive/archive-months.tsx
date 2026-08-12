@@ -15,6 +15,7 @@ export interface ArchivePiece {
   open: string
   /** Scripture reference, or the section it belongs to. */
   ref: string
+  readMinutes: number
 }
 
 export interface ArchiveMonth {
@@ -156,7 +157,7 @@ export function ArchiveMonths({
         return (
         <section
           key={month.label}
-          className={`grid grid-cols-1 items-start gap-4 md:grid-cols-[8.5rem_1fr] md:gap-8 ${monthIndex === 0 ? "pt-2" : "pt-10 md:pt-12"}`}
+          className={`grid grid-cols-1 items-start gap-4 md:grid-cols-[10rem_1fr] md:gap-10 ${monthIndex === 0 ? "pt-2" : "pt-10 md:pt-12"}`}
         >
           <h2 className="kicker sticky top-24 border-b border-thread pb-3 pt-1 font-semibold text-gold md:border-0 md:pb-0">
             {month.label}
@@ -172,32 +173,42 @@ export function ArchiveMonths({
                 key={piece.key}
                 href={piece.href}
                 {...pillHandlers}
-                className="piece -mx-4 block border-b border-thread px-4 py-6 last:border-b-0 first:pt-1 hover:bg-sand md:-mx-5 md:px-5 md:py-7"
+                className="piece group -mx-4 block border-b border-thread px-4 py-6 first:pt-1 last:border-b-0 hover:bg-sand md:-mx-5 md:px-5"
               >
-                <time
-                  dateTime={piece.publishedAt}
-                  data-shift="trail"
-                  className="kicker mb-2 block text-ink-subtle"
-                >
-                  {piece.dateLabel}
-                </time>
+                <span data-shift="trail" className="kicker mb-2 block text-ink-subtle">
+                  <time dateTime={piece.publishedAt}>{piece.dateLabel}</time>
+                  <span aria-hidden className="mx-2 text-thread">·</span>
+                  <span className="tabular normal-case tracking-[0.09em]">
+                    {piece.readMinutes} min read
+                  </span>
+                </span>
                 <h3
                   data-shift="lead"
-                  className="mb-2.5 font-display text-[1.35rem] font-normal leading-[1.18] tracking-[-0.012em] text-ink-strong sm:text-[1.55rem]"
+                  className="mb-2.5 max-w-[34ch] text-balance font-display text-[1.35rem] font-normal leading-[1.18] tracking-[-0.012em] text-ink-strong sm:text-[1.55rem]"
                 >
                   {piece.title}
                 </h3>
+                {/* Three lines, so every row is the same size and the page
+                    is a list to choose from rather than a stack of part
+                    articles. The whole piece is one click away. */}
                 <p
                   data-shift="trail"
-                  className="mb-3 text-[1.0625rem] leading-[1.62] text-ink-muted sm:text-lg"
+                  className="mb-4 max-w-[62ch] text-[1.0625rem] leading-[1.62] text-ink-muted line-clamp-3 sm:text-lg"
                 >
                   {piece.open}
                 </p>
                 <span
                   data-shift="trail"
-                  className="block font-sans text-[0.6875rem] uppercase tracking-[0.11em] text-gold"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1.5 font-sans text-[0.6875rem] uppercase tracking-[0.11em]"
                 >
-                  {piece.ref}
+                  <span className="text-gold">{piece.ref}</span>
+                  {/* The row is the link; this is the affordance that says
+                      so on a touch screen, where the cursor pill never
+                      appears. */}
+                  <span className="inline-flex items-center gap-1.5 text-ink-subtle transition-colors group-hover:text-ink sm:ms-auto">
+                    Read the whole article
+                    <span aria-hidden>&rarr;</span>
+                  </span>
                 </span>
               </Link>
             ))}

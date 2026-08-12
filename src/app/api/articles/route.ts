@@ -5,6 +5,7 @@ import {
   listPostedArticles,
   validateInput,
 } from '@/lib/posted'
+import { revalidatePublished } from '@/lib/revalidate'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,5 +37,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: result.status })
   }
   const { slug } = result.article
+  revalidatePublished(slug)
   return NextResponse.json({ ok: true, slug, url: `/articles/${slug}` }, { status: 201 })
 }

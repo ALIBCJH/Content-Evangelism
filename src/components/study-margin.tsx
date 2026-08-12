@@ -6,11 +6,19 @@ import type { Heading } from '@/lib/toc'
 import { WhatsAppIcon } from '@/components/brand-icons'
 
 /**
- * The study margin: a desktop-only rail beside the article that turns the
- * empty left column into a companion — chapter list (scroll-spy'd), how
- * far you've read, and quick sharing. Chapter clicks first ask the
- * reading gate to open (via the 'rptw:reveal' event), then glide to the
- * heading once the unfold has begun.
+ * The study margin: a desktop rail beside the article that turns the once
+ * empty left column into a reading companion — the chapter list, how far
+ * through you are, and the two ways to pass it on.
+ *
+ * The chapters are anchors, not buttons. They used to be buttons because
+ * the body was collapsed behind a reading gate and had to be asked to
+ * open before anything could be scrolled to; with the gate gone the whole
+ * teaching is simply on the page, so an `href="#chapter"` does the work —
+ * and does it for a crawler, a keyboard, and a middle click too, none of
+ * which a click handler serves.
+ *
+ * Only the state is client-side: which chapter is in view, and how far
+ * down the page the reader has come.
  */
 export function StudyMargin({ headings, title }: { headings: Heading[]; title: string }) {
   const [activeId, setActiveId] = React.useState<string | null>(null)
@@ -34,7 +42,11 @@ export function StudyMargin({ headings, title }: { headings: Heading[]; title: s
     }
     measure()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
   // Scroll-spy: the last heading above the viewport's upper third leads.
@@ -62,15 +74,6 @@ export function StudyMargin({ headings, title }: { headings: Heading[]; title: s
     return () => window.removeEventListener('scroll', onScroll)
   }, [headings])
 
-  const goTo = (id: string) => {
-    window.dispatchEvent(new Event('rptw:reveal'))
-    // Travel only after the gate's 0.8s unfold settles — scrolling while
-    // the page height is still animating lands short of the heading.
-    window.setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 850)
-  }
-
   const share = () => {
     const url = window.location.href
     window.open(
@@ -90,27 +93,38 @@ export function StudyMargin({ headings, title }: { headings: Heading[]; title: s
     }
   }
 
+  /* One chapter is not a structure worth printing — the same threshold
+     ArticleContents applies, so the rail and the in-flow list agree. */
+  const hasChapters = headings.length > 1
+
   return (
     <div className="w-56">
-      {headings.length > 0 && (
-        <nav aria-label="In this article">
+      {hasChapters && (
+        <nav aria-label="In this teaching">
           <p className="kicker text-gold">In this teaching</p>
-          <ol className="mt-4 space-y-1 border-l border-hairline">
-            {headings.map((heading) => {
+          <ol className="mt-4 border-l border-hairline">
+            {headings.map((heading, index) => {
               const active = heading.id === activeId
               return (
                 <li key={heading.id}>
-                  <button
-                    type="button"
-                    onClick={() => goTo(heading.id)}
-                    className={`focus-ring -ml-px block w-full border-l-2 py-1.5 pl-4 pr-2 text-left font-sans text-[0.8125rem] leading-snug transition-colors ${
+                  <a
+                    href={`#${heading.id}`}
+                    /* The gold edge is the position marker, but colour is
+                       never the only signal — the active chapter is also
+                       the only one set in the strong ink, and it is the
+                       one the page is currently on. */
+                    aria-current={active ? 'true' : undefined}
+                    className={`focus-ring -ml-px flex items-baseline gap-2.5 border-l-2 py-1.5 pl-4 pr-2 font-sans text-[0.8125rem] leading-snug transition-colors ${
                       active
                         ? 'border-gold font-semibold text-ink-strong'
                         : 'border-transparent text-ink-muted hover:border-hairline-strong hover:text-ink'
                     }`}
                   >
-                    {heading.text}
-                  </button>
+                    <span aria-hidden className="tabular text-[0.6875rem] text-ink-subtle">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="min-w-0">{heading.text}</span>
+                  </a>
                 </li>
               )
             })}
@@ -118,13 +132,23 @@ export function StudyMargin({ headings, title }: { headings: Heading[]; title: s
         </nav>
       )}
 
-      <div className={headings.length > 0 ? 'mt-8 border-t border-hairline pt-6' : ''}>
+      <div className={hasChapters ? 'mt-8 border-t border-hairline pt-6' : ''}>
         <div className="flex items-baseline justify-between">
           <p className="kicker text-ink-subtle">Your reading</p>
           <span className="tabular font-sans text-xs font-semibold text-gold">{percent}%</span>
         </div>
-        <div className="mt-3 h-[3px] overflow-hidden rounded-full bg-surface-3">
-          <div className="h-full rounded-full bg-gold transition-[width] duration-200" style={{ width: `${percent}%` }} />
+        <div
+          className="mt-3 h-[3px] overflow-hidden rounded-full bg-surface-3"
+          role="progressbar"
+          aria-label="Reading progress"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full bg-gold transition-[width] duration-200"
+            style={{ width: `${percent}%` }}
+          />
         </div>
       </div>
 
@@ -147,7 +171,9 @@ export function StudyMargin({ headings, title }: { headings: Heading[]; title: s
           >
             {copied ? <Check className="h-4 w-4 text-status-success" /> : <Link2 className="h-4 w-4" />}
           </button>
-          {copied && <span className="font-sans text-xs text-status-success">Copied</span>}
+          <span aria-live="polite" className="font-sans text-xs text-status-success">
+            {copied ? 'Copied' : ''}
+          </span>
         </div>
       </div>
     </div>

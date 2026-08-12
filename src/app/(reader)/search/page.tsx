@@ -10,17 +10,17 @@ interface Props {
   searchParams: { q?: string }
 }
 
-/* The search page itself is indexable; result pages (?q=…) are thin,
-   query-shaped duplicates of the articles they list — Google's guidance
-   is to keep internal search results out of the index. */
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const query = (searchParams.q ?? '').trim()
-  return {
-    title: 'Search',
-    description: 'Search the archive of Repent and Prepare the Way.',
-    alternates: { canonical: '/search' },
-    ...(query ? { robots: { index: false, follow: true } } : {}),
-  }
+/* Internal search is a reader's tool, not a landing page: the shell has
+   no content of its own and the result pages are thin, query-shaped
+   duplicates of the articles they list. Both carry noindex — and it is
+   noindex rather than a robots.txt disallow, because a URL that cannot be
+   crawled cannot be read to discover it should not be indexed. Crawling
+   stays open so the links out of here still pass through. */
+export const metadata: Metadata = {
+  title: 'Search',
+  description: 'Search the archive of Repent and Prepare the Way.',
+  alternates: { canonical: '/search' },
+  robots: { index: false, follow: true },
 }
 
 export default async function SearchPage({ searchParams }: Props) {

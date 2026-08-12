@@ -1,7 +1,10 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import { listRealRows } from '@/lib/rows'
+import { CATEGORIES, siteUrl, topicHref, type Category } from '@/lib/content'
+import { listRealRows, type RealRow } from '@/lib/rows'
+import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
+import { JsonLd } from '@/components/json-ld'
 import { Opener } from '@/components/archive/opener'
 import {
   ArchiveMonths,
@@ -26,6 +29,48 @@ export interface ArchiveViewProps {
   purpose?: string
   /** Shown when nothing has been published yet. */
   emptyMessage: string
+  /** Narrows the listing; omitted means the whole archive. */
+  filter?: (row: RealRow) => boolean
+  /** Breadcrumb trail above the header, for listings below the root. */
+  crumbs?: Crumb[]
+  /**
+   * Emits CollectionPage + ItemList structured data. A listing page that
+   * declares what it lists, in order, is what lets Google carry the whole
+   * set into a result rather than treating the page as loose prose.
+   */
+  collection?: { name: string; description: string; path: string }
+}
+
+/**
+ * Links to every section that has something filed under it.
+ *
+ * The topic pages are the only ranking surface the five off-menu sections
+ * have, and nothing on the site linked to them except a breadcrumb on an
+ * article a reader had already found. The archive is the most linked page
+ * here, so this is where they belong.
+ */
+function TopicStrip({ categories }: { categories: Category[] }) {
+  if (categories.length < 2) return null
+  return (
+    /* A ruled band rather than a paragraph of links: it reads as the
+       section bar of a publication, and it closes the masthead in one
+       rule instead of the two that used to stack here. */
+    <nav aria-label="Sections" className="mb-10 border-y border-thread py-3.5">
+      <ul className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+        <li className="kicker text-ink-subtle">Sections</li>
+        {categories.map((category) => (
+          <li key={category}>
+            <Link
+              href={topicHref(category)}
+              className="focus-ring font-sans text-[0.8125rem] tracking-[0.04em] text-ink-muted transition-colors hover:text-gold"
+            >
+              {category}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
 }
 
 /** The opening line of a piece — what the reader sees in the archive. */
@@ -43,26 +88,29 @@ function Shell({
   title,
   purpose,
   count,
+  crumbs,
   children,
 }: {
   kicker: string
   title: string
   purpose?: string
   count?: number
+  crumbs?: Crumb[]
   children: React.ReactNode
 }) {
   return (
     <main className="shell pb-8">
       <header className="pt-12 md:pt-16">
+        {crumbs && <Breadcrumbs className="mb-5 [&_ol]:justify-start" crumbs={crumbs} />}
         <p className="kicker mb-4 text-ink-subtle">
           {kicker}
           {count !== undefined && ` · ${count} ${count === 1 ? 'piece' : 'pieces'}`}
         </p>
-        <h1 className="mb-4 font-display text-[2.4rem] font-light leading-[1.04] tracking-[-0.02em] text-ink-strong sm:text-[3rem] md:text-[3.4rem]">
+        <h1 className="mb-4 max-w-[18ch] text-balance font-display text-[2.4rem] font-light leading-[1.04] tracking-[-0.02em] text-ink-strong sm:text-[3rem] md:text-[3.4rem]">
           {title}
         </h1>
         {purpose && (
-          <p className="mb-11 max-w-lg border-b border-thread pb-11 font-display text-lg font-light italic leading-[1.5] text-ink-muted sm:text-xl">
+          <p className="mb-9 max-w-[46ch] text-pretty font-display text-lg font-light italic leading-[1.5] text-ink-muted sm:text-xl">
             {purpose}
           </p>
         )}
@@ -77,25 +125,51 @@ export async function ArchiveView({
   title,
   purpose,
   emptyMessage,
+  filter,
+  crumbs,
+  collection,
 }: ArchiveViewProps) {
   /* listRealRows already returns real, published pieces newest first. */
-  const rows = (await listRealRows()).map((r) => ({
+  const source = await listRealRows()
+  const rows = (filter ? source.filter(filter) : source).map((r) => ({
     slug: r.slug,
     href: r.href,
     title: r.title,
     dek: r.dek,
     category: r.category as string,
     publishedAt: r.publishedAt,
+    readMinutes: r.readMinutes,
     body: r.body,
   }))
 
+  /* The listing, as structured data: what this page collects and the
+     order it collects it in. */
+  const collectionLd = collection && {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': `${siteUrl}${collection.path}`,
+    url: `${siteUrl}${collection.path}`,
+    name: collection.name,
+    description: collection.description,
+    isPartOf: { '@id': `${siteUrl}/#website` },
+    inLanguage: 'en',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: rows.length,
+      itemListOrder: 'https://schema.org/ItemListOrderDescending',
+      itemListElement: rows.map((row, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `${siteUrl}${row.href}`,
+        name: row.title,
+      })),
+    },
+  }
+
   if (rows.length === 0) {
     return (
-      <Shell kicker={kicker} title={title} purpose={purpose}>
-        {/* The purpose line already closes with a rule, so this doesn't
-            open with one — two hairlines that close together read as a
-            mistake rather than as structure. */}
-        <p className="pb-10 font-display text-lg font-light italic text-ink-muted">
+      <Shell kicker={kicker} title={title} purpose={purpose} crumbs={crumbs}>
+        <p className="border-t border-thread pb-10 pt-10 font-display text-lg font-light italic text-ink-muted">
           {emptyMessage}
         </p>
         <div className="border-t border-thread py-10 text-center">
@@ -131,6 +205,7 @@ export async function ArchiveView({
       title: row.title,
       open: openingLine(row.body, row.dek),
       ref: row.category,
+      readMinutes: row.readMinutes,
     }
     const bucket = grouped.get(label)
     if (bucket) bucket.push(piece)
@@ -139,8 +214,16 @@ export async function ArchiveView({
 
   const months: ArchiveMonth[] = Array.from(grouped, ([label, pieces]) => ({ label, pieces }))
 
+  /* Only on the whole archive: a topic page linking to its siblings adds
+     nothing a reader wants, and the breadcrumb already goes back up. */
+  const liveCategories = filter
+    ? []
+    : CATEGORIES.filter((category) => source.some((row) => row.category === category))
+
   return (
-    <Shell kicker={kicker} title={title} purpose={purpose} count={rows.length}>
+    <Shell kicker={kicker} title={title} purpose={purpose} count={rows.length} crumbs={crumbs}>
+      {collectionLd && <JsonLd data={collectionLd} />}
+      <TopicStrip categories={liveCategories} />
       {/* ── The archive, newest piece opened at its head ─────────── */}
       <ArchiveMonths
         months={months}
@@ -152,11 +235,12 @@ export async function ArchiveView({
             title={lead.title}
             body={lead.body ?? lead.dek}
             scriptureRef={lead.category}
+            readMinutes={lead.readMinutes}
           />
         }
       />
 
-      <div className="mt-8 border-t border-thread py-14 text-center">
+      <div className="mt-8 border-t border-thread py-12 text-center">
         <Link
           href="/search"
           className="border-b border-gold-ink pb-0.5 font-sans text-[0.8125rem] font-medium tracking-[0.05em] text-gold transition-colors hover:text-ink"

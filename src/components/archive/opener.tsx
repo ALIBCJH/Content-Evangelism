@@ -11,6 +11,7 @@ export interface OpenerProps {
   body: string
   /** Scripture reference, or the section it belongs to. */
   scriptureRef: string
+  readMinutes: number
 }
 
 /**
@@ -21,7 +22,15 @@ export interface OpenerProps {
  * The whole body is rendered; `.excerpt` clips it visually (see globals.css),
  * so crawlers and AI engines still receive the complete text.
  */
-export function Opener({ href, dateLabel, publishedAt, title, body, scriptureRef }: OpenerProps) {
+export function Opener({
+  href,
+  dateLabel,
+  publishedAt,
+  title,
+  body,
+  scriptureRef,
+  readMinutes,
+}: OpenerProps) {
   const blocks = body
     .split(/\n\s*\n/)
     .map((block) => block.trim())
@@ -29,27 +38,30 @@ export function Opener({ href, dateLabel, publishedAt, title, body, scriptureRef
 
   return (
     <article className="cloth mb-4 px-6 pt-9 sm:px-9">
-      <time
-        dateTime={publishedAt}
-        className="kicker mb-2.5 block tracking-[0.13em] text-ink-subtle"
-      >
-        {dateLabel}
-      </time>
-      <h2 className="mb-6 font-display text-[1.9rem] font-light leading-[1.08] tracking-[-0.018em] text-ink-strong sm:text-[2.2rem] md:text-[2.5rem]">
+      {/* The same meta line the rows below carry, so the opened piece
+          reads as the first row of the archive rather than as a banner. */}
+      <p className="kicker mb-2.5 block tracking-[0.13em] text-ink-subtle">
+        <time dateTime={publishedAt}>{dateLabel}</time>
+        <span aria-hidden className="mx-2 text-thread">·</span>
+        <span className="tabular normal-case tracking-[0.09em]">{readMinutes} min read</span>
+      </p>
+      {/* h3, not h2: the month above is the section heading, and this is
+          one piece inside it — the same level the rows below sit at. */}
+      <h3 className="mb-6 text-balance font-display text-[1.9rem] font-light leading-[1.08] tracking-[-0.018em] text-ink-strong sm:text-[2.2rem] md:text-[2.5rem]">
         {title}
-      </h2>
+      </h3>
 
       <div className="excerpt">
         {blocks.map((block, index) => {
           // "## " is a subheading; "> " is pulled scripture.
           if (block.startsWith('## ')) {
             return (
-              <h3
+              <h4
                 key={index}
                 className="font-display text-xl font-normal leading-snug text-ink-strong"
               >
                 {block.slice(3).trim()}
-              </h3>
+              </h4>
             )
           }
           if (block.startsWith('> ')) {
