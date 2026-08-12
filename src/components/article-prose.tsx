@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { parseBody, type Inline } from '@/lib/article-body'
+import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
+import { embedSrc, watchHref } from '@/lib/youtube'
 
 /**
  * The article body, rendered.
@@ -69,6 +70,32 @@ function Inlines({ inlines }: { inlines: Inline[] }) {
   )
 }
 
+/* The three panels the design draws, and the one thing that separates
+   them: who is speaking. `statement` is the ministry speaking for itself,
+   `source` is the desk blocking its own copy from publishing, and `note`
+   is an aside beside the running text. They are deliberately not
+   interchangeable — a reader can tell them apart at a glance. */
+const CALLOUT: Record<CalloutTone, { panel: string; label: string; body: string; cite: string }> = {
+  statement: {
+    panel: 'rounded-panel border border-[#E8DEC2] bg-[#FBF7EC] px-6 py-7 sm:px-8',
+    label: 'kicker mb-4 block text-gold-ink',
+    body: 'font-display text-[1.25rem] leading-[1.5] text-navy sm:text-[1.375rem]',
+    cite: 'mt-4 block font-mono text-[0.6875rem] text-ink-subtle',
+  },
+  source: {
+    panel: 'rounded-figure border border-dashed border-[#C9906A] bg-[#FBF0E9] px-6 py-6 sm:px-7',
+    label: 'kicker-lg mb-3 block text-[#A85B32]',
+    body: 'text-base leading-[1.75] text-[#5C4636]',
+    cite: 'mt-3 block font-mono text-[0.6875rem] text-[#8A6A55]',
+  },
+  note: {
+    panel: 'border-l-2 border-rule pl-4',
+    label: 'kicker mb-2 block text-ink-subtle',
+    body: 'text-base leading-[1.7] text-ink-subtle',
+    cite: 'mt-2 block font-mono text-[0.6875rem] text-ink-subtle',
+  },
+}
+
 export function ArticleProse({ body }: { body: string }) {
   const blocks = parseBody(body)
   let firstParagraphSeen = false
@@ -104,6 +131,116 @@ export function ArticleProse({ body }: { body: string }) {
                     {block.cite}
                   </figcaption>
                 )}
+              </figure>
+            )
+
+          case 'callout': {
+            const tone = CALLOUT[block.tone]
+            return (
+              <aside key={index} className={`my-9 ${tone.panel}`}>
+                {block.label && <span className={tone.label}>{block.label}</span>}
+                <p className={tone.body}>
+                  <Inlines inlines={block.inlines} />
+                </p>
+                {block.cite && <span className={tone.cite}>{block.cite}</span>}
+              </aside>
+            )
+          }
+
+          case 'table':
+            /* A real table, not a grid of divs: it is a comparison, and a
+               screen reader should be able to say which column a cell is
+               in. It scrolls inside its own box so the page never does. */
+            return (
+              <figure
+                key={index}
+                className="my-9 overflow-hidden rounded-panel border border-rule bg-card"
+              >
+                {block.caption && (
+                  <figcaption className="kicker border-b border-rule px-6 py-4 text-gold">
+                    {block.caption}
+                  </figcaption>
+                )}
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[34rem] border-collapse text-left">
+                    <thead>
+                      <tr>
+                        {block.head.map((cell, i) => (
+                          <th
+                            key={i}
+                            scope="col"
+                            className="border-b border-rule bg-raised px-5 py-3.5 font-display text-[1.0625rem] font-normal text-navy"
+                          >
+                            {cell}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {block.rows.map((row, r) => (
+                        <tr key={r}>
+                          {row.map((cell, c) =>
+                            c === 0 ? (
+                              <th
+                                key={c}
+                                scope="row"
+                                className="border-b border-rule-soft px-5 py-4 text-sm font-normal text-ink-subtle"
+                              >
+                                {cell}
+                              </th>
+                            ) : (
+                              <td
+                                key={c}
+                                className="border-b border-rule-soft px-5 py-4 text-[0.9375rem] leading-[1.5] text-ink-900"
+                              >
+                                {cell}
+                              </td>
+                            )
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </figure>
+            )
+
+          case 'video':
+            return (
+              <figure
+                key={index}
+                className="my-9 flex flex-col overflow-hidden rounded-panel border border-navy-rule bg-navy-deep sm:flex-row sm:items-stretch"
+              >
+                <div className="relative aspect-[9/16] w-full shrink-0 sm:w-[clamp(150px,34%,200px)]">
+                  <iframe
+                    src={embedSrc(block.id)}
+                    title={block.title}
+                    allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
+                </div>
+                <figcaption className="flex min-w-0 flex-1 flex-col justify-center px-6 py-7">
+                  {block.eyebrow && (
+                    <span className="kicker mb-3.5 block text-gold-pale">{block.eyebrow}</span>
+                  )}
+                  <span className="mb-2.5 block font-display text-[1.375rem] leading-[1.25] text-card sm:text-[1.625rem]">
+                    {block.title}
+                  </span>
+                  <span className="block text-[0.8125rem] leading-[1.6] text-navy-soft">
+                    {block.byline}
+                    {block.byline ? ' · ' : ''}
+                    <a
+                      href={watchHref(block.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gold-pale underline-offset-2 hover:underline"
+                    >
+                      watch on YouTube
+                    </a>
+                  </span>
+                </figcaption>
               </figure>
             )
 

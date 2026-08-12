@@ -17,6 +17,24 @@ import { headingId } from '@/lib/toc'
  *   - bullet   |   1. numbered
  *   [text](/articles/slug) **strong** *emphasis*
  *
+ * A teaching that sets two things side by side, quotes a statement of
+ * faith, or carries a recording needs three more blocks, and they stay as
+ * typeable as the rest:
+ *
+ *   |+ How Scripture describes each      (optional caption)
+ *   | | The rapture | The second coming  (the header row)
+ *   | Who sees Him | Those who are His | Every eye (Rev 1:7)
+ *
+ *   ::statement From the ministry's statement of faith
+ *   :: The rapture is described as the imminent return of Christ…
+ *   :: — Ministry of Repentance and Holiness
+ *
+ *   @video 29PZpK0CKts | Title | Prophet Dr. David Edward Owuor | Watch · 20 seconds
+ *
+ * A callout's tone is one of `statement` (the ministry speaking for
+ * itself), `source` (an editorial block: this cannot publish as it
+ * stands), or `note` (a quiet aside beside the running text).
+ *
  * Anything else is a paragraph, so every article written before this
  * shipped renders exactly as it did.
  */
@@ -27,11 +45,16 @@ export type Inline =
   | { kind: 'strong'; text: string }
   | { kind: 'link'; text: string; href: string }
 
+export type CalloutTone = 'statement' | 'source' | 'note'
+
 export type Block =
   | { kind: 'heading'; id: string; text: string }
   | { kind: 'paragraph'; inlines: Inline[] }
   | { kind: 'quote'; inlines: Inline[]; cite?: string }
   | { kind: 'list'; ordered: boolean; items: Inline[][] }
+  | { kind: 'table'; caption?: string; head: string[]; rows: string[][] }
+  | { kind: 'callout'; tone: CalloutTone; label?: string; inlines: Inline[]; cite?: string }
+  | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string }
 
 /* ── Inline ──────────────────────────────────────────────────────── */
 
@@ -77,6 +100,16 @@ export function parseInline(text: string): Inline[] {
 
 const BULLET = /^[-*•]\s+/
 const NUMBERED = /^\d+[.)]\s+/
+const TONES: CalloutTone[] = ['statement', 'source', 'note']
+
+/** "| a | b | c" → ["a", "b", "c"], with the outer pipes discarded. */
+function cells(line: string): string[] {
+  return line
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim())
+}
 
 export function parseBody(body: string): Block[] {
   const raw = body
@@ -91,6 +124,54 @@ export function parseBody(body: string): Block[] {
     }
 
     const lines = block.split('\n').map((line) => line.trim()).filter(Boolean)
+
+    /* A recording, set into the teaching where it is referred to. */
+    if (lines.length === 1 && lines[0].startsWith('@video ')) {
+      const [id, title, byline, eyebrow] = cells(lines[0].slice(7)).map((part) => part.trim())
+      if (id && title) {
+        return {
+          kind: 'video',
+          id,
+          title,
+          ...(byline ? { byline } : {}),
+          ...(eyebrow ? { eyebrow } : {}),
+        }
+      }
+    }
+
+    /* Two columns set side by side. The first row is the header; a leading
+       `|+` line is the caption above it. */
+    if (lines.every((line) => line.startsWith('|'))) {
+      const caption = lines[0].startsWith('|+') ? lines[0].slice(2).trim() : undefined
+      const body = caption ? lines.slice(1) : lines
+      const [head, ...rest] = body.map(cells)
+      if (head && rest.length > 0) {
+        return { kind: 'table', ...(caption ? { caption } : {}), head, rows: rest }
+      }
+    }
+
+    /* A labelled panel. The tone decides what it is and how it reads. */
+    if (lines.every((line) => line.startsWith('::'))) {
+      const opener = lines[0].slice(2).trim()
+      const tone = TONES.find(
+        (candidate) => opener === candidate || opener.startsWith(`${candidate} `)
+      )
+      if (tone) {
+        const label = opener.slice(tone.length).trim() || undefined
+        const rest = lines.slice(1).map((line) => line.replace(/^::\s?/, ''))
+        const last = rest[rest.length - 1] ?? ''
+        const hasCite = rest.length > 1 && /^[—–-]\s*\S/.test(last)
+        const cite = hasCite ? last.replace(/^[—–-]\s*/, '') : undefined
+        const text = (hasCite ? rest.slice(0, -1) : rest).join(' ')
+        return {
+          kind: 'callout',
+          tone,
+          ...(label ? { label } : {}),
+          inlines: parseInline(text),
+          ...(cite ? { cite } : {}),
+        }
+      }
+    }
 
     if (lines.every((line) => line.startsWith('>'))) {
       const quoted = lines.map((line) => line.replace(/^>\s?/, ''))
@@ -136,7 +217,14 @@ export function bodyToPlainText(body: string): string {
         case 'list':
           return block.items.map(inlineText).join(' ')
         case 'quote':
+        case 'callout':
           return [inlineText(block.inlines), block.cite].filter(Boolean).join(' — ')
+        case 'table':
+          return [block.caption, block.head.join(' · '), ...block.rows.map((r) => r.join(' · '))]
+            .filter(Boolean)
+            .join('\n')
+        case 'video':
+          return [block.title, block.byline].filter(Boolean).join(' — ')
         default:
           return inlineText(block.inlines)
       }
@@ -195,6 +283,25 @@ export function bodyToHtml(body: string, origin: string): string {
           const tag = block.ordered ? 'ol' : 'ul'
           const items = block.items.map((item) => `<li>${inlineHtml(item, origin)}</li>`).join('')
           return `<${tag}>${items}</${tag}>`
+        }
+        case 'callout': {
+          const label = block.label ? `<strong>${escapeXml(block.label)}</strong><br />` : ''
+          const cite = block.cite ? `<br /><cite>${escapeXml(block.cite)}</cite>` : ''
+          return `<blockquote><p>${label}${inlineHtml(block.inlines, origin)}${cite}</p></blockquote>`
+        }
+        case 'table': {
+          const caption = block.caption ? `<caption>${escapeXml(block.caption)}</caption>` : ''
+          const head = block.head.map((cell) => `<th>${escapeXml(cell)}</th>`).join('')
+          const rows = block.rows
+            .map((row) => `<tr>${row.map((cell) => `<td>${escapeXml(cell)}</td>`).join('')}</tr>`)
+            .join('')
+          return `<table>${caption}<thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>`
+        }
+        case 'video': {
+          /* A feed reader cannot play an embed, so it gets the link. */
+          const href = `https://www.youtube.com/watch?v=${escapeXml(block.id)}`
+          const byline = block.byline ? ` — ${escapeXml(block.byline)}` : ''
+          return `<p><a href="${href}">${escapeXml(block.title)}</a>${byline}</p>`
         }
         default:
           return `<p>${inlineHtml(block.inlines, origin)}</p>`

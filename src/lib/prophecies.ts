@@ -179,12 +179,9 @@ export const prophecyRecords: ProphecyRecord[] = [
 export const recordById = (id: string): ProphecyRecord | undefined =>
   prophecyRecords.find((record) => record.id === id)
 
-/** The privacy-preserving embed, and the poster frame behind it. */
-export const embedSrc = (video: string): string =>
-  `https://www.youtube-nocookie.com/embed/${video}`
-
-export const posterSrc = (video: string): string =>
-  `https://i.ytimg.com/vi/${video}/hqdefault.jpg`
+/* The embed and the poster frame come from lib/youtube, which the article
+   renderer shares — there is one way to build a YouTube URL here. */
+export { embedSrc, posterSrc } from '@/lib/youtube'
 
 export const recordHref = (record: Pick<ProphecyRecord, 'id'>): string =>
   `/prophecies/${record.id}`

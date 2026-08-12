@@ -101,8 +101,8 @@ live immediately.
 Articles can be posted from the browser at **`/admin`** ("The Posting Desk") —
 title, category, summary, body, an optional image (with a description of
 what it shows, which is required once an image is set), and the posting
-key. Published pieces appear at `/articles/<slug>` and at the top of the
-archive on `/`.
+key. Published pieces appear at `/articles/<slug>` and at the head of the
+archive on `/articles`.
 
 The body is plain text with a small grammar (`src/lib/article-body.ts`):
 
@@ -118,6 +118,16 @@ Blank line separates paragraphs.
 
 Link a phrase with [the cross](/articles/the-cross-of-jesus),
 and emphasise with *italic* or **bold**.
+
+|+ An optional caption
+| | The rapture | The second coming
+| Who sees Him | Those who are His | Every eye (Rev 1:7)
+
+::statement From the ministry's statement of faith
+:: The rapture is the imminent, premillennial return of Christ…
+:: — Ministry of Repentance and Holiness
+
+@video 29PZpK0CKts | The title | Prophet Dr. David Edward Owuor | Watch · 20 seconds
 ```
 
 API (same deployment, Next.js route handlers):
