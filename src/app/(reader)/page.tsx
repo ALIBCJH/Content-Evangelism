@@ -46,7 +46,6 @@ export default async function HomePage() {
       />
 
       <HomeHero />
-      <div className="gold-rule" />
 
       {lead && (
         <section className="shell pt-16 lg:pt-20">

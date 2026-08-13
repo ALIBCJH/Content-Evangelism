@@ -86,12 +86,6 @@
      was for the pages that are not a long read. */
   --read: 34rem;
 
-  /* The masthead's exact height: 72px of bar, its hairline, and the 2px
-     gold rule that closes it. The front page subtracts it from the
-     viewport so the masthead and the hero together fill the first screen;
-     it is measured here rather than in the hero so the two cannot drift. */
-  --masthead: 75px;
-
   /* The header plus its gold rule plus air: where every sticky
      sidebar and scroll-margin starts. */
   --stick: 104px;

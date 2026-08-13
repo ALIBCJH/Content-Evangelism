@@ -292,8 +292,8 @@ export const homeHero = {
   kicker: 'Since 2003 · Nairobi, Kenya',
   title: ['Prepare the Way.', 'The Messiah Is Coming.'],
   dek: 'Biblical teachings, Scripture studies, prophetic messages, sermons, and resources from the Ministry of Repentance and Holiness.',
-  primary: { label: 'Read the Articles', href: '/articles' },
-  secondary: { label: 'Watch the Prophecies', href: '/prophecies' },
+  primary: { label: 'Watch the Prophecies', href: '/prophecies' },
+  secondary: { label: 'About the Ministry', href: '/about' },
 }
 
 export interface Statement {
