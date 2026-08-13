@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CATEGORIES, articleSubjects, categoryBlurb, siteInfo, siteUrl, topicHref } from '@/lib/content'
+import { CATEGORIES, articleSubjects, categoryBlurb, siteUrl, topicHref } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
 import { teachingRecordings } from '@/lib/teachings'
@@ -57,32 +57,19 @@ export default async function TeachingsPage() {
             className="mb-6"
             crumbs={[{ name: 'Home', href: '/' }, { name: 'Teachings' }]}
           />
-          <h1 className="mb-4 font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
+          <h1 className="font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
             Teachings
           </h1>
-          <p className="max-w-[660px] text-[1.0625rem] leading-[1.7] text-ink-700">
-            The Scriptures opened for the Church, arranged by what they are about.
-            Every teaching is filed under a section and carries the passages it rests
-            on.
-          </p>
         </div>
       </section>
 
       <div className="shell pb-24 pt-14">
-        {/* The recordings first: they are teachings, where the two lists
-            below them are ways of finding written pieces. The rail and the
-            card are the archive's, because a published recording held with
-            its dateline is what the prophecy archive already is. */}
-        <h2 className="rule-heading mb-2 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">
-          Recorded teachings
-        </h2>
-        <p className="mb-7 max-w-[660px] text-[0.9375rem] leading-[1.7] text-ink-muted">
-          Published by the ministry on its own channel and preached by{' '}
-          {siteInfo.head}. Each opens the recording on YouTube. A dateline
-          reading “date to confirm” has not yet been checked against the
-          source, and is left unstated rather than guessed.
-        </p>
-
+        {/* The recordings open the page: they are teachings, where the two
+            lists below them are ways of finding written pieces. The rail
+            and the card are the archive's, because a published recording
+            held with its dateline is what the prophecy archive already is.
+            They carry no heading and no preamble — each card states its own
+            dateline, what it is, and that it opens YouTube. */}
         <DatedRail>
           {teachingRecordings.map((recording, index) => {
             const previous = teachingRecordings[index - 1]
