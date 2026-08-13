@@ -19,12 +19,6 @@ import { SearchOverlay } from '@/components/search-overlay'
  * the bar and the menu button takes over — four sections would otherwise
  * crush the masthead on a phone.
  *
- * On the front page it stands *on* the hero rather than above it: the bar
- * is transparent over the navy, and turns to paper the moment the hero
- * leaves the top of the window. It keeps its height throughout, so nothing
- * below it shifts when it changes — the gold rule fades rather than
- * disappearing, which would otherwise cost the bar two pixels mid-scroll.
- *
  * The drawer is built to full dialog standards, because at those widths it
  * is the only navigation there is: focus moves into it on open and back to
  * the button on close, Tab is trapped inside, Escape and the backdrop both
@@ -34,11 +28,7 @@ import { SearchOverlay } from '@/components/search-overlay'
 export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
   const [open, setOpen] = React.useState(false)
   const [searching, setSearching] = React.useState(false)
-  const [pastHero, setPastHero] = React.useState(false)
   const pathname = usePathname()
-
-  /* Only a page that renders a hero asks the masthead to stand on it. */
-  const overHero = pathname === '/' && !pastHero
 
   const panelRef = React.useRef<HTMLDivElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
@@ -57,26 +47,6 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
   React.useEffect(() => {
     setOpen(false)
     setSearching(false)
-  }, [pathname])
-
-  /* The bar turns to paper when the hero leaves the strip it occupies —
-     watched directly rather than guessed from a scroll offset, so it is
-     right whatever height the hero happens to be. Without the observer
-     (no hero on the page, or no IntersectionObserver) it is simply
-     solid, which is the safe end of the switch. */
-  React.useEffect(() => {
-    const hero = document.querySelector('[data-hero]')
-    if (!hero || !('IntersectionObserver' in window)) {
-      setPastHero(true)
-      return
-    }
-    setPastHero(false)
-    const io = new IntersectionObserver(
-      ([entry]) => setPastHero(!entry.isIntersecting),
-      { rootMargin: '-74px 0px 0px 0px', threshold: 0 }
-    )
-    io.observe(hero)
-    return () => io.disconnect()
   }, [pathname])
 
   /* Widening to the rail hides the menu button; close the drawer with it
@@ -168,12 +138,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
 
   return (
     <>
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b transition-colors duration-300',
-          overHero ? 'border-transparent bg-transparent' : 'border-rule bg-raised'
-        )}
-      >
+      <header className="sticky top-0 z-50 border-b border-rule bg-raised">
         <div className="mx-auto flex h-[72px] max-w-shell items-center gap-6 px-5 sm:px-8 lg:gap-10">
           <Link
             href="/"
@@ -188,12 +153,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               unoptimized
               className="h-[34px] w-[34px] rounded-full"
             />
-            <span
-              className={cn(
-                'block max-w-[150px] font-display text-[0.9375rem] font-semibold leading-[1.15] tracking-[0.01em] transition-colors',
-                overHero ? 'text-[#FFFDF8]' : 'text-navy'
-              )}
-            >
+            <span className="block max-w-[150px] font-display text-[0.9375rem] font-semibold leading-[1.15] tracking-[0.01em] text-navy">
               Ministry of Repentance &amp; Holiness
             </span>
           </Link>
@@ -209,13 +169,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                   aria-current={current ? 'page' : undefined}
                   className={cn(
                     'focus-ring rounded-lg px-3.5 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors',
-                    overHero
-                      ? current
-                        ? 'bg-white/15 text-[#FFFDF8]'
-                        : 'text-[#FFFDF8] hover:bg-white/10'
-                      : current
-                        ? 'bg-chip text-navy'
-                        : 'text-navy hover:bg-chip'
+                    current ? 'bg-chip text-navy' : 'text-navy hover:bg-chip'
                   )}
                 >
                   {section.label}
@@ -232,33 +186,15 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               aria-expanded={open}
               aria-haspopup="dialog"
               onClick={() => setOpen(true)}
-              className={cn(
-                'focus-ring icon-only flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-tile border transition-colors',
-                overHero ? 'border-white/40 bg-white/10' : 'border-rule bg-card'
-              )}
+              className="focus-ring icon-only flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-tile border border-rule bg-card"
             >
-              {[18, 18, 12].map((width, index) => (
-                <span
-                  key={index}
-                  aria-hidden
-                  className={cn(
-                    'h-[1.75px] transition-colors',
-                    overHero ? 'bg-[#FFFDF8]' : 'bg-navy'
-                  )}
-                  style={{ width }}
-                />
-              ))}
+              <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
+              <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
+              <span aria-hidden className="h-[1.75px] w-3 bg-navy" />
             </button>
           </div>
         </div>
-        {/* Kept in the layout at every state: hiding it would take two
-            pixels out of the bar mid-scroll and shift the page under it. */}
-        <div
-          className={cn(
-            'gold-rule transition-opacity duration-300',
-            overHero ? 'opacity-0' : 'opacity-[0.55]'
-          )}
-        />
+        <div className="gold-rule opacity-[0.55]" />
       </header>
 
       {/* ── The drawer ───────────────────────────────────────────── */}
