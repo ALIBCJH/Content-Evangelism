@@ -21,7 +21,6 @@ export default function ArticlesPage() {
     <ArchiveView
       kicker="Articles"
       title="Articles"
-      purpose="Scripture examined passage by passage — every teaching, prophecy and oracle the ministry has published, newest first."
       emptyMessage="Nothing has been published yet. The first piece will open here."
       collection={{
         name: 'The Archive',

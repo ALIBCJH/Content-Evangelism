@@ -1,12 +1,6 @@
 import * as React from 'react'
 import Link from 'next/link'
-import {
-  articleSubjects,
-  CATEGORIES,
-  siteUrl,
-  topicHref,
-  type Category,
-} from '@/lib/content'
+import { siteUrl } from '@/lib/content'
 import { listRealRows, type RealRow } from '@/lib/rows'
 import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
@@ -81,15 +75,9 @@ export async function ArchiveView({
     },
   }
 
-  /* Only the whole archive lists its siblings; a filtered listing already
-     says what it is, and the breadcrumb goes back up. */
+  /* Only the whole archive hands off to the other one; a filtered listing
+     already says what it is, and the breadcrumb goes back up. */
   const whole = !filter
-  const counts = whole
-    ? CATEGORIES.map((category) => ({
-        category,
-        count: source.filter((row) => row.category === category).length,
-      })).filter(({ count }) => count > 0)
-    : []
 
   return (
     <main>
@@ -107,48 +95,21 @@ export async function ArchiveView({
             </p>
           )}
 
-          {/* With a line under the title the two columns bottom out together,
-              which is how the design sets them. Without one the title would
-              be left floating at the foot of a taller column, so it goes to
-              the top instead. */}
-          <div
-            className={`grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-[72px] ${
-              purpose ? 'items-end' : 'items-start'
+          {/* The title, and the line under it where a filtered listing has
+              one. The subject chips that stood beside it are gone, so the
+              two-column grid they were the second column of goes too. */}
+          <h1
+            className={`font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem] ${
+              purpose ? 'mb-4' : ''
             }`}
           >
-            <div>
-              <h1
-                className={`font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem] ${
-                  purpose ? 'mb-4' : ''
-                }`}
-              >
-                {title}
-              </h1>
-              {purpose && (
-                <p className="max-w-[660px] text-pretty text-[1.0625rem] leading-[1.7] text-ink-700">
-                  {purpose}
-                </p>
-              )}
-            </div>
-
-            {whole && (
-              <nav aria-label="Subjects" className="lg:border-l lg:border-rule lg:pl-10">
-                <p className="kicker mb-3.5 text-ink-subtle">Browse by subject</p>
-                <ul className="flex flex-wrap gap-2">
-                  {articleSubjects.map((subject) => (
-                    <li key={subject}>
-                      <Link
-                        href={`/search?q=${encodeURIComponent(subject)}`}
-                        className="focus-ring inline-block rounded-chip bg-chip px-3.5 py-2 text-[0.8125rem] text-ink-700 transition-colors hover:bg-navy hover:text-card"
-                      >
-                        {subject}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            )}
-          </div>
+            {title}
+          </h1>
+          {purpose && (
+            <p className="max-w-[660px] text-pretty text-[1.0625rem] leading-[1.7] text-ink-700">
+              {purpose}
+            </p>
+          )}
         </div>
       </section>
 
@@ -166,25 +127,9 @@ export async function ArchiveView({
         </div>
       ) : (
         <section className="shell pb-24 pt-12">
-          {/* The filter row: the sections that actually hold something. */}
-          <div className="mb-10 flex flex-wrap items-center justify-between gap-6 border-b border-rule pb-5">
-            <div className="flex flex-wrap gap-2.5">
-              <Link
-                href="/articles"
-                className="focus-ring rounded-chip border border-rule bg-card px-4 py-2.5 text-[0.8125rem] font-medium text-ink-700 transition-colors hover:border-gold hover:text-navy"
-              >
-                All Articles
-              </Link>
-              {counts.map(({ category }) => (
-                <Link
-                  key={category}
-                  href={topicHref(category)}
-                  className="focus-ring rounded-chip border border-rule bg-card px-4 py-2.5 text-[0.8125rem] font-medium text-ink-700 transition-colors hover:border-gold hover:text-navy"
-                >
-                  {category}
-                </Link>
-              ))}
-            </div>
+          {/* What is left of the filter row: the ordering, which the list
+              does not state for itself. The section chips are gone. */}
+          <div className="mb-10 flex items-center justify-end border-b border-rule pb-5">
             <span className="kicker-lg text-ink-subtle">Newest first</span>
           </div>
 
