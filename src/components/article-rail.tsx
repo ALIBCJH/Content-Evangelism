@@ -11,6 +11,10 @@ import type { Heading } from '@/lib/toc'
  * already on the page, so `href="#chapter"` does the work, and does it for
  * a crawler, a keyboard, and a middle click too. The only client-side
  * state is which chapter is currently in view.
+ *
+ * It is set in the apparatus face, not the reading face. The rail is
+ * something a reader scans to find a place, never something they read
+ * through, and the type should say so.
  */
 export function ArticleRail({
   headings,
@@ -51,7 +55,7 @@ export function ArticleRail({
   if (!hasChapters && scriptures.length === 0) return null
 
   return (
-    <aside className="flex flex-col gap-8 self-start lg:sticky lg:top-stick">
+    <aside className="flex flex-col gap-8 self-start font-apparatus lg:sticky lg:top-stick">
       {hasChapters && (
         <nav aria-label="On this page">
           <p className="kicker mb-1 border-b border-rule pb-3 text-ink-subtle">On this page</p>
@@ -60,7 +64,7 @@ export function ArticleRail({
               key={heading.id}
               href={`#${heading.id}`}
               aria-current={activeId === heading.id ? 'true' : undefined}
-              className={`block py-2.5 text-sm leading-[1.45] transition-colors hover:text-gold ${
+              className={`block py-2.5 text-[0.875rem] leading-[1.5] transition-colors hover:text-gold ${
                 activeId === heading.id ? 'text-gold' : 'text-ink-700'
               }`}
             >
@@ -76,7 +80,9 @@ export function ArticleRail({
           <ul>
             {scriptures.map((ref) => (
               <li key={ref} className="border-b border-dotted border-rule py-3">
-                <span className="font-mono text-[0.6875rem] text-navy">{ref}</span>
+                <span className="text-[0.8125rem] font-medium tracking-[0.04em] text-gold-ink">
+                  {ref}
+                </span>
               </li>
             ))}
           </ul>

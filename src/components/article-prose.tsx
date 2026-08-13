@@ -18,11 +18,18 @@ import { embedSrc, watchHref } from '@/lib/youtube'
  * air in it, and paragraph spacing wide enough that the eye finds the
  * next line without hunting. Muted grey is correct for a caption and
  * wrong for two thousand words.
+ *
+ * The body is Gentium Book Plus at 19px on a 1.74 line — larger and
+ * looser than the chrome, because devotional writing wants the space, and
+ * because Gentium's tall x-height is what keeps a long passage legible on
+ * a phone. Chapter headings are Newsreader; every citation, label and
+ * caption is IBM Plex. Serif for what you read, sans for what you scan.
  */
 
 /* One class, used by the paragraph and by every list item, so a bullet
    and the sentence above it are set in the same type. */
-const RUNNING_TEXT = 'text-[1.0625rem] leading-[1.8] text-ink-700 text-pretty sm:text-[1.125rem]'
+const RUNNING_TEXT =
+  'font-reading text-[1.0625rem] leading-[1.74] text-ink-700 text-pretty sm:text-[1.1875rem]'
 
 function Inlines({ inlines }: { inlines: Inline[] }) {
   return (
@@ -79,20 +86,20 @@ const CALLOUT: Record<CalloutTone, { panel: string; label: string; body: string;
   statement: {
     panel: 'rounded-panel border border-[#E8DEC2] bg-[#FBF7EC] px-6 py-7 sm:px-8',
     label: 'kicker mb-4 block text-gold-ink',
-    body: 'font-display text-[1.25rem] leading-[1.5] text-navy sm:text-[1.375rem]',
-    cite: 'mt-4 block font-mono text-[0.6875rem] text-ink-subtle',
+    body: 'font-reading text-[1.125rem] leading-[1.6] text-navy sm:text-[1.25rem]',
+    cite: 'mt-4 block font-apparatus text-[0.75rem] text-ink-subtle',
   },
   source: {
     panel: 'rounded-figure border border-dashed border-[#C9906A] bg-[#FBF0E9] px-6 py-6 sm:px-7',
     label: 'kicker-lg mb-3 block text-[#A85B32]',
-    body: 'text-base leading-[1.75] text-[#5C4636]',
-    cite: 'mt-3 block font-mono text-[0.6875rem] text-[#8A6A55]',
+    body: 'font-apparatus text-[0.875rem] leading-[1.6] text-[#5C4636]',
+    cite: 'mt-3 block font-apparatus text-[0.75rem] text-[#8A6A55]',
   },
   note: {
     panel: 'border-l-2 border-rule pl-4',
     label: 'kicker mb-2 block text-ink-subtle',
-    body: 'text-base leading-[1.7] text-ink-subtle',
-    cite: 'mt-2 block font-mono text-[0.6875rem] text-ink-subtle',
+    body: 'font-reading text-[1.0625rem] leading-[1.7] text-ink-subtle',
+    cite: 'mt-2 block font-apparatus text-[0.75rem] text-ink-subtle',
   },
 }
 
@@ -111,7 +118,7 @@ export function ArticleProse({ body }: { body: string }) {
               <h2
                 key={index}
                 id={block.id}
-                className="mb-5 mt-14 scroll-mt-stick text-balance font-display text-[1.625rem] font-medium leading-[1.15] text-navy md:text-[2.125rem]"
+                className="mb-5 mt-14 scroll-mt-stick text-balance font-article text-[1.5rem] font-normal leading-[1.24] tracking-[-0.008em] text-navy md:text-[1.9rem]"
               >
                 {block.text}
               </h2>
@@ -123,11 +130,11 @@ export function ArticleProse({ body }: { body: string }) {
                in the mono face every reference on this site is set in. */
             return (
               <figure key={index} className="scripture my-9">
-                <blockquote className="mb-3.5 font-display text-[1.3125rem] font-normal leading-[1.45] text-navy sm:text-[1.5625rem]">
+                <blockquote className="mb-3.5 font-reading text-[1.1875rem] font-normal leading-[1.6] text-navy sm:text-[1.375rem]">
                   <Inlines inlines={block.inlines} />
                 </blockquote>
                 {block.cite && (
-                  <figcaption className="font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink-subtle">
+                  <figcaption className="font-apparatus text-[0.6875rem] font-medium uppercase tracking-[0.15em] text-gold-ink">
                     {block.cite}
                   </figcaption>
                 )}
@@ -264,6 +271,30 @@ export function ArticleProse({ body }: { body: string }) {
             )
           }
 
+          case 'faq':
+            /* Where the devotional ends and the apparatus begins. The
+               reader is told by the type, not by a label: this whole
+               section is set in the sans face, so it reads as reference
+               rather than as more of the teaching. */
+            return (
+              <section
+                key={index}
+                className="mt-20 border-t border-rule pt-12 font-apparatus"
+              >
+                <h2 className="mb-8 text-[0.6875rem] font-semibold uppercase tracking-[0.19em] text-ink-subtle">
+                  Frequently asked questions
+                </h2>
+                {block.items.map(({ q, a }) => (
+                  <div key={q} className="mb-8 last:mb-0">
+                    <h3 className="mb-2 text-[0.9375rem] font-semibold leading-[1.45] text-ink-strong">
+                      {q}
+                    </h3>
+                    <p className="text-[0.9375rem] leading-[1.68] text-ink-muted">{a}</p>
+                  </div>
+                ))}
+              </section>
+            )
+
           default: {
             const isFirst = !firstParagraphSeen
             firstParagraphSeen = true
@@ -272,7 +303,7 @@ export function ArticleProse({ body }: { body: string }) {
                 key={index}
                 className={
                   isFirst
-                    ? 'text-pretty text-[1.125rem] leading-[1.75] text-ink-900 sm:text-[1.1875rem]'
+                    ? 'font-reading text-pretty text-[1.1875rem] leading-[1.7] text-ink-900 sm:text-[1.25rem]'
                     : `mt-5 ${RUNNING_TEXT}`
                 }
               >

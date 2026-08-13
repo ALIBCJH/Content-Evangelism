@@ -16,6 +16,41 @@ Kicker: 10–11px, `letter-spacing: 0.12–0.14em`, uppercase.
 Headlines are Fraunces **500** with negative tracking (−0.015em to −0.025em)
 and line-heights of 1.0–1.16. Body is Inter 15–19px at 1.7–1.8.
 
+### The reading layer
+
+The three faces above are the chrome. An article is not chrome, and from
+the article page down it is set in three of its own.
+
+| Role | Family | Notes |
+| --- | --- | --- |
+| Article | **Newsreader** 300/400 | Headline, italic standfirst, chapter headings |
+| Reading | **Gentium Book Plus** 400/700 | Body copy and quoted Scripture |
+| Apparatus | **IBM Plex Sans** 400/500/600 | Byline, citations, rail, contents, questions |
+
+The rule the split runs on: **serif for what you read, sans for what you
+scan.** Body, headlines and Scripture are the reading layer; metadata,
+references, navigation and the questions at the foot are the reference
+layer. That is why the apparatus at the bottom of an article feels unlike
+the devotional above it — the reader is being told the teaching has ended.
+
+- Article headlines are Newsreader **300**, tracked −0.018em. The weight is
+  the point: at 700 a large serif shouts, at 300 the same words are
+  unhurried. Large serif at default tracking reads loose, so it is pulled in.
+- Body is 19px on a 1.74 line — larger and looser than the chrome, because
+  devotional writing wants the space and Gentium's tall x-height carries it
+  on a phone.
+- Gentium was built by SIL for scripture typesetting and Bible translation,
+  so Greek and Hebrew transliteration is native to the face rather than
+  substituted.
+- The reading column is capped at `--read: 34rem`, roughly 65 characters.
+  `--measure` (760px) stays as it is for pages that are not a long read.
+- Small uppercase labels in the apparatus run at 0.19em; uppercase always
+  needs the extra tracking.
+
+All six families are declared through `next/font`, which downloads them at
+build and serves subset WOFF2 from this origin with `font-display: swap` —
+no third-party connection for a reader on mobile data to open.
+
 ## Colour
 
 ```

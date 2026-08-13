@@ -21,6 +21,16 @@ const config: Config = {
         serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
         mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+
+        // ── The reading layer ────────────────────────────────────
+        // An article is set in its own three faces, not the chrome's.
+        // Serif for what you read, sans for what you scan.
+        //   article    Newsreader — headline, standfirst, chapter heads
+        //   reading    Gentium Book Plus — body copy and Scripture
+        //   apparatus  IBM Plex Sans — meta, rail, citations, questions
+        article: ['var(--font-newsreader)', 'Georgia', 'Times New Roman', 'serif'],
+        reading: ['var(--font-gentium)', 'Georgia', 'Times New Roman', 'serif'],
+        apparatus: ['var(--font-plex)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       colors: {
         /* ── Paper ─────────────────────────────────────────────── */
@@ -92,6 +102,7 @@ const config: Config = {
       maxWidth: {
         shell: 'var(--shell)',
         measure: 'var(--measure)',
+        read: 'var(--read)',
       },
       borderRadius: {
         chip: '999px',

@@ -19,8 +19,15 @@ import { ShareRow } from '@/components/share-row'
  * The design sets it in two parts. First a cream band: the breadcrumb, the
  * headline and its standfirst on the left, the photograph on the right —
  * so a reader knows what the piece is and what it looks like before
- * scrolling at all. Then the reading column, 760px wide, with a 280px rail
- * beside it carrying the chapters and the Scriptures the teaching rests on.
+ * scrolling at all. Then the reading column with a 280px rail beside it
+ * carrying the chapters and the Scriptures the teaching rests on.
+ *
+ * From here down the page leaves the chrome's type behind and is set in
+ * the reading layer: Newsreader for the headline and the standfirst,
+ * Gentium for every word of the body, IBM Plex for the byline and the
+ * rail. Serif for what you read, sans for what you scan. The column is
+ * capped at --read rather than --measure, because 19px Gentium reaches 65
+ * characters sooner than the chrome's text does.
  *
  * Every teaching is rendered through this shell, from /articles/[slug],
  * so a change to how a teaching is presented is made once.
@@ -90,13 +97,16 @@ export function ArticleLayout({
 
           <div className="shell grid items-end gap-10 pb-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:gap-14">
             <div>
-              <h1 className="mb-5 text-balance font-display text-[2.125rem] font-medium leading-[1.04] tracking-[-0.02em] text-navy sm:text-[2.75rem] lg:text-[3.5rem]">
+              {/* 300, not 500. Large serif at a heavy weight shouts; at
+                  300 the same words are unhurried. The negative tracking
+                  pulls a loose-by-default large serif into one shape. */}
+              <h1 className="mb-5 text-balance font-article text-[2.125rem] font-light leading-[1.08] tracking-[-0.018em] text-navy sm:text-[2.75rem] lg:text-[3.5rem]">
                 {title}
               </h1>
-              <p className="mb-6 text-pretty font-display text-[1.1875rem] leading-[1.45] text-ink-700 sm:text-[1.375rem]">
+              <p className="mb-6 text-pretty font-article text-[1.1875rem] font-light italic leading-[1.45] text-ink-700 sm:text-[1.375rem]">
                 {dek}
               </p>
-              <p className="font-mono text-[0.6875rem] tracking-[0.06em] text-ink-subtle">
+              <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
                 {author.href ? (
                   <Link
                     href={author.href}
@@ -143,8 +153,13 @@ export function ArticleLayout({
         </section>
 
         {/* ── The reading column ─────────────────────────────────── */}
-        <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-[72px]">
-          <article className="max-w-measure">
+        {/* The reading column is tracked at --read rather than 1fr. With a
+            34rem measure a 1fr track leaves the text at one edge and the
+            rail at the other with a quarter of the page empty between
+            them; tracking the measure sets the rail beside the column it
+            annotates, and turns the remainder into a right margin. */}
+        <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,var(--read))_280px] lg:gap-[72px]">
+          <article className="max-w-read font-reading">
             {/* The chapter list, for every width the rail does not reach. */}
             <ArticleContents
               headings={headings}

@@ -31,6 +31,16 @@ import { headingId } from '@/lib/toc'
  *
  *   @video 29PZpK0CKts | Title | Prophet Dr. David Edward Owuor | Watch · 20 seconds
  *
+ * A teaching that answers the questions readers actually type carries them
+ * at the foot, where the devotional has ended and the apparatus begins:
+ *
+ *   ?? What does Hebrews 12:14 mean?
+ *   ?: It instructs believers to pursue peace with all men and holiness…
+ *
+ * Consecutive question blocks gather into one section, so they are set as
+ * a single list rather than as scattered pairs, and the same pairs are
+ * what the page emits as FAQPage structured data.
+ *
  * A callout's tone is one of `statement` (the ministry speaking for
  * itself), `source` (an editorial block: this cannot publish as it
  * stands), or `note` (a quiet aside beside the running text).
@@ -55,6 +65,12 @@ export type Block =
   | { kind: 'table'; caption?: string; head: string[]; rows: string[][] }
   | { kind: 'callout'; tone: CalloutTone; label?: string; inlines: Inline[]; cite?: string }
   | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string }
+  | { kind: 'faq'; items: FaqItem[] }
+
+export interface FaqItem {
+  q: string
+  a: string
+}
 
 /* ── Inline ──────────────────────────────────────────────────────── */
 
@@ -117,7 +133,7 @@ export function parseBody(body: string): Block[] {
     .map((block) => block.trim())
     .filter(Boolean)
 
-  return raw.map((block): Block => {
+  const blocks = raw.map((block): Block => {
     if (block.startsWith('## ')) {
       const text = block.slice(3).trim()
       return { kind: 'heading', id: headingId(text), text }
@@ -148,6 +164,18 @@ export function parseBody(body: string): Block[] {
       if (head && rest.length > 0) {
         return { kind: 'table', ...(caption ? { caption } : {}), head, rows: rest }
       }
+    }
+
+    /* A question and its answer. `?? ` opens the question, `?: ` carries
+       the answer, which may run over several lines. */
+    if (lines[0]?.startsWith('?? ') && lines.every((line) => /^\?[?:]\s/.test(line))) {
+      const q = lines[0].slice(3).trim()
+      const a = lines
+        .slice(1)
+        .map((line) => line.slice(3).trim())
+        .join(' ')
+        .trim()
+      if (q && a) return { kind: 'faq', items: [{ q, a }] }
     }
 
     /* A labelled panel. The tone decides what it is and how it reads. */
@@ -201,6 +229,22 @@ export function parseBody(body: string): Block[] {
 
     return { kind: 'paragraph', inlines: parseInline(block) }
   })
+
+  /* Questions written one after another are one section, not several. */
+  return blocks.reduce<Block[]>((out, block) => {
+    const previous = out[out.length - 1]
+    if (block.kind === 'faq' && previous?.kind === 'faq') {
+      previous.items.push(...block.items)
+      return out
+    }
+    return [...out, block]
+  }, [])
+}
+
+/** The question-and-answer pairs, for FAQPage structured data. */
+export function extractFaqs(body: string | undefined): FaqItem[] {
+  if (!body) return []
+  return parseBody(body).flatMap((block) => (block.kind === 'faq' ? block.items : []))
 }
 
 /* ── Derived values for structured data and feeds ────────────────── */
@@ -225,6 +269,10 @@ export function bodyToPlainText(body: string): string {
             .join('\n')
         case 'video':
           return [block.title, block.byline].filter(Boolean).join(' — ')
+        case 'faq':
+          /* The questions are part of the page a reader searches, so they
+             belong in the haystack and in the word count. */
+          return block.items.map(({ q, a }) => `${q} ${a}`).join('\n')
         default:
           return inlineText(block.inlines)
       }
@@ -303,6 +351,12 @@ export function bodyToHtml(body: string, origin: string): string {
           const byline = block.byline ? ` — ${escapeXml(block.byline)}` : ''
           return `<p><a href="${href}">${escapeXml(block.title)}</a>${byline}</p>`
         }
+        case 'faq':
+          /* A definition list is what this is, and it survives the trip
+             into a reader that strips everything it does not know. */
+          return `<dl>${block.items
+            .map(({ q, a }) => `<dt>${escapeXml(q)}</dt><dd>${escapeXml(a)}</dd>`)
+            .join('')}</dl>`
         default:
           return `<p>${inlineHtml(block.inlines, origin)}</p>`
       }
