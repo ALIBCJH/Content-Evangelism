@@ -1,16 +1,13 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import {
-  articleSubjects,
-  CATEGORIES,
-  categoryBlurb,
-  siteUrl,
-  topicHref,
-} from '@/lib/content'
+import { CATEGORIES, articleSubjects, categoryBlurb, siteInfo, siteUrl, topicHref } from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
+import { teachingRecordings } from '@/lib/teachings'
 import { Breadcrumbs } from '@/components/breadcrumbs'
+import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
+import { RecordingCard } from '@/components/teaching/recording-card'
 import { JsonLd } from '@/components/json-ld'
 
 /**
@@ -72,6 +69,34 @@ export default async function TeachingsPage() {
       </section>
 
       <div className="shell pb-24 pt-14">
+        {/* The recordings first: they are teachings, where the two lists
+            below them are ways of finding written pieces. The rail and the
+            card are the archive's, because a published recording held with
+            its dateline is what the prophecy archive already is. */}
+        <h2 className="rule-heading mb-2 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">
+          Recorded teachings
+        </h2>
+        <p className="mb-7 max-w-[660px] text-[0.9375rem] leading-[1.7] text-ink-muted">
+          Published by the ministry on its own channel and preached by{' '}
+          {siteInfo.head}. Each opens the recording on YouTube. A dateline
+          reading “date to confirm” has not yet been checked against the
+          source, and is left unstated rather than guessed.
+        </p>
+
+        <DatedRail>
+          {teachingRecordings.map((recording, index) => {
+            const previous = teachingRecordings[index - 1]
+            const first = recording.year !== null && previous?.year !== recording.year
+            return (
+              <DatedRailItem key={recording.id} year={first ? recording.year : null}>
+                <RecordingCard recording={recording} />
+              </DatedRailItem>
+            )
+          })}
+        </DatedRail>
+
+        <div className="mb-16" />
+
         {sections.length > 0 && (
           <>
             <h2 className="rule-heading mb-7 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">
