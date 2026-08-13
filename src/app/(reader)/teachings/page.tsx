@@ -6,8 +6,7 @@ import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
 import { teachingRecordings } from '@/lib/teachings'
 import { Breadcrumbs } from '@/components/breadcrumbs'
-import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
-import { RecordingCard } from '@/components/teaching/recording-card'
+import { RecordingList } from '@/components/teaching/recording-list'
 import { JsonLd } from '@/components/json-ld'
 
 /**
@@ -70,17 +69,7 @@ export default async function TeachingsPage() {
             held with its dateline is what the prophecy archive already is.
             They carry no heading and no preamble — each card states its own
             dateline, what it is, and that it opens YouTube. */}
-        <DatedRail>
-          {teachingRecordings.map((recording, index) => {
-            const previous = teachingRecordings[index - 1]
-            const first = recording.year !== null && previous?.year !== recording.year
-            return (
-              <DatedRailItem key={recording.id} year={first ? recording.year : null}>
-                <RecordingCard recording={recording} />
-              </DatedRailItem>
-            )
-          })}
-        </DatedRail>
+        <RecordingList recordings={teachingRecordings} />
 
         <div className="mb-16" />
 
