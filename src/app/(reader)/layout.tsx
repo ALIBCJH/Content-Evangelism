@@ -2,6 +2,7 @@ import * as React from 'react'
 import { buildSearchIndex } from '@/lib/search-index'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
+import { Tracker } from '@/components/insight/tracker'
 
 /**
  * Shared chrome for every reader-facing page; /admin stays outside.
@@ -17,6 +18,7 @@ export default async function ReaderLayout({ children }: { children: React.React
       <SiteHeader docs={docs} />
       <div className="flex-1">{children}</div>
       <SiteFooter />
+      <Tracker />
     </div>
   )
 }

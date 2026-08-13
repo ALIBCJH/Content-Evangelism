@@ -64,6 +64,7 @@ export function RecordingCard({
             type="button"
             onClick={onPlay}
             aria-label={`Play: ${recording.title}`}
+            data-track="play-teaching"
             className="focus-ring group/play absolute inset-0 h-full w-full cursor-pointer"
           >
             <Image
@@ -129,6 +130,7 @@ export function RecordingCard({
             )}
             <Link
               href={teachingHref(recording)}
+              data-track="open-record"
               className="focus-ring whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
             >
               THE RECORD →
@@ -137,6 +139,7 @@ export function RecordingCard({
               href={watchHref(recording.video)}
               target="_blank"
               rel="noopener noreferrer"
+              data-track="watch-youtube"
               className="focus-ring whitespace-nowrap font-mono text-[0.6875rem] text-ink-subtle transition-colors hover:text-gold"
             >
               YOUTUBE ↗
