@@ -116,7 +116,7 @@ Blank line separates paragraphs.
 
 - a bullet          1. or a numbered item
 
-Link a phrase with [the cross](/articles/the-cross-of-jesus),
+Link a phrase with [the rapture](/articles/rapture-or-second-coming-what-is-the-difference),
 and emphasise with *italic* or **bold**.
 
 |+ An optional caption

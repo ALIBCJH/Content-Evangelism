@@ -457,7 +457,7 @@ export default function AdminPage() {
                     <code className="text-gold"> - </code> or <code className="text-gold">1. </code> for a list
                   </p>
                   <p>
-                    Link a phrase with <code className="text-gold">[the cross](/articles/the-cross-of-jesus)</code> ·
+                    Link a phrase with <code className="text-gold">[the rapture](/articles/rapture-or-second-coming)</code> ·
                     emphasise with <code className="text-gold">*italic*</code> or <code className="text-gold">**bold**</code>
                   </p>
                 </div>

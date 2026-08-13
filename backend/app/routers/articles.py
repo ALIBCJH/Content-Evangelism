@@ -18,7 +18,7 @@ from app.text import estimate_read_minutes, slugify
 router = APIRouter(prefix="/api")
 
 # Slugs owned by static pages in the frontend — never assign them here.
-RESERVED_SLUGS = {"the-cross-of-jesus"}
+RESERVED_SLUGS: set[str] = set()
 
 
 async def _unique_slug(session: AsyncSession, wanted: str) -> str:

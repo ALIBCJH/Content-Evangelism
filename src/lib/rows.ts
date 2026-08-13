@@ -1,6 +1,5 @@
 import {
   categoryArt,
-  crossArticle,
   type ArticleArt as ArticleArtSpec,
   type Category,
 } from '@/lib/content'
@@ -19,45 +18,38 @@ export interface RealRow {
   imageUrl?: string
   imageAlt?: string
   art: ArticleArtSpec
-  /** Search haystack (body included for posted pieces). */
+  /** Search haystack: the title, the standfirst and the body. */
   text: string
-  /** Display body (posted pieces only) — feeds the front-page teaser. */
-  body?: string
+  /** The body — also what the front-page teaser is drawn from. */
+  body: string
 }
 
+/**
+ * Every article on the site, newest first.
+ *
+ * There is one source now: the pieces the posting desk has published.
+ * The site previously carried a single hand-set teaching alongside them,
+ * spliced in here so that listings, search, related-reading and the
+ * sitemap all saw it as an ordinary row; it has since been withdrawn, and
+ * with it the splice.
+ */
 export async function listRealRows(): Promise<RealRow[]> {
   const posted = await listPostedArticles()
-  const rows: RealRow[] = [
-    ...posted.map((a) => ({
-      slug: a.slug,
-      href: `/articles/${a.slug}`,
-      title: a.title,
-      dek: a.dek,
-      category: a.category,
-      authorName: a.authorName,
-      publishedAt: a.publishedAt,
-      readMinutes: a.readMinutes,
-      imageUrl: a.imageUrl,
-      imageAlt: a.imageAlt,
-      art: categoryArt[a.category],
-      text: `${a.title}\n${a.dek}\n${a.body}`.toLowerCase(),
-      body: a.body,
-    })),
-    {
-      slug: crossArticle.slug,
-      href: crossArticle.href!,
-      title: crossArticle.title,
-      dek: crossArticle.dek,
-      category: crossArticle.category,
-      authorName: 'The Editorial Desk',
-      publishedAt: crossArticle.publishedAt,
-      readMinutes: crossArticle.readMinutes,
-      imageUrl: crossArticle.image?.src,
-      imageAlt: crossArticle.image?.alt,
-      art: crossArticle.art,
-      text: `${crossArticle.title}\n${crossArticle.dek}`.toLowerCase(),
-    },
-  ]
+  const rows: RealRow[] = posted.map((a) => ({
+    slug: a.slug,
+    href: `/articles/${a.slug}`,
+    title: a.title,
+    dek: a.dek,
+    category: a.category,
+    authorName: a.authorName,
+    publishedAt: a.publishedAt,
+    readMinutes: a.readMinutes,
+    imageUrl: a.imageUrl,
+    imageAlt: a.imageAlt,
+    art: categoryArt[a.category],
+    text: `${a.title}\n${a.dek}\n${a.body}`.toLowerCase(),
+    body: a.body,
+  }))
   return rows.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 }
 
