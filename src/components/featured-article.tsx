@@ -69,7 +69,7 @@ export function FeaturedArticle({
       </div>
 
       <div className="relative min-h-[220px] bg-navy-deep sm:min-h-[300px] md:min-h-[420px]">
-        {row.imageUrl && (
+        {row.imageUrl ? (
           <Image
             src={row.imageUrl}
             alt={row.imageAlt ?? ''}
@@ -78,6 +78,14 @@ export function FeaturedArticle({
             sizes="(min-width: 768px) 50vw, 100vw"
             className="object-cover"
           />
+        ) : (
+          /* No photograph: the section, set on the ministry's navy — the
+             same plate the archive card falls back to. Half a card of
+             empty navy says nothing; the section at least says what the
+             piece is. */
+          <span className="absolute inset-0 flex items-center justify-center px-6 text-center font-display text-[1.75rem] leading-tight text-gold-pale">
+            {row.category}
+          </span>
         )}
       </div>
     </Link>
