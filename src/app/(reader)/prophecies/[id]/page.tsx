@@ -1,6 +1,5 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { siteInfo, siteUrl } from '@/lib/content'
 import {
@@ -8,12 +7,12 @@ import {
   prophecyRecords,
   recordById,
   recordHref,
-  recordScriptures,
 } from '@/lib/prophecies'
 import { rssAlternate } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
+import { RecordAside } from '@/components/record/record-aside'
 
 /**
  * One prophecy record.
@@ -131,31 +130,15 @@ export default function RecordPage({ params }: Params) {
             ]}
           />
 
-          <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
-            <div>
-              <h1 className="mb-5 text-balance font-display text-[2.25rem] font-medium leading-[1.04] tracking-[-0.02em] sm:text-[3rem] lg:text-[3.75rem]">
-                {record.title}
-              </h1>
-              <p className="flex flex-wrap items-center gap-3.5">
-                <span className="font-mono text-xs tracking-[0.06em] text-gold-pale">
-                  {record.date} · {record.location.toUpperCase()} · VIDEO RECORD
-                </span>
-                {record.fulfilled && <FulfilledBadge tone="navy" />}
-              </p>
-            </div>
-
-            <dl className="lg:border-l lg:border-navy-rule lg:pl-8">
-              {meta.map((row) => (
-                <div
-                  key={row.k}
-                  className="flex justify-between gap-5 border-b border-navy-rule py-2.5 text-[0.8125rem]"
-                >
-                  <dt className="text-navy-soft">{row.k}</dt>
-                  <dd className="text-right font-mono text-ground">{row.v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+          <h1 className="mb-4 max-w-[900px] text-balance font-display text-[2.25rem] font-medium leading-[1.04] tracking-[-0.02em] sm:text-[2.75rem] lg:text-[3.25rem]">
+            {record.title}
+          </h1>
+          <p className="flex flex-wrap items-center gap-3.5">
+            <span className="font-mono text-xs tracking-[0.06em] text-gold-pale">
+              {record.date} · {record.location.toUpperCase()} · VIDEO RECORD
+            </span>
+            {record.fulfilled && <FulfilledBadge tone="navy" />}
+          </p>
         </div>
         <div className="gold-rule" />
       </section>
@@ -166,15 +149,6 @@ export default function RecordPage({ params }: Params) {
           <h2 id="original-source" className="sr-only">
             Original source
           </h2>
-          <Provenance
-            label="Primary Source"
-            tone="source"
-            note={
-              record.published === 'To confirm'
-                ? 'Official ministry recording. Publication date to confirm against the source.'
-                : `Official ministry recording, published ${record.date}.`
-            }
-          />
           <div className="relative h-0 overflow-hidden rounded-figure border border-navy-rule bg-navy-deep pb-[56.25%]">
             <iframe
               src={embedSrc(record.video)}
@@ -185,10 +159,43 @@ export default function RecordPage({ params }: Params) {
               className="absolute inset-0 h-full w-full border-0"
             />
           </div>
-          <p className="mt-3 text-xs text-ink-subtle">
+          <Provenance
+            label="Primary Source"
+            tone="source"
+            note={
+              record.published === 'To confirm'
+                ? 'Official ministry recording. Publication date to confirm against the source.'
+                : `Official ministry recording, published ${record.date}.`
+            }
+          />
+          <p className="-mt-1 text-xs text-ink-subtle">
             The video is the primary source of this page; every excerpt below is
             transcribed from it.
           </p>
+
+          {/* When it happened, as published — under the recording it
+              describes rather than beside the title, where it was
+              competing with the headline for the same glance. */}
+          <h2
+            id="when-it-happened"
+            className="mb-5 mt-12 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
+          >
+            When it happened
+          </h2>
+          <p className="mb-7 max-w-measure text-[1.0625rem] leading-[1.75] text-ink-900 sm:text-[1.125rem]">
+            {record.summary}
+          </p>
+          <dl className="rounded-panel border border-rule bg-card px-6 py-2 sm:px-8">
+            {meta.map((row) => (
+              <div
+                key={row.k}
+                className="flex justify-between gap-5 border-b border-rule-soft py-3.5 text-[0.9375rem] last:border-b-0"
+              >
+                <dt className="text-ink-muted">{row.k}</dt>
+                <dd className="text-right font-mono text-[0.8125rem] text-navy">{row.v}</dd>
+              </div>
+            ))}
+          </dl>
 
           {/* ── What was said ────────────────────────────────────── */}
           <h2
@@ -301,72 +308,26 @@ export default function RecordPage({ params }: Params) {
           </div>
         </article>
 
-        {/* ── The rail ───────────────────────────────────────────── */}
-        <aside className="flex flex-col gap-8 self-start lg:sticky lg:top-stick">
-          <nav aria-label="On this page">
-            <p className="kicker mb-1 border-b border-rule pb-3 text-ink-subtle">On this page</p>
-            {[
-              ['Original Source', 'original-source'],
-              ['What Was Said', 'what-was-said'],
-              ['Timeline', 'timeline'],
-              ['Subsequent Events', 'subsequent-events'],
-              ['Interpretation', 'interpretation'],
-            ].map(([label, id]) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                className="block py-2 text-sm text-ink-700 transition-colors hover:text-gold"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
-
-          {others.length > 0 && (
-            <nav aria-label="Other records">
-              <p className="kicker mb-1.5 border-b border-rule pb-3 text-ink-subtle">
-                Other records
-              </p>
-              {others.map((other) => (
-                <Link
-                  key={other.id}
-                  href={recordHref(other)}
-                  className="block border-b border-dotted border-rule py-3 transition-colors hover:text-gold"
-                >
-                  <span className="mb-1 block font-mono text-[0.625rem] text-gold">
-                    {other.date}
-                  </span>
-                  <span className="block font-display text-[1.0625rem] leading-tight text-navy">
-                    {other.title}
-                  </span>
-                </Link>
-              ))}
-            </nav>
-          )}
-
-          <div>
-            <p className="kicker mb-3.5 border-b border-rule pb-3 text-ink-subtle">
-              Related Scriptures
-            </p>
-            <ul className="flex flex-col gap-2.5">
-              {recordScriptures.map((scripture) => (
-                <li
-                  key={scripture.ref}
-                  className="relative rounded-tile border border-rule bg-raised px-4 py-4"
-                >
-                  <span
-                    aria-hidden
-                    className="absolute inset-y-3.5 left-0 w-0.5 bg-gold"
-                  />
-                  <span className="mb-2 block font-display text-[0.9375rem] leading-[1.45] text-ink-900">
-                    {scripture.text}
-                  </span>
-                  <span className="font-mono text-[0.6875rem] text-navy">{scripture.ref}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </aside>
+        <RecordAside
+          heading="More prophecies"
+          items={others.map((other) => ({
+            href: recordHref(other),
+            date: other.date,
+            title: other.title,
+          }))}
+          links={[
+            { href: '/prophecies', label: 'PROPHECY ARCHIVE' },
+            { href: '/teachings', label: 'THE TEACHINGS' },
+            { href: '/articles', label: 'THE ARTICLES' },
+          ]}
+          contents={[
+            ['When it happened', 'when-it-happened'],
+            ['What Was Said', 'what-was-said'],
+            ['Timeline', 'timeline'],
+            ['Subsequent Events', 'subsequent-events'],
+            ['Interpretation', 'interpretation'],
+          ]}
+        />
       </div>
     </main>
   )
