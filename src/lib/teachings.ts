@@ -99,3 +99,9 @@ export const teachingRecordings: TeachingRecording[] = [
     year: null,
   },
 ]
+
+export const teachingHref = (recording: TeachingRecording): string =>
+  `/teachings/${recording.id}`
+
+export const teachingById = (id: string): TeachingRecording | null =>
+  teachingRecordings.find((recording) => recording.id === id) ?? null

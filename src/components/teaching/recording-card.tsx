@@ -2,6 +2,8 @@ import * as React from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import type { TeachingRecording } from '@/lib/teachings'
+import Link from 'next/link'
+import { teachingHref } from '@/lib/teachings'
 import { embedSrc, posterSrc, watchHref } from '@/lib/youtube'
 
 /**
@@ -93,8 +95,12 @@ export function RecordingCard({
           </span>
         </p>
 
+        {/* Two ways in, and they are different things: the poster plays
+            the teaching where it stands, the headline opens its record. */}
         <h3 className="mb-3.5 text-balance font-display text-[1.375rem] font-medium leading-[1.15] text-navy sm:text-[1.75rem]">
-          {recording.title}
+          <Link href={teachingHref(recording)} className="focus-ring">
+            <span className="headline-link">{recording.title}</span>
+          </Link>
         </h3>
 
         {recording.summary && (
@@ -121,6 +127,12 @@ export function RecordingCard({
                 ▶ PLAY HERE
               </button>
             )}
+            <Link
+              href={teachingHref(recording)}
+              className="focus-ring whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
+            >
+              THE RECORD →
+            </Link>
             <a
               href={watchHref(recording.video)}
               target="_blank"
