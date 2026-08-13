@@ -14,11 +14,22 @@ import { homeHero } from '@/lib/content'
  * Nothing else changes when a photograph does arrive: drop it behind this
  * block with the scrim the design specifies, and the type is already
  * placed for it.
+ *
+ * It is sized to fill the first screen exactly — the viewport less the
+ * masthead standing above it — so the front page opens on the navy and
+ * nothing else, with the featured article beginning at the fold rather
+ * than peeking over it. `svh` rather than `vh` or `dvh`: the small
+ * viewport is the one that holds still while a phone's address bar comes
+ * and goes, so the hero does not resize under the reader mid-scroll.
+ *
+ * The type is centred in that screen rather than sitting on its floor.
+ * At 660px the difference is slight, but on a tall desktop window the
+ * bottom-anchored block left the upper half of the navy empty.
  */
 export function HomeHero() {
   return (
-    <section className="flex min-h-[420px] items-end overflow-hidden bg-navy-deep sm:min-h-[560px] lg:min-h-[660px]">
-      <div className="mx-auto w-full max-w-shell px-5 pb-14 pt-24 sm:px-8 lg:pb-[72px] lg:pt-[120px]">
+    <section className="relative flex min-h-[calc(100svh-var(--masthead))] items-center overflow-hidden bg-navy-deep">
+      <div className="mx-auto w-full max-w-shell px-5 py-16 sm:px-8 lg:py-20">
         <p className="mb-5 flex items-center gap-3">
           <span aria-hidden className="h-px w-[26px] bg-gold-pale" />
           <span className="kicker-lg text-gold-sand">{homeHero.kicker}</span>
@@ -52,6 +63,16 @@ export function HomeHero() {
           </Link>
         </div>
       </div>
+
+      {/* The hero ends exactly at the fold now, so nothing below it peeks
+          over the edge to say the page continues. This is that signal and
+          only that — a gold hairline, which is what gold is for here, and
+          decorative, so it is hidden from assistive technology that has
+          the document outline to navigate by. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-8 mx-auto h-10 w-px bg-gradient-to-b from-transparent to-gold-pale/60"
+      />
     </section>
   )
 }
