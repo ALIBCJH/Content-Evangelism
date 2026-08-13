@@ -121,7 +121,7 @@ export default function RecordPage({ params }: Params) {
 
       {/* ── The header ─────────────────────────────────────────────── */}
       <section className="bg-navy text-ground">
-        <div className="shell pb-14 pt-11">
+        <div className="shell pb-9 pt-7">
           <Breadcrumbs
             className="mb-8 text-navy-soft [&_a:hover]:text-gold-pale [&_span[aria-current]]:text-gold-pale"
             crumbs={[

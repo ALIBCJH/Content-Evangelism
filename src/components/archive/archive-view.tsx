@@ -85,11 +85,11 @@ export async function ArchiveView({
 
       {/* ── The band ─────────────────────────────────────────────── */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell pb-14 pt-11">
+        <div className="shell pb-9 pt-7">
           {crumbs ? (
             <Breadcrumbs className="mb-6" crumbs={crumbs} />
           ) : (
-            <p className="kicker-lg mb-6 text-ink-subtle">
+            <p className="kicker-lg mb-4 text-ink-subtle">
               {kicker}
               {rows.length > 0 && ` · ${rows.length} ${rows.length === 1 ? 'piece' : 'pieces'}`}
             </p>
@@ -126,10 +126,10 @@ export async function ArchiveView({
           </p>
         </div>
       ) : (
-        <section className="shell pb-24 pt-12">
+        <section className="shell pb-24 pt-6">
           {/* What is left of the filter row: the ordering, which the list
               does not state for itself. The section chips are gone. */}
-          <div className="mb-10 flex items-center justify-end border-b border-rule pb-5">
+          <div className="mb-6 flex items-center justify-end border-b border-rule pb-4">
             <span className="kicker-lg text-ink-subtle">Newest first</span>
           </div>
 

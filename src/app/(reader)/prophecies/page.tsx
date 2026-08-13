@@ -60,7 +60,7 @@ export default function PropheciesPage() {
       />
 
       <section className="border-b border-rule bg-raised">
-        <div className="shell pb-14 pt-11">
+        <div className="shell pb-9 pt-7">
           <Breadcrumbs
             className="mb-6"
             crumbs={[{ name: 'Home', href: '/' }, { name: 'Prophecy Archive' }]}
