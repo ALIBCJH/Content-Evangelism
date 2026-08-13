@@ -10,18 +10,20 @@ import {
 import { listRealRows, type RealRow } from '@/lib/rows'
 import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
-import { ArticleRow } from '@/components/archive/article-row'
-import { FeaturedArticle } from '@/components/featured-article'
+import { ArticleCard } from '@/components/archive/article-card'
+import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
 
 /**
  * A listing of writing: the whole archive at /articles, and the same
  * component filtered to a section or an author.
  *
- * The design sets it as a cream band carrying the title and the subjects,
- * then the newest piece as a full card, then the rest as rows with a
- * sticky rail beside them. Nothing is paginated — the archive is small
- * enough to read in one page, and a reader who wants a specific thing has
- * search.
+ * A cream band carries the title and the subjects; below it every piece
+ * is a card on the dated rail, in the same language as the prophecy
+ * archive. The two are the ministry's two chronologies and now read as
+ * one set of pages rather than two.
+ *
+ * Nothing is paginated — the archive is small enough to read in one page,
+ * and a reader who wants a specific thing has search.
  */
 
 export interface ArchiveViewProps {
@@ -42,55 +44,6 @@ export interface ArchiveViewProps {
    * set into a result rather than treating the page as loose prose.
    */
   collection?: { name: string; description: string; path: string }
-}
-
-/** The rail: what else is filed here, and the way into the other archive. */
-function Rail({
-  counts,
-  showSubjects,
-}: {
-  counts: { category: Category; count: number }[]
-  showSubjects: boolean
-}) {
-  return (
-    <aside className="flex flex-col gap-8 self-start lg:sticky lg:top-stick">
-      {counts.length > 1 && (
-        <nav aria-label="Sections">
-          <p className="kicker mb-1.5 border-b border-rule pb-3 text-ink-subtle">Sections</p>
-          {counts.map(({ category, count }) => (
-            <Link
-              key={category}
-              href={topicHref(category)}
-              className="block border-b border-dotted border-rule py-3 transition-colors hover:text-gold"
-            >
-              <span className="block font-display text-[1.125rem] leading-snug text-navy">
-                {category}
-              </span>
-              <span className="font-mono text-[0.625rem] text-ink-subtle">
-                {count} {count === 1 ? 'piece' : 'pieces'}
-              </span>
-            </Link>
-          ))}
-        </nav>
-      )}
-
-      {showSubjects && (
-        <div className="rounded-panel border border-rule bg-raised p-6">
-          <p className="kicker mb-3 text-ink-subtle">From the archive</p>
-          <p className="mb-4 text-sm leading-[1.7] text-ink-700">
-            Prophetic messages are held separately, each with its original recording
-            and publication date.
-          </p>
-          <Link
-            href="/prophecies"
-            className="font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
-          >
-            PROPHECY ARCHIVE →
-          </Link>
-        </div>
-      )}
-    </aside>
-  )
 }
 
 export async function ArchiveView({
@@ -127,8 +80,6 @@ export async function ArchiveView({
       })),
     },
   }
-
-  const [lead, ...rest] = rows
 
   /* Only the whole archive lists its siblings; a filtered listing already
      says what it is, and the breadcrumb goes back up. */
@@ -237,22 +188,41 @@ export async function ArchiveView({
             <span className="kicker-lg text-ink-subtle">Newest first</span>
           </div>
 
-          <div className="mb-12">
-            <FeaturedArticle row={lead} kind="Featured" priority />
-          </div>
+          {/* The year prints only where it changes, so a run of pieces
+              from one year reads as a block rather than repeating. */}
+          <DatedRail>
+            {rows.map((row, index) => {
+              const year = row.publishedAt.slice(0, 4)
+              const first = index === 0 || rows[index - 1].publishedAt.slice(0, 4) !== year
+              return (
+                <DatedRailItem key={row.slug} year={first ? year : null}>
+                  <ArticleCard row={row} latest={index === 0} />
+                </DatedRailItem>
+              )
+            })}
+          </DatedRail>
+        </section>
+      )}
 
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
+      {/* The other archive. It used to be a panel in a sidebar, which on a
+          short listing left a column of nothing beside it; as a closing
+          band it cannot collapse, and the hand-off reads as deliberate. */}
+      {whole && rows.length > 0 && (
+        <section className="border-t border-rule bg-raised">
+          <div className="shell flex flex-wrap items-center justify-between gap-6 py-12">
             <div>
-              {rest.length > 0 ? (
-                rest.map((row) => <ArticleRow key={row.slug} row={row} />)
-              ) : (
-                <p className="border-t border-rule pt-8 text-[0.9375rem] text-ink-muted">
-                  This is everything filed here so far. The next piece will appear
-                  above the moment it is published.
-                </p>
-              )}
+              <p className="kicker mb-2.5 text-ink-subtle">From the archive</p>
+              <p className="max-w-[620px] text-pretty font-display text-[1.375rem] leading-[1.3] text-navy">
+                Prophetic messages are held separately, each with its original
+                recording and publication date.
+              </p>
             </div>
-            <Rail counts={counts} showSubjects={whole} />
+            <Link
+              href="/prophecies"
+              className="focus-ring whitespace-nowrap rounded-tile border border-rule bg-card px-6 py-3.5 font-mono text-[0.6875rem] tracking-[0.08em] text-navy transition-colors hover:border-gold hover:text-gold"
+            >
+              PROPHECY ARCHIVE →
+            </Link>
           </div>
         </section>
       )}
