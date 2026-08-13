@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google'
+import {
+  Fraunces,
+  Gentium_Book_Plus,
+  IBM_Plex_Sans,
+  Inter,
+  JetBrains_Mono,
+  Newsreader,
+} from 'next/font/google'
 import { siteInfo, siteUrl } from '@/lib/content'
 import {
   contactEmail,
@@ -35,6 +42,60 @@ const mono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
   variable: '--font-mono',
+  display: 'swap',
+})
+
+/* ── The reading layer ──────────────────────────────────────────────
+ *
+ * An article is not chrome, and it is not set in the chrome's type. The
+ * three families below carry the teaching itself; the three above carry
+ * the site around it. The rule the split runs on is simple — serif for
+ * what you read, sans for what you scan — so a reader can tell without
+ * being told where the devotional ends and the apparatus begins.
+ *
+ * All three are declared through `next/font`, which downloads them at
+ * build time and serves them from this origin as subset WOFF2. There is
+ * no request to Google from a reader's browser, no third-party
+ * connection to open on a slow network, and `display: swap` on each, so
+ * the text is legible before the fonts land. That matters most for the
+ * readers this ministry actually has, on Kenyan mobile data.
+ */
+
+/* Article headlines, the italic standfirst, and the chapter headings. At
+   300 — the weight is the point. A headline set at 700 shouts; at 300
+   the same words are unhurried, which is the register a devotional is
+   written in. `opsz` keeps it even from the standfirst up to the h1. */
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  /* Variable across weight and optical size, so no `weight` list: every
+     weight from 300 up is available from the one file, and `opsz` keeps
+     the standfirst and the 56px headline evenly drawn. */
+  axes: ['opsz'],
+  style: ['normal', 'italic'],
+  variable: '--font-newsreader',
+  display: 'swap',
+})
+
+/* Every word of the article body, and the Scripture it quotes.
+   SIL built Gentium for scripture typesetting and Bible translation, so
+   the Greek and Hebrew transliteration a teaching reaches for — harpazō,
+   rapiemur — is native to the face rather than bolted onto it. Its tall
+   x-height is what keeps a long passage readable on a phone. */
+const gentium = Gentium_Book_Plus({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-gentium',
+  display: 'swap',
+})
+
+/* Everything that is not prose: the eyebrow, the byline, the citation
+   under a quotation, the rail, the key scriptures, the questions at the
+   foot. A neutral grotesque, which is the job — it stays out of the way. */
+const plex = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex',
   display: 'swap',
 })
 
@@ -156,7 +217,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${mono.variable}`}
+      className={[
+        fraunces.variable,
+        inter.variable,
+        mono.variable,
+        newsreader.variable,
+        gentium.variable,
+        plex.variable,
+      ].join(' ')}
     >
       <body>
         <JsonLd data={siteGraph} />

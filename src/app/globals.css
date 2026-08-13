@@ -80,6 +80,12 @@
   --shell: 1280px;
   --measure: 760px;
 
+  /* The article's reading column. Narrower than --measure because it is
+     set in Gentium at 19px, and 34rem is roughly the 65 characters past
+     which the eye starts losing the line return. --measure stays as it
+     was for the pages that are not a long read. */
+  --read: 34rem;
+
   /* The masthead's exact height: 72px of bar, its hairline, and the 2px
      gold rule that closes it. The front page subtracts it from the
      viewport so the masthead and the hero together fill the first screen;

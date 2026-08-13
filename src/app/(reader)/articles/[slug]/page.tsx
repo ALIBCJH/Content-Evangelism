@@ -10,7 +10,7 @@ import {
 } from '@/lib/content'
 import { getPostedArticle, listPostedArticles } from '@/lib/posted'
 import { listRealRows, relatedRows } from '@/lib/rows'
-import { bodyToPlainText, wordCount } from '@/lib/article-body'
+import { bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
 import { schemaImage } from '@/lib/images'
 import { rssAlternate } from '@/lib/seo'
 import { extractHeadings } from '@/lib/toc'
@@ -123,9 +123,26 @@ export default async function PostedArticlePage({ params }: Params) {
 
   const headings = extractHeadings(article.body)
 
+  /* A teaching that answers questions at its foot says so in structured
+     data too, as its own node rather than folded into the Article — which
+     is what makes the answers eligible to be quoted on their own. */
+  const faqs = extractFaqs(article.body)
+  const faqLd = faqs.length > 0 && {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${url}#faq`,
+    isPartOf: { '@id': `${siteUrl}/#website` },
+    mainEntity: faqs.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }
+
   return (
     <>
       <JsonLd data={articleLd} />
+      {faqLd && <JsonLd data={faqLd} />}
       <ArticleLayout
         category={article.category}
         title={article.title}

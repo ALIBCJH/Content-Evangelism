@@ -11,6 +11,9 @@ import type { Heading } from '@/lib/toc'
  * It is plain server-rendered anchors on purpose. A chapter list is
  * navigation, so it has to work as navigation does: crawlable, openable
  * in a new tab, and reachable by keyboard without a script running.
+ *
+ * Set in the apparatus face, like the rail it stands in for — this is
+ * scanned to find a place, not read through.
  */
 export function ArticleContents({
   headings,
@@ -23,7 +26,7 @@ export function ArticleContents({
   if (headings.length < 2) return null
 
   return (
-    <nav aria-labelledby="in-this-teaching" className={className}>
+    <nav aria-labelledby="in-this-teaching" className={`font-apparatus ${className}`}>
       <p id="in-this-teaching" className="kicker text-ink-subtle">
         On this page
       </p>
