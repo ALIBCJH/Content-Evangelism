@@ -69,13 +69,15 @@ closes the header and opens the footer.
    gold rule; Featured Article (text ⟷ image, 16px radius); Vision and
    Mission cards side by side with scripture chips.
 2. **Articles** — cream band with title, dek and subject chips; filter row;
-   featured card; list rows with 4:3 thumbnails, and a sticky sidebar
-   (Series, From the archive).
+   then every piece as a card on the dated rail, in the same language as
+   the Prophecy Archive. A closing band hands off to the other archive.
+   *(Departure — see below.)*
 3. **Article** — breadcrumb, title + standfirst beside a 3:2 image, then the
    reading column with a 280px sticky rail (On this page, Key scriptures).
    Scripture sits in a cream figure ruled 3px gold on its opening edge.
-4. **Prophecy Archive** — a year rail down the left with a dotted timeline,
-   records as cards with 16:9 thumbnails, Fulfilled badges and tag chips.
+4. **Prophecy Archive** — a year rail down the left, records as cards with
+   16:9 thumbnails, Fulfilled badges and tag chips. The rail and the card
+   are shared with the article archive (`components/archive/dated-rail`).
 5. **Record** — navy header with the meta table, the original recording as
    the primary source, What Was Said, Timeline, Subsequent Events
    (independent), and Interpretation, each labelled for provenance.
@@ -91,3 +93,30 @@ closes the header and opens the footer.
   ministry interpretation are separately labelled wherever they appear.
 - Gold is a rule and an accent, never a field of paint except on buttons.
 - Scripture references are always set in JetBrains Mono.
+- The two archives are one chronology in two halves. Writing and prophecy
+  share the dated rail and the card, so a reader moving between them does
+  not have to learn the page twice.
+
+## Departures from the prototype
+
+Everything above is transcribed from the `Ministry Platform` prototype
+except the following, which are recorded here so the difference is
+deliberate rather than drift.
+
+**The article archive is a dated rail, not a featured card over a sidebar.**
+The prototype sets /articles as a featured card, then list rows with 4:3
+thumbnails, beside a sticky sidebar carrying Series and From the archive.
+That composition assumes a long list. With a short one the featured card
+consumes the only piece, the rows below it are empty, and the sidebar is
+left as a single panel beside a column of nothing — which is what the page
+actually looked like.
+
+The prophecy archive had already solved the same problem: a dated rail with
+one card per record, which reads correctly at one record or at fifty. The
+article archive now uses it, and the two are one component. The featured
+treatment stays where the prototype also puts it and where it does not
+depend on list length — the front page.
+
+The sidebar's two panels were resolved rather than dropped: Series
+duplicated the filter row above it, and From the archive became the closing
+band, where it cannot collapse.

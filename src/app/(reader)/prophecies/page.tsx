@@ -7,6 +7,7 @@ import { posterSrc, prophecyRecords, recordHref } from '@/lib/prophecies'
 import { rssAlternate } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
+import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
 
 /**
@@ -82,30 +83,15 @@ export default function PropheciesPage() {
           <span className="kicker-lg text-ink-subtle">Newest first</span>
         </div>
 
-        <ol>
+        {/* The rail is shared with the article archive — see dated-rail.
+            A record whose year is still to be confirmed leaves its marker
+            unlabelled rather than printing a placeholder dash. */}
+        <DatedRail>
           {records.map((record) => (
-            <li
+            <DatedRailItem
               key={record.id}
-              className="grid grid-cols-1 sm:grid-cols-[92px_minmax(0,1fr)]"
+              year={record.year === '—' ? null : record.year}
             >
-              {/* The rail: the year, the wire, and the marker. It is
-                  withdrawn on a phone — 92px of chronology is width the
-                  card needs more, and the dateline on each card already
-                  carries the year. */}
-              <div className="relative hidden pt-8 sm:block">
-                <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-gold">
-                  {record.year}
-                </span>
-                <span
-                  aria-hidden
-                  className="absolute inset-y-0 left-6 w-px bg-rule sm:left-[46px]"
-                />
-                <span
-                  aria-hidden
-                  className="absolute left-[18px] top-9 h-[9px] w-[9px] rounded-full bg-gold sm:left-[42px]"
-                />
-              </div>
-
               <Link
                 href={recordHref(record)}
                 className="card card-interactive my-3 flex flex-col items-start gap-6 p-5 sm:ml-8 sm:p-8 lg:flex-row lg:gap-7"
@@ -164,9 +150,9 @@ export default function PropheciesPage() {
                   </span>
                 </span>
               </Link>
-            </li>
+            </DatedRailItem>
           ))}
-        </ol>
+        </DatedRail>
       </section>
     </main>
   )
