@@ -31,10 +31,7 @@ export default async function HomePage() {
   const [lead] = rows
 
   return (
-    /* The hero runs to the top of the window with the masthead over it, so
-       the page is pulled up under the 74px the masthead occupies. Only the
-       front page does this; every other page starts below it. */
-    <main className="-mt-[74px]">
+    <main>
       <JsonLd
         data={{
           '@context': 'https://schema.org',
