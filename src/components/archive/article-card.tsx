@@ -43,9 +43,13 @@ export function ArticleCard({
   return (
     <Link
       href={row.href}
-      className="card card-interactive group my-3 flex flex-col items-start gap-6 p-5 sm:ml-8 sm:p-8 lg:flex-row lg:gap-7"
+      className="card card-interactive group flex h-full flex-col items-start gap-6 p-5 sm:p-8 lg:flex-row lg:items-stretch lg:gap-7"
     >
-      <span className="relative block aspect-[16/9] w-full shrink-0 overflow-hidden rounded-tile border border-rule bg-navy-deep lg:w-[260px]">
+      {/* On a phone the picture leads at 16:9. From `lg` it stands as a
+          column beside the type and takes the card's full height, because
+          a narrower card is a taller card, and a fixed 16:9 well left a
+          third of that column empty. */}
+      <span className="relative block aspect-[16/9] w-full shrink-0 overflow-hidden rounded-tile border border-rule bg-navy-deep lg:aspect-auto lg:w-[240px]">
         {row.imageUrl ? (
           <Image
             src={row.imageUrl}
@@ -86,7 +90,10 @@ export function ArticleCard({
           <span className="headline-link">{row.title}</span>
         </span>
 
-        <span className="mb-4 block max-w-[720px] text-[0.9375rem] leading-[1.7] text-ink-muted line-clamp-3">
+        {/* No `block` here: line-clamp needs `display: -webkit-box`, and a
+            `block` alongside it silently wins and leaves the excerpt
+            unclamped — which is what it had been doing. */}
+        <span className="mb-4 line-clamp-3 max-w-[720px] text-[0.9375rem] leading-[1.7] text-ink-muted">
           {openingLine(row.body, row.dek)}
         </span>
 

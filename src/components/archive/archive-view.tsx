@@ -1,11 +1,11 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { siteUrl } from '@/lib/content'
+import { cn } from '@/lib/utils'
 import { listRealRows, type RealRow } from '@/lib/rows'
 import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { ArticleCard } from '@/components/archive/article-card'
-import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
 
 /**
  * A listing of writing: the whole archive at /articles, and the same
@@ -135,17 +135,32 @@ export async function ArchiveView({
 
           {/* The year prints only where it changes, so a run of pieces
               from one year reads as a block rather than repeating. */}
-          <DatedRail>
-            {rows.map((row, index) => {
-              const year = row.publishedAt.slice(0, 4)
-              const first = index === 0 || rows[index - 1].publishedAt.slice(0, 4) !== year
-              return (
-                <DatedRailItem key={row.slug} year={first ? year : null}>
-                  <ArticleCard row={row} latest={index === 0} />
-                </DatedRailItem>
-              )
-            })}
-          </DatedRail>
+          {/* The cascade.
+              From `lg` up the cards take a little under two-thirds of the
+              shell and alternate edge to edge, each pulled up so its corner
+              laps the one before it. The lap is the thing to get right: it
+              is 28px against the card's own 32px of padding, so what a card
+              covers is always the previous card's margin and never a word
+              of it. Hovering lifts a card clear of its neighbours.
+
+              Below `lg` none of it applies. Cards go full width and stack
+              in order, because a stagger on a 390px screen is not a
+              composition, it is two columns of forty characters. */}
+          <ol>
+            {rows.map((row, index) => (
+              <li
+                key={row.slug}
+                className={cn(
+                  'relative transition-[z-index] hover:z-10',
+                  'lg:w-[62%]',
+                  index > 0 && 'mt-6 lg:-mt-7',
+                  index % 2 === 1 && 'lg:ml-auto'
+                )}
+              >
+                <ArticleCard row={row} latest={index === 0} />
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 
