@@ -108,5 +108,17 @@
     "width": 1920,
     "height": 1280,
     "query": "manual pick"
+  },
+  "holiness-puzzle": {
+    "title": "HOLINESS spelled on jigsaw pieces",
+    "creator": null,
+    "license": "UNLICENSED — stock-library preview, watermarked",
+    "license_url": null,
+    "source_page": null,
+    "provider": "unknown stock library",
+    "width": 992,
+    "height": 558,
+    "query": null,
+    "note": "Supplied by the ministry and published at their instruction. The file carries a visible stock-library watermark across the lettering and is a low-resolution comp. It must be replaced with a licensed copy — overwrite holiness-puzzle.webp and this entry; nothing else needs to change."
   }
 }
