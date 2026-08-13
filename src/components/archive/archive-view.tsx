@@ -179,6 +179,7 @@ export async function ArchiveView({
             </div>
             <Link
               href="/prophecies"
+              data-track="prophecy-archive"
               className="focus-ring whitespace-nowrap rounded-tile border border-rule bg-card px-6 py-3.5 font-mono text-[0.6875rem] tracking-[0.08em] text-navy transition-colors hover:border-gold hover:text-gold"
             >
               PROPHECY ARCHIVE →

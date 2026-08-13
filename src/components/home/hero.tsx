@@ -49,12 +49,14 @@ export function HomeHero() {
               it, rather than becoming a second field of paint. */}
           <Link
             href={homeHero.primary.href}
+            data-track="hero-primary"
             className="focus-ring rounded-tile bg-navy px-7 py-4 text-center text-[0.9375rem] font-semibold text-card transition-colors hover:bg-navy-deep"
           >
             {homeHero.primary.label}
           </Link>
           <Link
             href={homeHero.secondary.href}
+            data-track="hero-secondary"
             className="focus-ring rounded-tile border border-gold-pale bg-card px-7 py-4 text-center text-[0.9375rem] font-semibold text-navy transition-colors hover:border-gold hover:bg-chip-gold"
           >
             {homeHero.secondary.label}

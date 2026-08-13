@@ -108,7 +108,10 @@ export function ArticleCard({
               </span>
             ))}
           </span>
-          <span className="whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors group-hover:text-gold">
+          <span
+            data-track="read-article"
+            className="whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors group-hover:text-gold"
+          >
             <span className="tabular">{row.readMinutes} MIN</span> · READ ARTICLE →
           </span>
         </span>
