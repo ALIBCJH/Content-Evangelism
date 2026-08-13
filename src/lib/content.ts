@@ -68,21 +68,6 @@ export const categoryArt: Record<Category, ArticleArt> = {
   Testimony: { palette: 'dawn', icon: 'star' },
 }
 
-export interface Article {
-  slug: string
-  title: string
-  dek: string
-  category: Category
-  authorId: string
-  publishedAt: string // ISO date
-  readMinutes: number
-  art: ArticleArt
-  /** Real photograph — used instead of the generated art plate when set. */
-  image?: { src: string; alt: string; width: number; height: number }
-  /** Route to the full article page, when one exists. */
-  href?: string
-}
-
 /* ── Authors ─────────────────────────────────────────────────────── */
 
 export const authors: Author[] = [
@@ -139,28 +124,6 @@ export const authors: Author[] = [
 
 export const authorById = (id: string): Author =>
   authors.find((a) => a.id === id) ?? authors[0]
-
-/* ── Articles ────────────────────────────────────────────────────── */
-
-/* ── The Cross of Jesus — the first fully published article. ─────── */
-
-export const crossArticle: Article = {
-  slug: 'the-cross-of-jesus',
-  title: 'The Cross of Jesus: Where Repentance Meets Mercy',
-  dek: 'Before it was ever an ornament, it was an execution. Yet at that darkest instrument of Rome, the holiness of God and the hope of sinners met once and for all. The cross stands at the center of history — and at the door of every human heart — asking the one question none of us can avoid: what will you do with the Man who hung here?',
-  category: 'Teachings',
-  authorId: 'editorial-desk',
-  publishedAt: '2026-07-31',
-  readMinutes: 8,
-  art: { palette: 'flame', icon: 'star' },
-  image: {
-    src: '/images/the-cross-of-jesus.png',
-    alt: 'A rugged wooden cross draped with a white cloth, standing against a golden sunrise sky',
-    width: 1155,
-    height: 658,
-  },
-  href: '/articles/the-cross-of-jesus',
-}
 
 /* ── Site chrome ─────────────────────────────────────────────────── */
 

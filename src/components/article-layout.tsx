@@ -22,9 +22,8 @@ import { ShareRow } from '@/components/share-row'
  * scrolling at all. Then the reading column, 760px wide, with a 280px rail
  * beside it carrying the chapters and the Scriptures the teaching rests on.
  *
- * Two routes render a teaching — the posted articles at /articles/[slug]
- * and the hand-set piece at /articles/the-cross-of-jesus — and both are
- * this shell, so a change to how a teaching is presented is made once.
+ * Every teaching is rendered through this shell, from /articles/[slug],
+ * so a change to how a teaching is presented is made once.
  */
 
 export interface ArticleLayoutProps {
