@@ -7,8 +7,17 @@ text of a published teaching lives only in whichever store it was posted
 to, and a store can be lost.
 
 Anything set by hand rather than typed into the desk is therefore kept
-here as well, in exactly the shape `POST /api/articles` accepts. To put one
-into a running site:
+here as well, in exactly the shape `POST /api/articles` accepts.
+
+**The site reads this directory.** A file here is published: it appears at
+`/articles/<slug>` and in the archive on the next deploy, with the
+`publishedAt` it carries, without being posted anywhere. The store is
+still consulted first, so a teaching edited at the desk shows the edit —
+but a piece that exists only here is served from here, which is why a
+deployment with no Upstash attached is not an empty site.
+
+Posting a file to a running site is therefore only for putting it into a
+store — worth doing when the desk will edit it, unnecessary otherwise:
 
 ```bash
 curl -X POST "$SITE/api/articles" \
@@ -42,4 +51,5 @@ title.toLowerCase().normalize('NFKD')
 ```
 
 Because `publishedAt` is stamped on arrival, post the files oldest first if
-the order on `/articles` matters.
+the order on `/articles` matters. A file left unposted keeps its own date,
+which is usually the reason to leave it unposted.

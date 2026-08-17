@@ -153,6 +153,21 @@ Both hold the identical document — the whole article array, newest first
 JSON blob. Upstash is reached over plain HTTPS, so this costs no
 dependency.
 
+Underneath both sits `content/articles/`, which is not a store: it is the
+set of teachings the repository itself carries, one JSON file each, and
+the site reads them as well as the store. A slug held by the store wins,
+so an edit made at the desk is what a reader gets; a slug only the
+repository has is served from the file, keeping the `publishedAt` written
+into it rather than being dated by the deploy. This is what makes a
+deployment with no store attached — a fresh Vercel import, before Upstash
+— serve the archive instead of the empty state. They are pulled into the
+serverless bundle by `outputFileTracingIncludes` in `next.config.js`,
+because a directory read at runtime is invisible to the bundler.
+
+A piece the repository carries is removed by removing its file and
+redeploying: `DELETE /api/articles/:slug` works on the store, and cannot
+delete something that was never posted to one.
+
 Publishing with no store attached fails cleanly with *"The article store
 is not writable"* rather than appearing to succeed; reading is unaffected
 and the site keeps serving its built-in pieces.

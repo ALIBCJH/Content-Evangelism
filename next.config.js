@@ -18,6 +18,14 @@ const imageHosts = (process.env.IMAGE_HOSTS ?? '')
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  experimental: {
+    /* The teachings kept in content/articles are read at runtime with a
+       directory listing, which the bundler cannot see and so does not
+       carry into a serverless function. Without this the deployment ships
+       the code that reads them and none of the files, and the archive is
+       empty on a host with no store attached. */
+    outputFileTracingIncludes: { '/**': ['./content/articles/*.json'] },
+  },
   images: {
     /* i.ytimg.com is not a configurable host: it is where the poster frame
        of every prophecy recording comes from, and the archive cannot draw
