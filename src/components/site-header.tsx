@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Search, X } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { navSections, siteInfo } from '@/lib/content'
 import type { SearchDoc } from '@/lib/search-docs'
@@ -20,7 +21,21 @@ import { ThemeToggle } from '@/components/theme-toggle'
  * the bar and the menu button takes over — four sections would otherwise
  * crush the masthead on a phone.
  *
- * The drawer is built to full dialog standards, because at those widths it
+ * On a phone the sections are a sheet that comes up from the bottom rather
+ * than a panel that slides in from the side. That is where a thumb is: a
+ * drawer pinned to the top-right corner of a six-inch screen asks a reader
+ * to reach across the whole device to close what they just opened. The
+ * sheet can be flung back down, which is the gesture a sheet promises, and
+ * the handle at its head says so before anyone tries.
+ *
+ * The section a reader is in is marked by one gold rule that travels
+ * between the sections rather than appearing and disappearing under each —
+ * so the eye follows where it went, and the answer to "where am I" is
+ * given by movement instead of by re-reading the bar. It is the same
+ * marker in the sheet, and it respects a reduced-motion preference by
+ * simply being where it belongs without the journey.
+ *
+ * The sheet is built to full dialog standards, because at those widths it
  * is the only navigation there is: focus moves into it on open and back to
  * the button on close, Tab is trapped inside, Escape and the backdrop both
  * dismiss it, and the page behind it cannot scroll. Pressing "/" anywhere
@@ -30,6 +45,13 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
   const [open, setOpen] = React.useState(false)
   const [searching, setSearching] = React.useState(false)
   const pathname = usePathname()
+  const still = useReducedMotion()
+
+  /* One spring, used by everything that moves, so the sheet and the marker
+     are recognisably the same piece of software. */
+  const spring = still
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 420, damping: 38, mass: 0.9 }
 
   const panelRef = React.useRef<HTMLDivElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
@@ -132,19 +154,19 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
     }
   }, [open])
 
+  /* Articles is the front page now, and it is also the section every
+     teaching and topic belongs to — so it is current on `/` and on
+     anything under /articles or /topics, but not on /about. */
   const isCurrent = (href: string) =>
-    href === '/articles'
-      ? pathname === '/articles' || pathname.startsWith('/articles/')
+    href === '/'
+      ? pathname === '/' || pathname.startsWith('/articles') || pathname.startsWith('/topics')
       : pathname.startsWith(href)
 
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-rule bg-raised">
         <div className="mx-auto flex h-[72px] max-w-shell items-center gap-6 px-5 sm:px-8 lg:gap-10">
-          <Link
-            href="/"
-            className="focus-ring flex shrink-0 items-center gap-3 rounded-md"
-          >
+          <Link href="/" className="focus-ring flex shrink-0 items-center gap-3 rounded-md">
             <Image
               src="/logo.png"
               alt=""
@@ -159,7 +181,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
             </span>
           </Link>
 
-          {/* The sections, inline. Below `lg` they live in the drawer. */}
+          {/* The sections, inline. Below `lg` they live in the sheet. */}
           <nav aria-label="Primary" className="hidden flex-1 items-center justify-end gap-1 lg:flex">
             {navSections.map((section) => {
               const current = isCurrent(section.href)
@@ -169,10 +191,30 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                   href={section.href}
                   aria-current={current ? 'page' : undefined}
                   className={cn(
-                    'focus-ring rounded-lg px-3.5 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors',
-                    current ? 'bg-chip text-navy' : 'text-navy hover:bg-chip'
+                    'focus-ring relative rounded-lg px-3.5 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors',
+                    current ? 'text-navy' : 'text-navy/85 hover:text-navy'
                   )}
                 >
+                  {/* Two marks, one shared identity each: the chip the
+                      section sits in and the gold rule under it both
+                      travel from the section left to the section arrived
+                      at, because they are the same element re-parented. */}
+                  {current && (
+                    <>
+                      <motion.span
+                        layoutId="nav-current-chip"
+                        aria-hidden
+                        transition={spring}
+                        className="absolute inset-0 -z-10 rounded-lg bg-chip"
+                      />
+                      <motion.span
+                        layoutId="nav-current-rule"
+                        aria-hidden
+                        transition={spring}
+                        className="absolute inset-x-3.5 -bottom-[9px] h-[2px] rounded-full bg-gold"
+                      />
+                    </>
+                  )}
                   {section.label}
                 </Link>
               )
@@ -189,97 +231,173 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
             <button
               ref={buttonRef}
               type="button"
-              aria-label="Open menu"
+              aria-label={open ? 'Close menu' : 'Open menu'}
               aria-expanded={open}
               aria-haspopup="dialog"
-              onClick={() => setOpen(true)}
-              className="focus-ring icon-only flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-tile border border-rule bg-card"
+              onClick={() => setOpen((was) => !was)}
+              className="focus-ring icon-only relative flex h-11 w-11 items-center justify-center rounded-tile border border-rule bg-card"
             >
-              <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
-              <span aria-hidden className="h-[1.75px] w-[18px] bg-navy" />
-              <span aria-hidden className="h-[1.75px] w-3 bg-navy" />
+              {/* Three bars that become a cross: the button says what it
+                  will do next by being the thing it will turn into. */}
+              <motion.span
+                aria-hidden
+                animate={open ? { rotate: 45, y: 0, width: 18 } : { rotate: 0, y: -5.5, width: 18 }}
+                transition={spring}
+                className="absolute h-[1.75px] rounded-full bg-navy"
+              />
+              <motion.span
+                aria-hidden
+                animate={open ? { opacity: 0, scaleX: 0.4 } : { opacity: 1, scaleX: 1 }}
+                transition={{ duration: still ? 0 : 0.16 }}
+                className="absolute h-[1.75px] w-[18px] rounded-full bg-navy"
+              />
+              <motion.span
+                aria-hidden
+                animate={open ? { rotate: -45, y: 0, width: 18 } : { rotate: 0, y: 5.5, width: 12 }}
+                transition={spring}
+                className="absolute h-[1.75px] rounded-full bg-navy"
+              />
             </button>
           </div>
         </div>
+
         <div className="gold-rule opacity-[0.55]" />
       </header>
 
-      {/* ── The drawer ───────────────────────────────────────────── */}
-      {open && (
-        <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Menu">
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 h-full w-full cursor-default bg-navy-deep/60 backdrop-blur-[2px]"
-          />
+      {/* ── The sheet ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {open && (
           <div
-            ref={panelRef}
-            className="absolute inset-y-0 right-0 flex w-[min(24rem,92vw)] flex-col bg-raised shadow-drawer"
+            className="fixed inset-0 z-[60] lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
           >
-            <div className="flex items-center justify-between border-b border-rule px-5 py-3.5">
-              <span className="kicker text-ink-subtle">Menu</span>
-              <button
-                type="button"
-                aria-label="Close menu"
-                onClick={() => setOpen(false)}
-                className="focus-ring icon-only grid h-11 w-11 place-items-center rounded-tile border border-rule bg-card text-navy"
-              >
-                <X aria-hidden className="h-5 w-5" />
-              </button>
-            </div>
+            <motion.button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: still ? 0 : 0.2 }}
+              className="absolute inset-0 h-full w-full cursor-default bg-plate-deep/70 backdrop-blur-[3px]"
+            />
 
-            <div className="flex-1 overflow-y-auto px-5 py-5">
-              <button
-                type="button"
-                onClick={openSearch}
-                className="focus-ring mb-5 flex w-full items-center gap-2.5 rounded-tile border border-rule bg-card px-4 py-3.5 text-left text-[0.9375rem] text-ink-subtle"
-              >
-                <Search aria-hidden className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                Search the archive…
-              </button>
-
-              <nav aria-label="Sections">
-                {navSections.map((section) => (
-                  <Link
-                    key={section.href}
-                    href={section.href}
-                    aria-current={isCurrent(section.href) ? 'page' : undefined}
-                    className="flex min-h-[60px] items-center justify-between gap-4 border-b border-rule-soft py-3.5"
-                  >
-                    <span className="min-w-0">
-                      <span className="block font-display text-[1.5rem] leading-tight text-navy">
-                        {section.label}
-                      </span>
-                      <span className="mt-0.5 block truncate text-xs text-ink-subtle">
-                        {section.items.slice(0, 3).join(' · ')}
-                      </span>
-                    </span>
-                    <span aria-hidden className="font-mono text-base text-gold">
-                      →
-                    </span>
-                  </Link>
-                ))}
-              </nav>
-
-              <div className="mt-6 rounded-figure bg-plate p-5">
-                <p className="kicker mb-2 text-gold-pale">The ministry</p>
-                <p className="font-display text-[1.3125rem] leading-tight text-plate-pale">
-                  {siteInfo.mission}
-                </p>
+            <motion.div
+              ref={panelRef}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={spring}
+              /* Flung down, it goes: past a fifth of its height or a
+                 decisive flick, whichever comes first. Dragging up does
+                 nothing, so the sheet cannot be pulled off the screen. */
+              drag={still ? false : 'y'}
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.45 }}
+              onDragEnd={(_event, info) => {
+                if (info.offset.y > 120 || info.velocity.y > 550) setOpen(false)
+              }}
+              className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col overflow-hidden rounded-t-[24px] border-t border-rule bg-raised shadow-drawer"
+            >
+              <div className="flex shrink-0 cursor-grab flex-col items-center pb-1 pt-3 active:cursor-grabbing">
+                <span aria-hidden className="h-1.5 w-11 rounded-full bg-rule-strong" />
               </div>
-            </div>
+
+              <div className="flex items-center justify-between px-5 pb-3 pt-1">
+                <span className="kicker text-ink-subtle">Menu</span>
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  onClick={() => setOpen(false)}
+                  className="focus-ring icon-only grid h-11 w-11 place-items-center rounded-tile border border-rule bg-card text-navy"
+                >
+                  <X aria-hidden className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                <motion.button
+                  type="button"
+                  onClick={openSearch}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: still ? 0 : 0.04, ...spring }}
+                  className="focus-ring mb-5 flex w-full items-center gap-2.5 rounded-tile border border-rule bg-card px-4 py-3.5 text-left text-[0.9375rem] text-ink-subtle"
+                >
+                  <Search aria-hidden className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                  Search articles or a verse
+                </motion.button>
+
+                <nav aria-label="Sections">
+                  <ul>
+                    {navSections.map((section, index) => {
+                      const current = isCurrent(section.href)
+                      return (
+                        <motion.li
+                          key={section.href}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: still ? 0 : 0.06 + index * 0.055, ...spring }}
+                        >
+                          <Link
+                            href={section.href}
+                            aria-current={current ? 'page' : undefined}
+                            className={cn(
+                              'relative flex min-h-[64px] items-center justify-between gap-4 rounded-tile py-3.5 pl-4 pr-3 transition-colors',
+                              current ? 'bg-chip' : 'active:bg-chip/60'
+                            )}
+                          >
+                            {current && (
+                              <motion.span
+                                layoutId="sheet-current"
+                                aria-hidden
+                                transition={spring}
+                                className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-gold"
+                              />
+                            )}
+                            <span className="min-w-0">
+                              <span className="block font-display text-[1.375rem] leading-tight text-navy">
+                                {section.label}
+                              </span>
+                              <span className="mt-0.5 block truncate text-xs text-ink-subtle">
+                                {section.items.slice(0, 3).join(' · ')}
+                              </span>
+                            </span>
+                            <span aria-hidden className="font-mono text-base text-gold">
+                              →
+                            </span>
+                          </Link>
+                        </motion.li>
+                      )
+                    })}
+                  </ul>
+                </nav>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: still ? 0 : 0.06 + navSections.length * 0.055, ...spring }}
+                  className="mt-6 rounded-figure bg-plate p-5"
+                >
+                  <p className="kicker mb-2 text-gold-pale">The ministry</p>
+                  <p className="font-display text-[1.3125rem] leading-tight text-plate-pale">
+                    {siteInfo.tagline}
+                  </p>
+                </motion.div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <SearchOverlay
         docs={docs}
         open={searching}
         onClose={() => {
           setSearching(false)
-          searchOpener.current?.focus()
+          searchOpener.current?.focus?.()
         }}
       />
     </>
