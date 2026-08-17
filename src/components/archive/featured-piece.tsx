@@ -27,10 +27,10 @@ export function FeaturedPiece({
   onToggle: () => void
 }) {
   return (
-    <article className="card card-interactive group relative overflow-hidden lg:grid lg:grid-cols-[minmax(0,37%)_minmax(0,1fr)]">
+    <article className="card card-interactive group relative overflow-hidden lg:grid lg:grid-cols-[minmax(0,34%)_minmax(0,1fr)] xl:grid-cols-[minmax(0,30%)_minmax(0,1fr)]">
       <QuotePlate item={item} mark className="min-h-[220px] lg:min-h-[340px]" />
 
-      <div className="flex min-w-0 flex-col p-6 sm:p-8 lg:p-9">
+      <div className="flex min-w-0 flex-col p-6 sm:p-8 lg:p-10 xl:p-12">
         <div className="mb-5 flex flex-wrap items-center gap-2.5">
           <span className="kicker inline-flex items-center gap-1.5 rounded-chip bg-chip-gold px-2.5 py-1 text-gold-ink">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-gold" />
@@ -47,7 +47,7 @@ export function FeaturedPiece({
           </time>
         </div>
 
-        <h2 className="mb-4 text-balance font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
+        <h2 className="mb-4 text-balance font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem] xl:text-[2.75rem]">
           {/* The whole card is the link; the heading is where it is
               announced, and the overlay is what makes the rest of the
               card clickable without nesting anything inside an anchor. */}
@@ -56,7 +56,7 @@ export function FeaturedPiece({
           </Link>
         </h2>
 
-        <p className="mb-5 max-w-[54ch] text-pretty text-[1.0625rem] leading-[1.65] text-ink-700">
+        <p className="mb-5 max-w-[62ch] text-pretty text-[1.0625rem] leading-[1.65] text-ink-700">
           {item.dek}
         </p>
 

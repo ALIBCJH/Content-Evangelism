@@ -25,11 +25,11 @@ export function PieceRow({
   onToggle: () => void
 }) {
   return (
-    <article className="card card-interactive group relative overflow-hidden sm:grid sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)]">
+    <article className="card card-interactive group relative h-full overflow-hidden sm:grid sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,36%)_minmax(0,1fr)]">
       <QuotePlate
         item={item}
         label={item.quote?.cite ?? item.category}
-        className="min-h-[180px] sm:min-h-[230px]"
+        className="min-h-[180px] sm:min-h-[240px]"
       />
 
       <div className="flex min-w-0 flex-col p-5 sm:p-7">

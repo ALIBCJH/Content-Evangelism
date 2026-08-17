@@ -237,7 +237,7 @@ export default async function AboutPage() {
             </ul>
             <p className="mt-5">
               <Link
-                href="/articles"
+                href="/"
                 className="font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
               >
                 READ THE ARCHIVE →

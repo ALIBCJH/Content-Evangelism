@@ -65,7 +65,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const sections: MetadataRoute.Sitemap = [
-    { url: `${siteUrl}/articles`, priority: 0.9, changeFrequency: 'daily' as const, lastModified: newest },
     { url: `${siteUrl}/prophecies`, priority: 0.8, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/teachings`, priority: 0.7, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/about`, priority: 0.6, changeFrequency: 'monthly' as const },

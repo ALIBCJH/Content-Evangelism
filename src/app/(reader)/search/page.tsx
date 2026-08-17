@@ -110,7 +110,7 @@ export default async function SearchPage({ searchParams }: Props) {
               <p className="max-w-measure text-[1.0625rem] leading-[1.75] text-ink-muted">
                 Nothing found for &ldquo;{query}&rdquo;. Try a different word — or read the
                 whole{' '}
-                <Link href="/articles" className="border-b border-gold/50 text-navy hover:text-gold">
+                <Link href="/" className="border-b border-gold/50 text-navy hover:text-gold">
                   archive
                 </Link>
                 .
