@@ -6,6 +6,7 @@ import type { ArchiveItem } from '@/lib/archive-items'
 import { useSaved } from '@/lib/saved'
 import { FeaturedPiece } from '@/components/archive/featured-piece'
 import { PieceRow } from '@/components/archive/piece-row'
+import { SelectMenu } from '@/components/ui/select-menu'
 
 /**
  * The archive as a reader handles it: filtered, ordered, and marked up
@@ -101,21 +102,7 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
               </button>
             )}
 
-            <label className="focus-within:ring-0 flex items-center gap-2 rounded-chip border border-rule bg-card pl-3.5 pr-2">
-              <span className="kicker text-ink-subtle">Sort</span>
-              <select
-                value={sort}
-                onChange={(event) => setSort(event.target.value as Sort)}
-                aria-label="Order the archive"
-                className="focus-ring cursor-pointer rounded-chip bg-transparent py-2 pr-1 text-[0.875rem] font-medium text-ink-900"
-              >
-                {SORTS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <SelectMenu label="Sort" value={sort} options={SORTS} onChange={setSort} />
           </div>
         </div>
       </section>
