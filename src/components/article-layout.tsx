@@ -88,8 +88,9 @@ export function ArticleLayout({
             <Breadcrumbs
               className="mb-8"
               crumbs={[
-                { name: 'Home', href: '/' },
-                { name: 'Articles', href: '/articles' },
+                /* The archive is the front page, so "Home" and "Articles"
+                   would be the same URL twice. One crumb. */
+                { name: 'Articles', href: '/' },
                 { name: category, href: topicHref(category) },
               ]}
             />
@@ -176,7 +177,7 @@ export function ArticleLayout({
               <ShareRow title={title} className="mt-8" />
               <p className="mt-10 text-center">
                 <Link
-                  href="/articles"
+                  href="/"
                   className="font-mono text-[0.6875rem] tracking-[0.08em] text-navy transition-colors hover:text-gold"
                 >
                   ← ALL ARTICLES

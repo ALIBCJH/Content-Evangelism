@@ -143,7 +143,7 @@ export interface NavSection {
 export const navSections: NavSection[] = [
   {
     label: 'Articles',
-    href: '/articles',
+    href: '/',
     items: [
       'Latest Articles', 'Bible Studies', 'Scripture Explained',
       'Questions Answered', 'Series', 'By Subject', 'Archive by Year',
@@ -223,6 +223,50 @@ export const whatsappChannel: Channel = {
 
 /** Every channel icon on the site reads from this list. */
 export const channels: Channel[] = [radioChannel, youtubeChannel, whatsappChannel]
+
+/* ── Pastoral care ───────────────────────────────────────────────── */
+
+/**
+ * How to reach the ministry when the reason is not editorial.
+ *
+ * A teaching on suffering that ends without a way to speak to a person is
+ * an article about pastoral care rather than an act of it, so these sit at
+ * the foot of every page a reader might be on when they decide to ask for
+ * help. The numbers are the ministry's own; nothing here is inferred.
+ */
+export interface CareLine {
+  kind: 'phone' | 'whatsapp' | 'email'
+  label: string
+  /** One entry per number or address, each with the link it opens. */
+  contacts: { text: string; href: string }[]
+}
+
+export const pastoralCare = {
+  kicker: 'Pastoral care',
+  title: 'In need of spiritual help?',
+  body: 'Reach out on the hotline, on WhatsApp, or by email. Someone from the ministry will respond.',
+  office: 'Head office · 195 Ruaka Rd, Runda, Nairobi, Kenya',
+  lines: [
+    {
+      kind: 'phone',
+      label: 'Hotline',
+      contacts: [
+        { text: '+254 715 276091', href: 'tel:+254715276091' },
+        { text: '+254 708 412344', href: 'tel:+254708412344' },
+      ],
+    },
+    {
+      kind: 'whatsapp',
+      label: 'WhatsApp',
+      contacts: [{ text: '+254 715 276091', href: 'https://wa.me/254715276091' }],
+    },
+    {
+      kind: 'email',
+      label: 'Email',
+      contacts: [{ text: 'repentoffice@gmail.com', href: 'mailto:repentoffice@gmail.com' }],
+    },
+  ] as CareLine[],
+}
 
 export const siteInfo = {
   name: 'Repent and Prepare the Way',
@@ -401,7 +445,7 @@ export const footerColumns: FooterColumn[] = [
   {
     title: 'Articles',
     links: [
-      { label: 'The Archive', href: '/articles' },
+      { label: 'The Archive', href: '/' },
       { label: 'Doctrine', href: '/topics/doctrine' },
       { label: 'Church History', href: '/topics/church-history' },
       { label: 'Testimony', href: '/topics/testimony' },

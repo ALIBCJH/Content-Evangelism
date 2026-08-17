@@ -163,7 +163,11 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
                   </span>
                 </h2>
 
-                <ol className="grid gap-5">
+                {/* Two across from `2xl`. One column on a 1460px page is a
+                    card with half a metre of nothing beside it; below that
+                    width two would each be too narrow to set a headline
+                    and a pulled verse side by side. */}
+                <ol className="grid gap-5 2xl:grid-cols-2">
                   {(featured ? rest : shown).map((item) => (
                     <li key={item.slug}>
                       <PieceRow

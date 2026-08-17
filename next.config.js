@@ -48,7 +48,12 @@ const nextConfig = {
     //
     // The old /category/* URLs land on the topic pages, which are the real
     // thing they described.
-    return [{ source: '/category/:slug', destination: '/topics/:slug', permanent: true }]
+    return [
+      { source: '/category/:slug', destination: '/topics/:slug', permanent: true },
+      /* The archive is the front page now. Teachings keep their
+         /articles/<slug> URLs — this matches the index alone. */
+      { source: '/articles', destination: '/', permanent: true },
+    ]
   },
   async headers() {
     return [

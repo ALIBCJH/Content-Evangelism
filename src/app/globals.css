@@ -124,8 +124,14 @@
 
   /* Two widths. --shell is the page — masthead, footer, and every
      listing share its margin. --measure is the reading column, and
-     nothing else, so widening the page never widens a paragraph. */
-  --shell: 1280px;
+     nothing else, so widening the page never widens a paragraph.
+
+     1280 was set when the listing was a single column of cards. On the
+     screens these pages are actually read on it left a third of the
+     display empty either side and squeezed the writing into a strip down
+     the middle; the archive now lays two cards across, and needs the
+     room to do it without cramping either one. */
+  --shell: 1460px;
   --measure: 760px;
 
   /* The article's reading column. Narrower than --measure because it is
@@ -361,6 +367,9 @@ option {
   max-width: var(--shell);
   margin-inline: auto;
   padding-inline: 32px;
+}
+@media (min-width: 90rem) {
+  .shell { padding-inline: 48px; }
 }
 @media (max-width: 40rem) {
   .shell { padding-inline: 20px; }

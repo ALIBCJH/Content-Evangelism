@@ -125,7 +125,7 @@ export async function ArchiveView({
           <p className="font-display text-xl text-ink-muted">{emptyMessage}</p>
           <p className="mt-6">
             <Link
-              href="/articles"
+              href="/"
               className="font-mono text-[0.6875rem] tracking-[0.08em] text-navy transition-colors hover:text-gold"
             >
               READ THE WHOLE ARCHIVE →

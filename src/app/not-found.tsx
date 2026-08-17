@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 const ways = [
-  { href: '/articles', label: 'The archive', hint: 'Everything published, newest first' },
+  { href: '/', label: 'The archive', hint: 'Everything published, newest first' },
   { href: '/prophecies', label: 'Prophecy Archive', hint: 'Every record with its source' },
   { href: '/search', label: 'Search', hint: 'Look for a teaching by name' },
   { href: '/about', label: 'The ministry', hint: 'Who publishes here' },
@@ -69,7 +69,7 @@ export default function NotFound() {
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
           <Link
-            href="/articles"
+            href="/"
             className="group inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-gold"
           >
             <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
