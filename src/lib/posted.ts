@@ -23,9 +23,18 @@ export { CATEGORIES }
  *
  * Both hold the same thing — the whole article array, newest first — so
  * moving between them is a matter of copying one JSON document.
+ *
+ * Underneath both sits a third thing, which is not a store: the pieces the
+ * repository itself carries, in content/articles. A deployment with no
+ * store attached used to serve an empty archive — the writing was in the
+ * repo, and the site it was written for did not show it. So reads are the
+ * union of the two: what is on the shelf, over what the repository ships.
+ * Writes are untouched by this and go to the store alone, which keeps the
+ * desk's copy authoritative for any slug it holds.
  */
 
 const STORE = path.join(process.cwd(), 'data', 'articles.json')
+const SEED_DIR = path.join(process.cwd(), 'content', 'articles')
 
 export interface PostedArticle {
   slug: string
@@ -170,14 +179,70 @@ function readMinutes(body: string): number {
   return Math.max(1, Math.round(words / 200))
 }
 
+/* ── The pieces the repository carries ────────────────────────────── */
+
+/**
+ * content/articles holds one JSON file per hand-written teaching, in
+ * exactly the shape POST /api/articles accepts, and each carries the slug
+ * that endpoint would have derived — so a file and a posted copy of the
+ * same teaching are the same URL, and the merge below can tell them apart.
+ *
+ * Unlike a posted article these keep their own `publishedAt`, which is the
+ * point: a piece written for the twelfth is dated the twelfth on the
+ * archive, not the day the deployment happened to be built.
+ *
+ * Read once. The files are part of the build and cannot change under a
+ * running instance, so re-reading them on every request would be a
+ * directory listing per page view for a set that never moves.
+ */
+let seeded: Promise<PostedArticle[]> | null = null
+
+async function readSeeded(): Promise<PostedArticle[]> {
+  seeded ??= (async () => {
+    try {
+      const names = (await fs.readdir(SEED_DIR)).filter((name) => name.endsWith('.json'))
+      const files = await Promise.all(
+        names.map(async (name) => {
+          try {
+            const parsed = JSON.parse(await fs.readFile(path.join(SEED_DIR, name), 'utf8'))
+            // A file missing either of these is not renderable, and one
+            // broken file must not take the whole archive down with it.
+            return parsed?.slug && parsed?.body ? (parsed as PostedArticle) : null
+          } catch {
+            return null
+          }
+        })
+      )
+      return files.filter((article): article is PostedArticle => article !== null)
+    } catch {
+      return []
+    }
+  })()
+  return seeded
+}
+
+/**
+ * Everything the site has to show. A slug held by the store wins: if a
+ * teaching was edited at the desk, the edit is what a reader should get,
+ * whatever the repository still says.
+ *
+ * Deleting a seeded piece is therefore not the desk's to do — it is a file
+ * in the repository, removed by removing the file.
+ */
+async function readAll(): Promise<PostedArticle[]> {
+  const [stored, fromRepo] = await Promise.all([readStore(), readSeeded()])
+  const posted = new Set(stored.map((article) => article.slug))
+  return [...stored, ...fromRepo.filter((article) => !posted.has(article.slug))]
+}
+
 /* ── Reads ────────────────────────────────────────────────────────── */
 
 export async function listPostedArticles(): Promise<PostedArticle[]> {
-  return (await readStore()).sort(byNewest)
+  return (await readAll()).sort(byNewest)
 }
 
 export async function getPostedArticle(slug: string): Promise<PostedArticle | null> {
-  const articles = await readStore()
+  const articles = await readAll()
   return articles.find((a) => a.slug === slug) ?? null
 }
 
@@ -202,7 +267,10 @@ export async function createPostedArticle(
   const articles = await readStore()
   const now = new Date().toISOString()
   const article: PostedArticle = {
-    slug: uniqueSlug(input.title, new Set(articles.map((a) => a.slug))),
+    /* Against every slug the site serves, not merely the stored ones: a
+       new piece must not silently take the URL of one the repository
+       carries and shadow it. */
+    slug: uniqueSlug(input.title, new Set((await readAll()).map((a) => a.slug))),
     title: input.title,
     dek: input.dek,
     category: input.category,
