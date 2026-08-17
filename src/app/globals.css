@@ -344,6 +344,15 @@ body {
 
 ::placeholder { color: var(--ink-400); }
 
+/* A native select's popup is drawn by the platform, and inherits the
+   page's ink over a sheet the page does not paint — near-white on white
+   in the dark theme. Naming both ends of it is the whole fix. */
+select { color-scheme: inherit; }
+option {
+  background-color: var(--card);
+  color: var(--ink);
+}
+
 /* ── Layout primitives ────────────────────────────────────────────── */
 
 /* The shell: 1280px wide, 32px of margin, everywhere. */
