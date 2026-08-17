@@ -10,7 +10,7 @@ const buttonVariants = cva(
         // Navy is the call to action on paper; gold is reserved for rules
         // and small marks, where it reads as ornament rather than a target.
         default:
-          'bg-navy text-linen hover:bg-navy-900 active:translate-y-px',
+          'bg-plate text-plate-pale hover:bg-plate-deep active:translate-y-px',
         outline:
           'border border-hairline-strong bg-transparent text-ink hover:border-gold/60 hover:text-ink-strong',
         ghost: 'text-ink-muted hover:bg-surface-2 hover:text-ink-strong',

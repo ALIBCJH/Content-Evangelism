@@ -155,7 +155,12 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   colorScheme: 'light',
-  themeColor: '#123B5D',
+  /* Two, so the browser chrome around the page is the page's own colour
+     in either theme rather than navy against a dark ground. */
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#123B5D' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A1A2F' },
+  ],
 }
 
 /* Site-wide knowledge graph, server-rendered so every crawler — including
@@ -213,10 +218,29 @@ const siteGraph = {
   ],
 }
 
+/**
+ * The theme, decided before the first paint.
+ *
+ * This runs in the head, synchronously, ahead of any stylesheet: a stored
+ * choice wins, and with none stored the operating system decides. Done in
+ * React instead, the page would paint light and then correct itself, and
+ * a reader who keeps their machine dark would be shown a white flash on
+ * every navigation — which is the one thing a dark theme must not do.
+ *
+ * It is deliberately tiny and deliberately silent: any failure at all
+ * (a browser with storage blocked) leaves the attribute unset, and the
+ * media query in globals.css takes over.
+ */
+const themeScript = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=t==='light'||t==='dark'?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
+      /* The theme attribute is written by the script below before React
+         hydrates, so the server's markup and the client's differ here by
+         design. */
+      suppressHydrationWarning
       className={[
         fraunces.variable,
         inter.variable,
@@ -226,6 +250,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         plex.variable,
       ].join(' ')}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <JsonLd data={siteGraph} />
         {children}

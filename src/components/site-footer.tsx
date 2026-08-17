@@ -21,7 +21,7 @@ const channelIcons = {
  */
 export function SiteFooter() {
   return (
-    <footer className="mt-auto bg-navy text-navy-pale">
+    <footer className="mt-auto bg-plate text-plate-pale">
       <div className="gold-rule" />
 
       <div className="shell grid gap-10 pb-10 pt-16 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_repeat(5,minmax(0,1fr))]">

@@ -84,16 +84,16 @@ function Inlines({ inlines }: { inlines: Inline[] }) {
    interchangeable — a reader can tell them apart at a glance. */
 const CALLOUT: Record<CalloutTone, { panel: string; label: string; body: string; cite: string }> = {
   statement: {
-    panel: 'rounded-panel border border-[#E8DEC2] bg-[#FBF7EC] px-6 py-7 sm:px-8',
+    panel: 'rounded-panel border border-statement-rule bg-statement-bg px-6 py-7 sm:px-8',
     label: 'kicker mb-4 block text-gold-ink',
     body: 'font-reading text-[1.125rem] leading-[1.6] text-navy sm:text-[1.25rem]',
     cite: 'mt-4 block font-apparatus text-[0.75rem] text-ink-subtle',
   },
   source: {
-    panel: 'rounded-figure border border-dashed border-[#C9906A] bg-[#FBF0E9] px-6 py-6 sm:px-7',
-    label: 'kicker-lg mb-3 block text-[#A85B32]',
-    body: 'font-apparatus text-[0.875rem] leading-[1.6] text-[#5C4636]',
-    cite: 'mt-3 block font-apparatus text-[0.75rem] text-[#8A6A55]',
+    panel: 'rounded-figure border border-dashed border-source-rule bg-source-bg px-6 py-6 sm:px-7',
+    label: 'kicker-lg mb-3 block text-source-label',
+    body: 'font-apparatus text-[0.875rem] leading-[1.6] text-source-ink',
+    cite: 'mt-3 block font-apparatus text-[0.75rem] text-source-cite',
   },
   note: {
     panel: 'border-l-2 border-rule pl-4',
@@ -243,7 +243,7 @@ export function ArticleProse({ body }: { body: string }) {
                   {block.eyebrow && (
                     <span className="kicker mb-3.5 block text-gold-pale">{block.eyebrow}</span>
                   )}
-                  <span className="mb-2.5 block font-display text-[1.375rem] leading-[1.25] text-card sm:text-[1.625rem]">
+                  <span className="mb-2.5 block font-display text-[1.375rem] leading-[1.25] text-plate-pale sm:text-[1.625rem]">
                     {block.title}
                   </span>
                   <span className="block text-[0.8125rem] leading-[1.6] text-navy-soft">

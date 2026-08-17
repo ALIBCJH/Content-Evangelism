@@ -207,11 +207,11 @@ export default async function AboutPage() {
           {/* The design's own device: where the ministry's published
               wording is needed and has not been supplied, the page says so
               rather than paraphrasing something unsourced into print. */}
-          <div className="rounded-figure border border-dashed border-[#C9906A] bg-[#FBF0E9] px-6 py-6">
-            <p className="kicker-lg mb-3 text-[#A85B32]">
+          <div className="rounded-figure border border-dashed border-source-rule bg-source-bg px-6 py-6">
+            <p className="kicker-lg mb-3 text-source-label">
               [Source needed — do not publish as is]
             </p>
-            <p className="text-[0.9375rem] leading-[1.75] text-[#5C4636]">
+            <p className="text-[0.9375rem] leading-[1.75] text-source-ink">
               The full text of each article of faith, and the ministry&rsquo;s own account
               of its history and leadership, are to be set here verbatim from the
               published wording — not summarised. Supply the source (magazine volume

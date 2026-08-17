@@ -76,7 +76,7 @@ export function RecordingCard({
             />
             <span
               aria-hidden
-              className="absolute left-1/2 top-1/2 flex h-[46px] w-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-navy/80 transition-colors group-hover/play:bg-navy"
+              className="absolute left-1/2 top-1/2 flex h-[46px] w-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-plate-deep/80 transition-colors group-hover/play:bg-plate-deep"
             >
               <svg width="13" height="16" viewBox="0 0 20 24" fill="#F7F4EC">
                 <path d="M2 2l16 10L2 22z" />
