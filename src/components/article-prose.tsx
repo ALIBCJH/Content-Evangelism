@@ -213,12 +213,23 @@ export function ArticleProse({ body }: { body: string }) {
             )
 
           case 'video':
+            /* Two frames, because recordings come in two shapes. A short
+               is upright and sits in a narrow column beside its caption;
+               a sermon is landscape, and a landscape recording squeezed
+               into that column is a postage stamp, so `wide` gives it the
+               full measure with the caption underneath. */
             return (
               <figure
                 key={index}
-                className="my-9 flex flex-col overflow-hidden rounded-panel border border-navy-rule bg-navy-deep sm:flex-row sm:items-stretch"
+                className={`my-9 flex flex-col overflow-hidden rounded-panel border border-navy-rule bg-navy-deep ${
+                  block.wide ? '' : 'sm:flex-row sm:items-stretch'
+                }`}
               >
-                <div className="relative aspect-[9/16] w-full shrink-0 sm:w-[clamp(150px,34%,200px)]">
+                <div
+                  className={`relative w-full shrink-0 ${
+                    block.wide ? 'aspect-video' : 'aspect-[9/16] sm:w-[clamp(150px,34%,200px)]'
+                  }`}
+                >
                   <iframe
                     src={embedSrc(block.id)}
                     title={block.title}
