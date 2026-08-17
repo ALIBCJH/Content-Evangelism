@@ -77,7 +77,7 @@ function Provenance({
         className={`kicker shrink-0 whitespace-nowrap rounded-chip px-3 py-1.5 ${
           tone === 'source'
             ? 'bg-chip-gold text-gold-ink'
-            : 'border border-[#C9D8E8] bg-[#E1E9F3] text-navy'
+            : 'border border-rule bg-chip-blue text-navy'
         }`}
       >
         {label}
@@ -119,7 +119,7 @@ export default function RecordPage({ params }: Params) {
       />
 
       {/* ── The header ─────────────────────────────────────────────── */}
-      <section className="bg-navy text-ground">
+      <section className="bg-plate text-plate-pale">
         <div className="shell pb-9 pt-7">
           <Breadcrumbs
             className="mb-8 text-navy-soft [&_a:hover]:text-gold-pale [&_span[aria-current]]:text-gold-pale"
@@ -249,7 +249,7 @@ export default function RecordPage({ params }: Params) {
           >
             Subsequent Events
           </h2>
-          <div className="rounded-panel border border-[#DCE4EE] bg-[#F3F6FA] p-6 sm:p-8">
+          <div className="rounded-panel border border-rule bg-raised p-6 sm:p-8">
             <Provenance
               label="Independent Record"
               tone="independent"
@@ -260,7 +260,7 @@ export default function RecordPage({ params }: Params) {
                 {record.independent.map((source) => (
                   <li
                     key={source.org}
-                    className="grid gap-4 border-t border-[#DCE4EE] py-4 sm:grid-cols-[150px_1fr_auto] sm:gap-6"
+                    className="grid gap-4 border-t border-rule py-4 sm:grid-cols-[150px_1fr_auto] sm:gap-6"
                   >
                     <span className="font-mono text-xs text-navy">{source.org}</span>
                     <span className="text-[0.9375rem] leading-[1.6] text-ink-900">
@@ -280,11 +280,11 @@ export default function RecordPage({ params }: Params) {
                 ))}
               </ul>
             ) : (
-              <p className="border-t border-[#DCE4EE] pb-1 pt-5 text-[0.9375rem] text-ink-muted">
+              <p className="border-t border-rule pb-1 pt-5 text-[0.9375rem] text-ink-muted">
                 No independent records added yet.
               </p>
             )}
-            <p className="mt-5 border-t border-[#DCE4EE] pt-4 text-[0.8125rem] leading-[1.7] text-ink-muted">
+            <p className="mt-5 border-t border-rule pt-4 text-[0.8125rem] leading-[1.7] text-ink-muted">
               This section presents the published record of what occurred, with its
               sources. Readers are left to draw their own conclusions; the ministry&rsquo;s
               understanding of the event is set out separately below.
@@ -298,7 +298,7 @@ export default function RecordPage({ params }: Params) {
           >
             Interpretation
           </h2>
-          <div className="rounded-panel border border-[#E8DEC2] bg-[#FBF7EC] p-6 sm:p-8">
+          <div className="rounded-panel border border-statement-rule bg-statement-bg p-6 sm:p-8">
             <p className="kicker mb-4 text-gold-ink">Ministry Interpretation</p>
             <p className="text-[1.0625rem] leading-[1.75] text-ink-900">
               How the ministry understands this message in the context of Scripture.

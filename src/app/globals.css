@@ -16,49 +16,97 @@
   color-scheme: light;
 
   /* ── Paper ─────────────────────────────────────────────────────── */
-  --ground: #F7F4EC;      /* the page */
-  --raised: #FBF9F3;      /* header, bands, quote figures */
-  --card: #FFFDF8;        /* cards, tables, panels */
-  --rule: #E4DED0;        /* hairline */
-  --rule-soft: #EDE7DA;   /* inner rules, list separators */
-  --chip: #F1EDE1;        /* tags and subject pills */
-  --chip-blue: #EAF0F6;   /* the "Article" kind pill */
-  --chip-gold: #F4EBD3;   /* "Featured" and "Primary Source" */
+  --ground-rgb: 238 242 248;      /* the page */
+  --raised-rgb: 247 249 252;      /* header, bands, quote figures */
+  --card-rgb: 255 255 255;        /* cards, tables, panels */
+  --rule-rgb: 219 227 238;        /* hairline */
+  --rule-soft-rgb: 232 238 246;   /* inner rules, list separators */
+  --rule-strong-rgb: 199 211 226;
+  --chip-rgb: 237 241 248;        /* tags and subject pills */
+  --chip-blue-rgb: 230 238 249;   /* the "Article" kind pill */
+  --chip-gold-rgb: 245 235 212;   /* "Featured" and "Primary Source" */
 
-  /* ── Navy ──────────────────────────────────────────────────────── */
-  --navy: #123B5D;        /* chrome, headings, footer */
-  --navy-deep: #0D2C46;   /* image wells, hero ground */
-  --navy-rule: #1D4568;   /* rules drawn on navy */
-  --navy-soft: #9FB4C8;   /* secondary text on navy */
-  --navy-pale: #C8D6E4;   /* body text on navy */
+  /* ── Navy: the ink a heading is set in ─────────────────────────── */
+  --navy-rgb: 18 59 93;
+
+  /* ── Plate: the ministry's navy panel, dark in both themes ─────── */
+  --plate-rgb: 18 59 93;
+  --plate-deep-rgb: 13 44 70;
+  --plate-rule-rgb: 29 69 104;
+  --plate-soft-rgb: 159 180 200;  /* secondary text on the plate */
+  --plate-pale-rgb: 200 214 228;  /* body text on the plate */
 
   /* ── Gold ──────────────────────────────────────────────────────── */
-  --gold: #B8944A;        /* accent ink, the primary button */
-  --gold-light: #C9A961;  /* button hover */
-  --gold-pale: #D8C48E;   /* rules, accents on navy */
-  --gold-sand: #E3CE96;   /* the hero kicker */
-  --gold-ink: #7A5F1E;    /* text on a gold chip, and gold text in prose */
+  --gold-rgb: 184 148 74;         /* accent ink, the primary button */
+  --gold-light-rgb: 201 169 97;   /* button hover */
+  --gold-pale-rgb: 216 196 142;   /* rules, accents on the plate */
+  --gold-sand-rgb: 227 206 150;   /* the hero kicker */
+  --gold-ink-rgb: 122 95 30;      /* text on a gold chip, gold text in prose */
 
   /* ── Ink ───────────────────────────────────────────────────────── */
-  --ink: #14202B;
-  --ink-900: #26333F;     /* lead paragraphs */
-  --ink-700: #40505E;     /* running text */
-  --ink-500: #5C6B7A;     /* secondary */
-  --ink-400: #8B98A5;     /* meta, timestamps, placeholders */
-
-  --fulfilled: #1E7A4E;
-  --fulfilled-navy: #23935E;
-
-  /* RGB triplets, for the utilities that need an alpha channel. */
-  --navy-rgb: 18 59 93;
-  --navy-deep-rgb: 13 44 70;
-  --gold-rgb: 184 148 74;
   --ink-rgb: 20 32 43;
-  --ink-900-rgb: 38 51 63;
-  --ink-700-rgb: 64 80 94;
-  --ink-500-rgb: 92 107 122;
-  --ink-400-rgb: 139 152 165;
-  --ground-rgb: 247 244 236;
+  --ink-900-rgb: 38 51 63;        /* lead paragraphs */
+  --ink-700-rgb: 64 80 94;        /* running text */
+  --ink-500-rgb: 92 107 122;      /* secondary */
+  --ink-400-rgb: 139 152 165;     /* meta, timestamps, placeholders */
+
+  --fulfilled-rgb: 30 122 78;
+  --fulfilled-navy-rgb: 35 147 94;
+
+  /* The editorial panels in a teaching: the ministry speaking for
+     itself, and the desk blocking its own copy. */
+  --statement-bg-rgb: 251 247 236;
+  --statement-rule-rgb: 232 222 194;
+  --source-bg-rgb: 251 240 233;
+  --source-rule-rgb: 201 144 106;
+  --source-ink-rgb: 92 70 54;
+  --source-label-rgb: 168 91 50;
+  --source-cite-rgb: 138 106 85;
+
+  /* The primary call to action. Navy on paper; in the dark theme a navy
+     button on a navy page is a rectangle you have to look for, so it
+     becomes the gold — the one place gold is a field rather than a rule. */
+  --cta-rgb: var(--plate-rgb);
+  --cta-hover-rgb: var(--plate-deep-rgb);
+  --cta-ink-rgb: var(--plate-pale-rgb);
+
+  /* Shadow ground: what a card's shadow is cast in. */
+  --shadow-rgb: var(--navy-rgb);
+
+  /* ── The same colours, as colours ──────────────────────────────── */
+  --ground: rgb(var(--ground-rgb));
+  --raised: rgb(var(--raised-rgb));
+  --card: rgb(var(--card-rgb));
+  --rule: rgb(var(--rule-rgb));
+  --rule-soft: rgb(var(--rule-soft-rgb));
+  --chip: rgb(var(--chip-rgb));
+  --chip-blue: rgb(var(--chip-blue-rgb));
+  --chip-gold: rgb(var(--chip-gold-rgb));
+  --navy: rgb(var(--navy-rgb));
+  --plate: rgb(var(--plate-rgb));
+  --plate-deep: rgb(var(--plate-deep-rgb));
+  --plate-rule: rgb(var(--plate-rule-rgb));
+  --plate-soft: rgb(var(--plate-soft-rgb));
+  --plate-pale: rgb(var(--plate-pale-rgb));
+  --gold: rgb(var(--gold-rgb));
+  --gold-light: rgb(var(--gold-light-rgb));
+  --gold-pale: rgb(var(--gold-pale-rgb));
+  --gold-sand: rgb(var(--gold-sand-rgb));
+  --gold-ink: rgb(var(--gold-ink-rgb));
+  --ink: rgb(var(--ink-rgb));
+  --ink-900: rgb(var(--ink-900-rgb));
+  --ink-700: rgb(var(--ink-700-rgb));
+  --ink-500: rgb(var(--ink-500-rgb));
+  --ink-400: rgb(var(--ink-400-rgb));
+  --fulfilled: rgb(var(--fulfilled-rgb));
+  --fulfilled-navy: rgb(var(--fulfilled-navy-rgb));
+
+  /* Names the plate went by before it had a name of its own. */
+  --navy-deep: var(--plate-deep);
+  --navy-rule: var(--plate-rule);
+  --navy-soft: var(--plate-soft);
+  --navy-pale: var(--plate-pale);
+  --navy-deep-rgb: var(--plate-deep-rgb);
 
   /* Legacy aliases — components written against the old token names keep
      rendering, in the new palette. */
@@ -67,10 +115,10 @@
   --cloth: var(--card);
   --thread: var(--rule);
   --blue: var(--navy);
-  --deep: var(--navy-deep);
-  --sky: var(--navy-soft);
+  --deep: var(--plate-deep);
+  --sky: var(--plate-soft);
   --border: var(--rule);
-  --border-strong: #D8CFBA;
+  --border-strong: rgb(var(--rule-strong-rgb));
   --hairline: var(--rule);
   --hairline-strong: var(--border-strong);
 
@@ -94,26 +142,26 @@
   --surface-1: rgb(var(--navy-rgb) / 0.035);
   --surface-2: rgb(var(--navy-rgb) / 0.065);
   --surface-3: rgb(var(--navy-rgb) / 0.11);
-  --panel-rgb: 255 253 248;
+  --panel-rgb: var(--card-rgb);
   --app-bg-rgb: var(--ground-rgb);
   --ink-muted-rgb: var(--ink-500-rgb);
   --ink-subtle-rgb: var(--ink-400-rgb);
   --ink-strong-rgb: var(--navy-rgb);
-  --flagship-rgb: var(--navy-rgb);
-  --flagship-deep-rgb: var(--navy-deep-rgb);
-  --flagship-soft-rgb: 159 180 200;
+  --flagship-rgb: var(--plate-rgb);
+  --flagship-deep-rgb: var(--plate-deep-rgb);
+  --flagship-soft-rgb: var(--plate-soft-rgb);
   --orchid-rgb: 109 40 217;
-  --success-rgb: 30 122 78;
-  --warning-rgb: 122 95 30;
+  --success-rgb: var(--fulfilled-rgb);
+  --warning-rgb: var(--gold-ink-rgb);
   --danger-rgb: 190 18 60;
   --info-rgb: var(--navy-rgb);
 
   --card-bg: var(--card);
   --card-shadow: none;
-  --card-shadow-hover: 0 2px 4px rgb(var(--navy-rgb) / 0.05), 0 18px 40px -24px rgb(var(--navy-rgb) / 0.30);
-  --shadow-panel: 0 1px 2px rgb(var(--navy-rgb) / 0.05), 0 20px 50px -30px rgb(var(--navy-rgb) / 0.22);
-  --glass-bg: rgb(251 249 243 / 0.86);
-  --glass-strong-bg: rgb(251 249 243 / 0.97);
+  --card-shadow-hover: 0 2px 4px rgb(var(--shadow-rgb) / 0.05), 0 18px 40px -24px rgb(var(--shadow-rgb) / 0.30);
+  --shadow-panel: 0 1px 2px rgb(var(--shadow-rgb) / 0.05), 0 20px 50px -30px rgb(var(--shadow-rgb) / 0.22);
+  --glass-bg: rgb(var(--raised-rgb) / 0.86);
+  --glass-strong-bg: rgb(var(--raised-rgb) / 0.97);
 
   --ring-offset: var(--ground);
   --scrollbar: rgb(var(--navy-rgb) / 0.20);
@@ -122,6 +170,152 @@
   --shimmer-mid: rgb(var(--navy-rgb) / 0.10);
   --selection-bg: rgb(var(--gold-rgb) / 0.20);
   --selection-fg: var(--ink);
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   The dark theme.
+
+   Only the numbers move: every rule in this file and every utility in the
+   components reads the same variables. The page is the deepest value and
+   surfaces climb out of it — ground, raised, card — so a card is legible
+   as a card without a shadow, which is what a shadow cannot do on navy.
+
+   `[data-theme]` is stamped on <html> before first paint by the script in
+   the root layout. The media query underneath it is for the reader whose
+   JavaScript has not run: system preference still decides, and an explicit
+   choice of light still wins over it.
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ground-rgb: 10 26 47;
+  --raised-rgb: 14 35 65;
+  --card-rgb: 18 41 74;
+  --rule-rgb: 34 64 95;
+  --rule-soft-rgb: 27 53 82;
+  --rule-strong-rgb: 44 78 113;
+  --chip-rgb: 26 52 87;
+  --chip-blue-rgb: 26 52 87;
+  --chip-gold-rgb: 61 49 22;
+
+  /* A heading is near-white; the plate lifts off the page rather than
+     sinking into it, so it is lighter here than in the light theme. */
+  --navy-rgb: 234 241 249;
+  --plate-rgb: 23 52 92;
+  --plate-deep-rgb: 16 40 71;
+  --plate-rule-rgb: 38 73 111;
+  --plate-soft-rgb: 168 190 210;
+  --plate-pale-rgb: 211 224 236;
+
+  /* Gold carries further on navy than on paper, so the working values
+     are the paler end of the same ramp. */
+  --gold-rgb: 201 169 97;
+  --gold-light-rgb: 216 188 121;
+  --gold-ink-rgb: 231 205 145;
+  --cta-rgb: var(--gold-rgb);
+  --cta-hover-rgb: var(--gold-light-rgb);
+  --cta-ink-rgb: var(--plate-deep-rgb);
+
+  --ink-rgb: 232 239 247;
+  --ink-900-rgb: 220 230 241;
+  --ink-700-rgb: 194 208 224;
+  --ink-500-rgb: 159 178 198;
+  --ink-400-rgb: 127 148 171;
+
+  --fulfilled-rgb: 74 200 142;
+  --fulfilled-navy-rgb: 92 214 158;
+
+  --statement-bg-rgb: 32 44 30;
+  --statement-rule-rgb: 74 66 38;
+  --source-bg-rgb: 48 32 26;
+  --source-rule-rgb: 150 100 72;
+  --source-ink-rgb: 224 205 192;
+  --source-label-rgb: 224 146 100;
+  --source-cite-rgb: 186 158 140;
+
+  /* Shadows on navy are cast in black, not in navy — navy on navy is
+     invisible, and the card would lose its edge. */
+  --shadow-rgb: 0 0 0;
+  --card-shadow-hover: 0 2px 4px rgb(0 0 0 / 0.30), 0 18px 40px -24px rgb(0 0 0 / 0.75);
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.25), 0 20px 50px -30px rgb(0 0 0 / 0.65);
+
+  --surface-1: rgb(255 255 255 / 0.04);
+  --surface-2: rgb(255 255 255 / 0.07);
+  --surface-3: rgb(255 255 255 / 0.12);
+  --scrollbar: rgb(255 255 255 / 0.18);
+  --scrollbar-hover: rgb(255 255 255 / 0.30);
+  --shimmer-base: rgb(255 255 255 / 0.05);
+  --shimmer-mid: rgb(255 255 255 / 0.10);
+  --selection-bg: rgb(var(--gold-rgb) / 0.30);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --ground-rgb: 10 26 47;
+    --raised-rgb: 14 35 65;
+    --card-rgb: 18 41 74;
+    --rule-rgb: 34 64 95;
+    --rule-soft-rgb: 27 53 82;
+    --rule-strong-rgb: 44 78 113;
+    --chip-rgb: 26 52 87;
+    --chip-blue-rgb: 26 52 87;
+    --chip-gold-rgb: 61 49 22;
+
+    --navy-rgb: 234 241 249;
+    --plate-rgb: 23 52 92;
+    --plate-deep-rgb: 16 40 71;
+    --plate-rule-rgb: 38 73 111;
+    --plate-soft-rgb: 168 190 210;
+    --plate-pale-rgb: 211 224 236;
+
+    --gold-rgb: 201 169 97;
+    --gold-light-rgb: 216 188 121;
+    --gold-ink-rgb: 231 205 145;
+  --cta-rgb: var(--gold-rgb);
+  --cta-hover-rgb: var(--gold-light-rgb);
+  --cta-ink-rgb: var(--plate-deep-rgb);
+
+    --ink-rgb: 232 239 247;
+    --ink-900-rgb: 220 230 241;
+    --ink-700-rgb: 194 208 224;
+    --ink-500-rgb: 159 178 198;
+    --ink-400-rgb: 127 148 171;
+
+    --fulfilled-rgb: 74 200 142;
+    --fulfilled-navy-rgb: 92 214 158;
+
+    --statement-bg-rgb: 32 44 30;
+    --statement-rule-rgb: 74 66 38;
+    --source-bg-rgb: 48 32 26;
+    --source-rule-rgb: 150 100 72;
+    --source-ink-rgb: 224 205 192;
+    --source-label-rgb: 224 146 100;
+    --source-cite-rgb: 186 158 140;
+
+    --shadow-rgb: 0 0 0;
+    --card-shadow-hover: 0 2px 4px rgb(0 0 0 / 0.30), 0 18px 40px -24px rgb(0 0 0 / 0.75);
+    --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.25), 0 20px 50px -30px rgb(0 0 0 / 0.65);
+
+    --surface-1: rgb(255 255 255 / 0.04);
+    --surface-2: rgb(255 255 255 / 0.07);
+    --surface-3: rgb(255 255 255 / 0.12);
+    --scrollbar: rgb(255 255 255 / 0.18);
+    --scrollbar-hover: rgb(255 255 255 / 0.30);
+    --shimmer-base: rgb(255 255 255 / 0.05);
+    --shimmer-mid: rgb(255 255 255 / 0.10);
+    --selection-bg: rgb(var(--gold-rgb) / 0.30);
+  }
+}
+
+/* The theme is a property of the whole page, so it fades as one rather
+   than each surface arriving on its own transition. */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-theme-ready] body,
+  html[data-theme-ready] body * {
+    transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
+  }
 }
 
 * {
@@ -285,7 +479,7 @@ body {
   position: relative;
   max-height: 19rem;
   overflow: hidden;
-  --excerpt-fade-rgb: 255 253 248;
+  --excerpt-fade-rgb: var(--card-rgb);
 }
 .excerpt-on-linen { --excerpt-fade-rgb: var(--ground-rgb); }
 .excerpt > * + * { margin-top: 1.05rem; }

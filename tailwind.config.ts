@@ -33,71 +33,125 @@ const config: Config = {
         apparatus: ['var(--font-plex)', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       colors: {
-        /* ── Paper ─────────────────────────────────────────────── */
-        ground: '#F7F4EC',
-        raised: '#FBF9F3',
-        card: '#FFFDF8',
-        rule: { DEFAULT: '#E4DED0', soft: '#EDE7DA', strong: '#D8CFBA' },
-        chip: { DEFAULT: '#F1EDE1', blue: '#EAF0F6', gold: '#F4EBD3' },
+        /* Every colour resolves through a CSS variable, so a utility and
+           its opacity modifier — bg-plate/80 — both follow the theme. The
+           <alpha-value> placeholder is what Tailwind substitutes when a
+           modifier is present, and 1 when it is not. */
 
-        /* ── Navy ──────────────────────────────────────────────── */
+        /* ── Paper ─────────────────────────────────────────────── */
+        ground: 'rgb(var(--ground-rgb) / <alpha-value>)',
+        raised: 'rgb(var(--raised-rgb) / <alpha-value>)',
+        card: 'rgb(var(--card-rgb) / <alpha-value>)',
+        rule: {
+          DEFAULT: 'rgb(var(--rule-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--rule-soft-rgb) / <alpha-value>)',
+          strong: 'rgb(var(--rule-strong-rgb) / <alpha-value>)',
+        },
+        chip: {
+          DEFAULT: 'rgb(var(--chip-rgb) / <alpha-value>)',
+          blue: 'rgb(var(--chip-blue-rgb) / <alpha-value>)',
+          gold: 'rgb(var(--chip-gold-rgb) / <alpha-value>)',
+        },
+
+        /* ── Navy: the ink a heading is set in ─────────────────── */
         navy: {
-          DEFAULT: '#123B5D',
-          deep: '#0D2C46',
-          rule: '#1D4568',
-          soft: '#9FB4C8',
-          pale: '#C8D6E4',
-          50: '#2A4E7E',
-          100: '#1B4177',
-          200: '#123B5D',
-          300: '#0D2C46',
-          900: '#0D2C46',
+          DEFAULT: 'rgb(var(--navy-rgb) / <alpha-value>)',
+          /* The plate, under the names it went by before it had one of
+             its own. New work should say plate. */
+          deep: 'rgb(var(--plate-deep-rgb) / <alpha-value>)',
+          rule: 'rgb(var(--plate-rule-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--plate-soft-rgb) / <alpha-value>)',
+          pale: 'rgb(var(--plate-pale-rgb) / <alpha-value>)',
+          50: 'rgb(var(--plate-rule-rgb) / <alpha-value>)',
+          100: 'rgb(var(--plate-rgb) / <alpha-value>)',
+          200: 'rgb(var(--plate-rgb) / <alpha-value>)',
+          300: 'rgb(var(--plate-deep-rgb) / <alpha-value>)',
+          900: 'rgb(var(--plate-deep-rgb) / <alpha-value>)',
+        },
+
+        /* ── Plate: the ministry's navy panel ──────────────────── */
+        plate: {
+          DEFAULT: 'rgb(var(--plate-rgb) / <alpha-value>)',
+          deep: 'rgb(var(--plate-deep-rgb) / <alpha-value>)',
+          rule: 'rgb(var(--plate-rule-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--plate-soft-rgb) / <alpha-value>)',
+          pale: 'rgb(var(--plate-pale-rgb) / <alpha-value>)',
         },
 
         /* ── Gold ──────────────────────────────────────────────── */
         gold: {
-          DEFAULT: '#B8944A',
-          light: '#C9A961',
-          pale: '#D8C48E',
-          sand: '#E3CE96',
-          ink: '#7A5F1E',
-          dark: '#7A5F1E',
-          50: '#F4EBD3',
+          DEFAULT: 'rgb(var(--gold-rgb) / <alpha-value>)',
+          light: 'rgb(var(--gold-light-rgb) / <alpha-value>)',
+          pale: 'rgb(var(--gold-pale-rgb) / <alpha-value>)',
+          sand: 'rgb(var(--gold-sand-rgb) / <alpha-value>)',
+          ink: 'rgb(var(--gold-ink-rgb) / <alpha-value>)',
+          dark: 'rgb(var(--gold-ink-rgb) / <alpha-value>)',
+          50: 'rgb(var(--chip-gold-rgb) / <alpha-value>)',
+        },
+
+        /* ── The primary call to action ────────────────────────── */
+        cta: {
+          DEFAULT: 'rgb(var(--cta-rgb) / <alpha-value>)',
+          hover: 'rgb(var(--cta-hover-rgb) / <alpha-value>)',
+          ink: 'rgb(var(--cta-ink-rgb) / <alpha-value>)',
         },
 
         /* ── Ink ───────────────────────────────────────────────── */
         ink: {
-          DEFAULT: '#14202B',
-          strong: '#123B5D',
-          900: '#26333F',
-          700: '#40505E',
-          muted: '#5C6B7A',
-          500: '#5C6B7A',
-          subtle: '#8B98A5',
-          400: '#8B98A5',
+          DEFAULT: 'rgb(var(--ink-rgb) / <alpha-value>)',
+          strong: 'rgb(var(--navy-rgb) / <alpha-value>)',
+          900: 'rgb(var(--ink-900-rgb) / <alpha-value>)',
+          700: 'rgb(var(--ink-700-rgb) / <alpha-value>)',
+          muted: 'rgb(var(--ink-500-rgb) / <alpha-value>)',
+          500: 'rgb(var(--ink-500-rgb) / <alpha-value>)',
+          subtle: 'rgb(var(--ink-400-rgb) / <alpha-value>)',
+          400: 'rgb(var(--ink-400-rgb) / <alpha-value>)',
         },
 
-        fulfilled: { DEFAULT: '#1E7A4E', navy: '#23935E' },
+        /* ── The teaching's editorial panels ───────────────────── */
+        statement: {
+          bg: 'rgb(var(--statement-bg-rgb) / <alpha-value>)',
+          rule: 'rgb(var(--statement-rule-rgb) / <alpha-value>)',
+        },
+        source: {
+          bg: 'rgb(var(--source-bg-rgb) / <alpha-value>)',
+          rule: 'rgb(var(--source-rule-rgb) / <alpha-value>)',
+          ink: 'rgb(var(--source-ink-rgb) / <alpha-value>)',
+          label: 'rgb(var(--source-label-rgb) / <alpha-value>)',
+          cite: 'rgb(var(--source-cite-rgb) / <alpha-value>)',
+        },
+
+        fulfilled: {
+          DEFAULT: 'rgb(var(--fulfilled-rgb) / <alpha-value>)',
+          navy: 'rgb(var(--fulfilled-navy-rgb) / <alpha-value>)',
+        },
 
         status: {
-          success: '#1E7A4E',
-          warning: '#7A5F1E',
-          danger: '#BE123C',
-          info: '#123B5D',
+          success: 'rgb(var(--fulfilled-rgb) / <alpha-value>)',
+          warning: 'rgb(var(--gold-ink-rgb) / <alpha-value>)',
+          danger: 'rgb(var(--danger-rgb) / <alpha-value>)',
+          info: 'rgb(var(--navy-rgb) / <alpha-value>)',
         },
 
         /* Aliases from the previous theme. */
-        linen: '#F7F4EC',
-        sand: '#F1EDE1',
-        cloth: '#FFFDF8',
-        thread: '#E4DED0',
-        sky: '#9FB4C8',
-        panel: '#FFFDF8',
-        canvas: '#F7F4EC',
-        flagship: { DEFAULT: '#123B5D', deep: '#0D2C46', soft: '#9FB4C8' },
-        orchid: '#6D28D9',
+        linen: 'rgb(var(--ground-rgb) / <alpha-value>)',
+        sand: 'rgb(var(--chip-rgb) / <alpha-value>)',
+        cloth: 'rgb(var(--card-rgb) / <alpha-value>)',
+        thread: 'rgb(var(--rule-rgb) / <alpha-value>)',
+        sky: 'rgb(var(--plate-soft-rgb) / <alpha-value>)',
+        panel: 'rgb(var(--card-rgb) / <alpha-value>)',
+        canvas: 'rgb(var(--ground-rgb) / <alpha-value>)',
+        flagship: {
+          DEFAULT: 'rgb(var(--plate-rgb) / <alpha-value>)',
+          deep: 'rgb(var(--plate-deep-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--plate-soft-rgb) / <alpha-value>)',
+        },
+        orchid: 'rgb(var(--orchid-rgb) / <alpha-value>)',
         surface: { DEFAULT: 'var(--surface-1)', 2: 'var(--surface-2)', 3: 'var(--surface-3)' },
-        hairline: { DEFAULT: '#E4DED0', strong: '#D8CFBA' },
+        hairline: {
+          DEFAULT: 'rgb(var(--rule-rgb) / <alpha-value>)',
+          strong: 'rgb(var(--rule-strong-rgb) / <alpha-value>)',
+        },
       },
       maxWidth: {
         shell: 'var(--shell)',

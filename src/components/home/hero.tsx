@@ -50,7 +50,7 @@ export function HomeHero() {
           <Link
             href={homeHero.primary.href}
             data-track="hero-primary"
-            className="focus-ring rounded-tile bg-navy px-7 py-4 text-center text-[0.9375rem] font-semibold text-card transition-colors hover:bg-navy-deep"
+            className="focus-ring rounded-tile bg-cta px-7 py-4 text-center text-[0.9375rem] font-semibold text-cta-ink transition-colors hover:bg-cta-hover"
           >
             {homeHero.primary.label}
           </Link>

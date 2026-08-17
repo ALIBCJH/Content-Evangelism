@@ -92,14 +92,14 @@ export default function InsightPage() {
         <button
           type="submit"
           disabled={loading || !key}
-          className="focus-ring rounded-tile bg-navy px-6 py-3 text-[0.9375rem] font-semibold text-card disabled:opacity-50"
+          className="focus-ring rounded-tile bg-plate px-6 py-3 text-[0.9375rem] font-semibold text-plate-pale disabled:opacity-50"
         >
           {loading ? 'Reading…' : 'Show the numbers'}
         </button>
       </form>
 
       {error && (
-        <p className="mb-8 rounded-tile border border-dashed border-[#C9906A] bg-[#FBF0E9] px-5 py-4 text-[0.9375rem] text-[#5C4636]">
+        <p className="mb-8 rounded-tile border border-dashed border-source-rule bg-source-bg px-5 py-4 text-[0.9375rem] text-source-ink">
           {error}
         </p>
       )}

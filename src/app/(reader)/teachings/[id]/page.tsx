@@ -97,7 +97,7 @@ export default function TeachingRecordPage({ params }: Params) {
       />
 
       {/* ── The header ─────────────────────────────────────────────── */}
-      <section className="bg-navy text-ground">
+      <section className="bg-plate text-plate-pale">
         <div className="shell pb-9 pt-7">
           <Breadcrumbs
             className="mb-7 text-navy-soft [&_a:hover]:text-gold-pale [&_span[aria-current]]:text-gold-pale"

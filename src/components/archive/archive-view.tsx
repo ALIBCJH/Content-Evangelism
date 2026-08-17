@@ -5,16 +5,23 @@ import { cn } from '@/lib/utils'
 import { listRealRows, type RealRow } from '@/lib/rows'
 import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
-import { ArticleCard } from '@/components/archive/article-card'
+import { toArchiveItems } from '@/lib/archive-items'
+import { ArchiveList } from '@/components/archive/archive-list'
 
 /**
  * A listing of writing: the whole archive at /articles, and the same
  * component filtered to a section or an author.
  *
- * A cream band carries the title and the subjects; below it every piece
- * is a card on the dated rail, in the same language as the prophecy
- * archive. The two are the ministry's two chronologies and now read as
- * one set of pages rather than two.
+ * A band carries the title and the count; under it a strip of controls,
+ * and under that the writing: the newest piece given the room to be read
+ * as a front page, then the rest as rows. Every card is two parts — the
+ * Scripture the piece leads with, on the ministry's navy, and what the
+ * teaching does with it.
+ *
+ * This component stays on the server. It is what a crawler and a reader
+ * with no JavaScript get, and it is the whole archive, newest first, with
+ * its structured data intact. Filtering, ordering and saving are handled
+ * by the list below it, which is the only part that needs a browser.
  *
  * Nothing is paginated — the archive is small enough to read in one page,
  * and a reader who wants a specific thing has search.
@@ -126,42 +133,7 @@ export async function ArchiveView({
           </p>
         </div>
       ) : (
-        <section className="shell pb-24 pt-6">
-          {/* What is left of the filter row: the ordering, which the list
-              does not state for itself. The section chips are gone. */}
-          <div className="mb-6 flex items-center justify-end border-b border-rule pb-4">
-            <span className="kicker-lg text-ink-subtle">Newest first</span>
-          </div>
-
-          {/* The year prints only where it changes, so a run of pieces
-              from one year reads as a block rather than repeating. */}
-          {/* The cascade.
-              From `lg` up the cards take a little under two-thirds of the
-              shell and alternate edge to edge, each pulled up so its corner
-              laps the one before it. The lap is the thing to get right: it
-              is 28px against the card's own 32px of padding, so what a card
-              covers is always the previous card's margin and never a word
-              of it. Hovering lifts a card clear of its neighbours.
-
-              Below `lg` none of it applies. Cards go full width and stack
-              in order, because a stagger on a 390px screen is not a
-              composition, it is two columns of forty characters. */}
-          <ol>
-            {rows.map((row, index) => (
-              <li
-                key={row.slug}
-                className={cn(
-                  'relative transition-[z-index] hover:z-10',
-                  'lg:w-[62%]',
-                  index > 0 && 'mt-6 lg:-mt-7',
-                  index % 2 === 1 && 'lg:ml-auto'
-                )}
-              >
-                <ArticleCard row={row} latest={index === 0} />
-              </li>
-            ))}
-          </ol>
-        </section>
+        <ArchiveList items={toArchiveItems(rows)} />
       )}
 
       {/* The other archive. It used to be a panel in a sidebar, which on a

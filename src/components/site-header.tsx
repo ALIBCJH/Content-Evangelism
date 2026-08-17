@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { navSections, siteInfo } from '@/lib/content'
 import type { SearchDoc } from '@/lib/search-docs'
 import { SearchOverlay } from '@/components/search-overlay'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 /**
  * The masthead: the seal and the wordmark on the left, the four sections
@@ -178,7 +179,13 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
             })}
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center lg:hidden">
+          {/* Light or dark. It sits outside the nav because it is not a
+              place to go, and it is the last thing in the row on both
+              layouts — the corner is where a reader looks for it. */}
+          <ThemeToggle className="ml-auto hidden lg:ml-2 lg:flex" />
+
+          <div className="ml-auto flex shrink-0 items-center gap-2.5 lg:hidden">
+            <ThemeToggle />
             <button
               ref={buttonRef}
               type="button"
@@ -256,9 +263,9 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                 ))}
               </nav>
 
-              <div className="mt-6 rounded-figure bg-navy p-5">
+              <div className="mt-6 rounded-figure bg-plate p-5">
                 <p className="kicker mb-2 text-gold-pale">The ministry</p>
-                <p className="font-display text-[1.3125rem] leading-tight text-card">
+                <p className="font-display text-[1.3125rem] leading-tight text-plate-pale">
                   {siteInfo.mission}
                 </p>
               </div>

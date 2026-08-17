@@ -81,7 +81,7 @@ export function SearchOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex justify-center bg-navy/55 px-6 pt-[88px]"
+      className="fixed inset-0 z-[100] flex justify-center bg-plate-deep/70 px-6 pt-[88px]"
       role="dialog"
       aria-modal="true"
       aria-label="Search"
