@@ -30,6 +30,11 @@ import { headingId } from '@/lib/toc'
  *   :: — Ministry of Repentance and Holiness
  *
  *   @video 29PZpK0CKts | Title | Prophet Dr. David Edward Owuor | Watch · 20 seconds
+ *   @video wide O0Yw0HKTc1k | Title | Prophet Dr. David Edward Owuor | Watch · 8 minutes
+ *
+ * A short is filmed upright and takes the narrow frame the block was
+ * built for; a sermon is filmed landscape, and `wide` gives it the 16:9
+ * frame rather than letterboxing an hour of preaching into a column.
  *
  * A teaching that answers the questions readers actually type carries them
  * at the foot, where the devotional has ended and the apparatus begins:
@@ -64,7 +69,7 @@ export type Block =
   | { kind: 'list'; ordered: boolean; items: Inline[][] }
   | { kind: 'table'; caption?: string; head: string[]; rows: string[][] }
   | { kind: 'callout'; tone: CalloutTone; label?: string; inlines: Inline[]; cite?: string }
-  | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string }
+  | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string; wide?: boolean }
   | { kind: 'faq'; items: FaqItem[] }
 
 export interface FaqItem {
@@ -141,14 +146,19 @@ export function parseBody(body: string): Block[] {
 
     const lines = block.split('\n').map((line) => line.trim()).filter(Boolean)
 
-    /* A recording, set into the teaching where it is referred to. */
+    /* A recording, set into the teaching where it is referred to. The id
+       may be preceded by `wide`, which is how a landscape sermon says it
+       is not a short and must not be set in the upright frame. */
     if (lines.length === 1 && lines[0].startsWith('@video ')) {
-      const [id, title, byline, eyebrow] = cells(lines[0].slice(7)).map((part) => part.trim())
+      const [opener, title, byline, eyebrow] = cells(lines[0].slice(7)).map((part) => part.trim())
+      const wide = /^wide\s+/i.test(opener ?? '')
+      const id = wide ? opener.replace(/^wide\s+/i, '').trim() : opener
       if (id && title) {
         return {
           kind: 'video',
           id,
           title,
+          ...(wide ? { wide: true } : {}),
           ...(byline ? { byline } : {}),
           ...(eyebrow ? { eyebrow } : {}),
         }
