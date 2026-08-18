@@ -402,9 +402,7 @@ export const aboutSections = [
   { label: 'Our Mission', href: '#mission' },
   { label: 'Explore the Message', href: '#explore' },
   { label: 'What We Believe', href: '#faith' },
-  { label: 'How This Archive Is Kept', href: '#editorial' },
-  { label: 'A Growing Archive', href: '#archive' },
-  { label: 'Locations', href: '#locations' },
+  { label: 'Where We Meet', href: '#locations' },
 ]
 
 export const faithArticles = [
@@ -434,12 +432,108 @@ export const faithArticles = [
   },
 ]
 
-export const locations = [
-  { city: 'Nairobi', detail: 'Kenya · Main altar' },
-  { city: 'Kisumu', detail: 'Kenya' },
-  { city: 'Bogotá', detail: 'Colombia' },
-  { city: 'Kampala', detail: 'Uganda' },
+/**
+ * Kenya's forty-seven counties, in the order the Constitution numbers
+ * them, and the altar each one is known to gather at.
+ *
+ * A county carries an `altar` only where the altar is named and findable
+ * — the four below are. The rest are listed because the ministry gathers
+ * across the whole country, and left unlinked because sending someone to
+ * a map pin nobody has checked is worse than telling them we do not have
+ * it yet. Adding one is a name and a maps query, nothing more.
+ *
+ * `maps` is what Google Maps is asked to search for, not a coordinate we
+ * have invented: the query runs, and the reader sees whatever Maps holds
+ * for that name today.
+ */
+export interface County {
+  no: number
+  name: string
+  altar?: { name: string; where?: string; maps: string }
+}
+
+export const counties: County[] = [
+  {
+    no: 1,
+    name: 'Mombasa',
+    altar: {
+      name: 'Kongowea Main Altar',
+      maps: 'Ministry of Repentance and Holiness Kongowea Main Altar Mombasa',
+    },
+  },
+  { no: 2, name: 'Kwale' },
+  { no: 3, name: 'Kilifi' },
+  { no: 4, name: 'Tana River' },
+  { no: 5, name: 'Lamu' },
+  { no: 6, name: 'Taita–Taveta' },
+  { no: 7, name: 'Garissa' },
+  { no: 8, name: 'Wajir' },
+  { no: 9, name: 'Mandera' },
+  { no: 10, name: 'Marsabit' },
+  { no: 11, name: 'Isiolo' },
+  { no: 12, name: 'Meru' },
+  { no: 13, name: 'Tharaka-Nithi' },
+  { no: 14, name: 'Embu' },
+  { no: 15, name: 'Kitui' },
+  { no: 16, name: 'Machakos' },
+  { no: 17, name: 'Makueni' },
+  { no: 18, name: 'Nyandarua' },
+  { no: 19, name: 'Nyeri' },
+  { no: 20, name: 'Kirinyaga' },
+  { no: 21, name: 'Murang’a' },
+  { no: 22, name: 'Kiambu' },
+  { no: 23, name: 'Turkana' },
+  { no: 24, name: 'West Pokot' },
+  { no: 25, name: 'Samburu' },
+  { no: 26, name: 'Trans Nzoia' },
+  { no: 27, name: 'Uasin Gishu' },
+  { no: 28, name: 'Elgeyo-Marakwet' },
+  { no: 29, name: 'Nandi' },
+  { no: 30, name: 'Baringo' },
+  { no: 31, name: 'Laikipia' },
+  {
+    no: 32,
+    name: 'Nakuru',
+    altar: {
+      name: 'Kenlands Main Altar',
+      maps: 'Kenlands Main Altar Repentance and Holiness Nakuru',
+    },
+  },
+  { no: 33, name: 'Narok' },
+  { no: 34, name: 'Kajiado' },
+  { no: 35, name: 'Kericho' },
+  { no: 36, name: 'Bomet' },
+  { no: 37, name: 'Kakamega' },
+  { no: 38, name: 'Vihiga' },
+  { no: 39, name: 'Bungoma' },
+  { no: 40, name: 'Busia' },
+  { no: 41, name: 'Siaya' },
+  {
+    no: 42,
+    name: 'Kisumu',
+    altar: {
+      name: 'Oasis Altar',
+      maps: 'Oasis Altar Repentance and Holiness Kisumu',
+    },
+  },
+  { no: 43, name: 'Homa Bay' },
+  { no: 44, name: 'Migori' },
+  { no: 45, name: 'Kisii' },
+  { no: 46, name: 'Nyamira' },
+  {
+    no: 47,
+    name: 'Nairobi City',
+    altar: {
+      name: 'Nairobi Main Altar',
+      where: 'Behind Muthurwa Market, next to LandMawe Playground',
+      maps: 'Nairobi Main Altar Repentance and Holiness Muthurwa',
+    },
+  },
 ]
+
+/** What Google Maps is asked, for a county that has an altar. */
+export const mapsHref = (query: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
 
 /* ── The footer ──────────────────────────────────────────────────── */
 

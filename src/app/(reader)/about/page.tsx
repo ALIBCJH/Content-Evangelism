@@ -1,12 +1,14 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import {
   aboutSections,
+  counties,
   faithArticles,
   foundingYear,
-  locations,
+  mapsHref,
+  pastoralCare,
   siteInfo,
   siteUrl,
 } from '@/lib/content'
@@ -93,50 +95,6 @@ const doorways = [
     href: '/topics/doctrine',
     body: 'Teachings exploring foundational Christian belief — Scripture, salvation, the covenants, and the character of God.',
     category: 'Doctrine',
-  },
-]
-
-/**
- * The rules the desk publishes under.
- *
- * Every one of them is already visible in the archive — the dates on the
- * teachings, the labelled panels inside them, the prophetic records held
- * with their publication dates, and the blocks that say a source is
- * missing rather than filling the gap. Writing them down here lets a
- * reader hold the site to them.
- */
-const editorialRules = [
-  {
-    title: 'Dated, attributed, and left where it was written',
-    body: 'Every teaching carries the day it was published and the desk that wrote it. Nothing is quietly back-dated, and an edited piece says when it was edited.',
-  },
-  {
-    title: 'Scripture is quoted, not alluded to',
-    body: 'A passage that carries an argument is set out in full, with book, chapter and verse, so a reader can check it against their own Bible rather than take our word for the sense of it.',
-  },
-  {
-    title: "The ministry's teaching is labelled as the ministry's teaching",
-    body: 'Where a page states what this ministry holds rather than what the text plainly says, it is marked as such. A reader is entitled to know which of the two they are reading.',
-  },
-  {
-    title: 'Where Christians disagree, the page says so',
-    body: 'On the rapture, the millennium, the gifts and much else, serious Christians read the same passages and reach different conclusions. The archive states its own position openly and does not pretend it is the only reading available.',
-  },
-  {
-    title: 'Prophecy is kept with its record',
-    body: 'A prophetic word is held with its original recording and the date it was published, separately from any later event — so that a source, an event, and an interpretation of that event are never read as one another.',
-  },
-  {
-    title: 'Testimony is called testimony',
-    body: 'An account of a healing is a first-hand report of what witnesses believe took place. It is published as that, and never dressed as an independently documented medical finding.',
-  },
-  {
-    title: 'Prayer is never set against medicine',
-    body: 'Scripture does not oppose the two, and assuming it does has cost people their health. Where a teaching touches illness, it says plainly: continue your treatment.',
-  },
-  {
-    title: 'A missing source is admitted, not filled in',
-    body: 'Where the ministry’s own published wording is needed and has not been supplied, the page says so in the open rather than printing a paraphrase nobody can check.',
   },
 ]
 
@@ -445,7 +403,7 @@ export default async function AboutPage() {
             lede="Each article of faith is published with the Scriptures that support it and the teachings that expand on it, rather than as a document to download."
           />
 
-          <ul className="mb-8 grid gap-5 md:grid-cols-2">
+          <ul className="grid gap-5 md:grid-cols-2">
             {faithArticles.map((article) => (
               <li
                 key={article.num}
@@ -466,138 +424,89 @@ export default async function AboutPage() {
               </li>
             ))}
           </ul>
-
-          {/* The design's own device: where the ministry's published
-              wording is needed and has not been supplied, the page says so
-              rather than paraphrasing something unsourced into print. */}
-          <div className="rounded-figure border border-dashed border-source-rule bg-source-bg px-6 py-6">
-            <p className="kicker-lg mb-3 text-source-label">
-              [Source needed — do not publish as is]
-            </p>
-            <p className="max-w-measure text-[0.9375rem] leading-[1.75] text-source-ink">
-              The four articles above are summaries. The full text of each, and the ministry&rsquo;s
-              own account of its history and leadership, are to be set here verbatim from the
-              published wording — not paraphrased. Supply the source (magazine volume and page, or
-              the page on repentandpreparetheway.org) and it is typed in exactly as published.
-            </p>
-          </div>
         </Section>
 
-        {/* ── How this archive is kept ───────────────────────────── */}
+        {/* ── Where we meet ──────────────────────────────────────── */}
         <Section>
           <SectionHead
-            id="editorial"
-            eyebrow="How This Archive Is Kept"
-            title="The rules this desk publishes under"
-            lede="A ministry that asks people to test what they are told owes them the means of testing it. These are the rules the desk works to, and they are the reason some pages here say less than a reader might expect."
+            id="locations"
+            eyebrow="Where We Meet"
+            title="Across all forty-seven counties, and beyond Kenya"
+            lede="The ministry is distributed globally — it preaches, holds conferences and gathers on every continent it has been invited to. Its home is Kenya, where it meets in all forty-seven counties."
           />
 
-          <ol className="overflow-hidden rounded-panel border border-rule bg-card">
-            {editorialRules.map((rule, index) => (
-              <li
-                key={rule.title}
-                className="grid grid-cols-[32px_minmax(0,1fr)] gap-5 border-b border-rule-soft px-6 py-5 last:border-b-0 sm:px-7"
-              >
-                <span className="tabular pt-1 font-mono text-xs text-gold">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span className="block">
-                  <span className="mb-1.5 block font-display text-[1.25rem] leading-[1.25] text-navy">
-                    {rule.title}
-                  </span>
-                  <span className="block max-w-measure text-[0.9375rem] leading-[1.7] text-ink-700">
-                    {rule.body}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        {/* ── A growing archive ──────────────────────────────────── */}
-        <Section>
-          <SectionHead
-            id="archive"
-            eyebrow="A Growing Archive"
-            title="The work of preserving these teachings is ongoing"
-            lede="As new articles are prepared and older teachings are documented, this archive will continue to grow. The figures below are counted from what is published rather than typed in, so the page cannot claim more than the site actually holds."
-          />
-
-          <dl className="mb-9 grid gap-5 sm:grid-cols-3">
-            {stats.map((stat) => (
-              <div key={stat.label} className="rounded-figure border border-rule bg-card p-6">
-                <dt className="sr-only">{stat.label}</dt>
-                <dd>
-                  <span className="tabular mb-2 block font-display text-[2.375rem] font-medium leading-none text-navy">
-                    {stat.value}
-                  </span>
-                  <span className="block text-[0.8125rem] leading-[1.5] text-ink-muted">
-                    {stat.label}
-                  </span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-
-          <p className="max-w-measure text-[1.0625rem] leading-[1.8] text-ink-700 sm:text-[1.125rem]">
-            The goal is not simply another collection of articles. It is to preserve a message,
-            make it accessible, and help people search the Scriptures for themselves.
+          <p className="mb-9 flex flex-wrap items-baseline gap-x-2 gap-y-1 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-ink-subtle">
+            <span className="text-gold-ink">Head office</span>
+            <span aria-hidden>·</span>
+            <span>{pastoralCare.office.replace('Head office · ', '')}</span>
           </p>
-        </Section>
 
-        {/* ── Locations ──────────────────────────────────────────── */}
-        <Section>
-          <SectionHead id="locations" eyebrow="Locations" title="Where the ministry meets" />
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {locations.map((location) => (
-              <li key={location.city} className="rounded-panel border border-rule bg-card p-6">
-                <span className="mb-1.5 block font-display text-[1.25rem] leading-[1.2] text-navy">
-                  {location.city}
+          {/* A county whose altar is named opens that altar on the map. A
+              county without one is still listed, because the ministry
+              gathers there — it is only the location we cannot yet point
+              at, and pointing at an unchecked pin is how a reader ends up
+              somewhere else on a Sunday morning. */}
+          <ul className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {counties.map((county) => {
+              const chrome =
+                'flex items-start gap-3 rounded-tile border p-4 transition-colors'
+              const numeral = (
+                <span aria-hidden className="tabular pt-0.5 font-mono text-[0.6875rem] text-gold">
+                  {String(county.no).padStart(2, '0')}
                 </span>
-                <span className="block text-[0.8125rem] leading-[1.6] text-ink-subtle">
-                  {location.detail}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Section>
+              )
 
-        {/* ── Begin exploring ────────────────────────────────────── */}
-        <Section>
-          <div className="rounded-panel border border-statement-rule bg-statement-bg p-8 sm:p-12">
-            <p className="kicker mb-4 text-gold-ink">Begin Exploring</p>
-            <h2
-              id="begin"
-              className="mb-5 max-w-[32rem] scroll-mt-stick text-balance font-display text-[1.75rem] font-medium leading-[1.15] text-navy sm:text-[2.25rem]"
-            >
-              Search the Scriptures for yourself.
-            </h2>
-            <p className="mb-9 max-w-[42rem] text-pretty text-[1.0625rem] leading-[1.75] text-ink-700">
-              Whether you came here looking for a particular teaching or simply want to understand
-              the message of the ministry, you are welcome to read whatever is here.
-            </p>
+              if (!county.altar) {
+                return (
+                  <li key={county.no} className={`${chrome} border-rule-soft bg-transparent`}>
+                    {numeral}
+                    <span className="block text-[0.9375rem] leading-[1.4] text-ink-500">
+                      {county.name}
+                    </span>
+                  </li>
+                )
+              }
 
-            <ul className="flex flex-wrap gap-4">
-              {[
-                { label: 'Read the latest teachings', href: '/teachings' },
-                { label: 'Explore the archive', href: '/' },
-                { label: 'The prophecy archive', href: '/prophecies' },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="focus-ring group inline-flex items-center gap-2 rounded-full border border-rule-strong bg-card px-6 py-3 font-sans text-sm font-semibold text-navy transition-colors hover:border-gold hover:text-gold-ink"
+              return (
+                <li key={county.no}>
+                  <a
+                    href={mapsHref(county.altar.maps)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`focus-ring group ${chrome} border-rule bg-card hover:border-gold/60`}
                   >
-                    {link.label}
-                    <ArrowRight
-                      aria-hidden
-                      className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                    />
-                  </Link>
+                    {numeral}
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-[1.125rem] leading-[1.25] text-navy">
+                        {county.name}
+                      </span>
+                      <span className="mt-1 block text-[0.8125rem] leading-[1.5] text-ink-700">
+                        {county.altar.name}
+                      </span>
+                      {county.altar.where && (
+                        <span className="mt-1 block text-[0.75rem] leading-[1.5] text-ink-subtle">
+                          {county.altar.where}
+                        </span>
+                      )}
+                      <span className="kicker mt-2.5 flex items-center gap-1.5 text-gold-ink">
+                        Open in Maps
+                        <ArrowUpRight
+                          aria-hidden
+                          className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        />
+                      </span>
+                    </span>
+                  </a>
                 </li>
-              ))}
-            </ul>
-          </div>
+              )
+            })}
+          </ul>
+
+          <p className="mt-8 max-w-measure text-[0.9375rem] leading-[1.75] text-ink-subtle">
+            A county listed without an altar is one the ministry gathers in, whose meeting place is
+            not yet recorded here. We would rather say that than send someone to a pin nobody has
+            checked. If you know the altar in your county, tell us its name and we will add it.
+          </p>
         </Section>
       </div>
     </main>
