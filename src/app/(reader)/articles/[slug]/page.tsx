@@ -153,6 +153,7 @@ export default async function PostedArticlePage({ params }: Params) {
         }}
         publishedAt={article.publishedAt}
         readMinutes={article.readMinutes}
+        verified={article.verified}
         {...(article.imageUrl
           ? { hero: { src: article.imageUrl, alt: article.imageAlt ?? '' } }
           : {})}
