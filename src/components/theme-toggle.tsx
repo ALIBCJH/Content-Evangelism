@@ -54,10 +54,6 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
   const toggle = () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     document.documentElement.dataset.theme = next
-    /* Colour transitions are off until the first deliberate change, so
-       the theme the page loads in arrives instantly and only a toggle
-       animates. */
-    document.documentElement.dataset.themeReady = ''
     window.localStorage.setItem(STORAGE_KEY, next)
     setTheme(next)
   }
