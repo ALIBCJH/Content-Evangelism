@@ -60,6 +60,17 @@ export interface ArticleLayoutProps {
   children: React.ReactNode
 }
 
+/**
+ * The tracks, shared by the band and the reading area.
+ *
+ * The headline used to sit at the shell's edge while the teaching below it
+ * began 300px further in — two left margins on one page, with no relation
+ * between them. Both hang off the same grid now, so the headline starts
+ * where the chapters start and ends where the teaching ends.
+ */
+const TRACKS =
+  'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14'
+
 export function ArticleLayout({
   category,
   title,
@@ -84,72 +95,92 @@ export function ArticleLayout({
       <main>
         {/* ── The band ───────────────────────────────────────────── */}
         <section className="border-b border-rule bg-raised">
-          <div className="shell pt-10">
-            <Breadcrumbs
-              className="mb-8"
-              crumbs={[
-                /* The archive is the front page, so "Home" and "Articles"
-                   would be the same URL twice. One crumb. */
-                { name: 'Articles', href: '/' },
-                { name: category, href: topicHref(category) },
-              ]}
-            />
-          </div>
+          {/* One block across the whole grid. A teaching with no photograph
+              had been laying its headline into a 1fr track beside an empty
+              0.85fr one — half the band blank, and the headline broken over
+              three lines to fit a column that was only narrow because of a
+              picture that was never there. */}
+          <div className={`${TRACKS} pb-11 pt-8`}>
+            <div className="col-span-full">
+              <Breadcrumbs
+                className="mb-7"
+                crumbs={[
+                  /* The archive is the front page, so "Home" and "Articles"
+                     would be the same URL twice. One crumb. */
+                  { name: 'Articles', href: '/' },
+                  { name: category, href: topicHref(category) },
+                ]}
+              />
 
-          <div className="shell grid items-end gap-10 pb-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:gap-14">
-            <div>
-              {/* 300, not 500. Large serif at a heavy weight shouts; at
-                  300 the same words are unhurried. The negative tracking
-                  pulls a loose-by-default large serif into one shape. */}
-              <h1 className="mb-5 text-balance font-article text-[2.125rem] font-light leading-[1.08] tracking-[-0.018em] text-navy sm:text-[2.75rem] lg:text-[3.5rem]">
-                {title}
-              </h1>
-              <p className="mb-6 text-pretty font-article text-[1.1875rem] font-light italic leading-[1.45] text-ink-700 sm:text-[1.375rem]">
-                {dek}
-              </p>
-              <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
-                {author.href ? (
-                  <Link
-                    href={author.href}
-                    rel="author"
-                    className="transition-colors hover:text-gold"
-                  >
-                    {author.name}
-                  </Link>
-                ) : (
-                  <span>{author.name}</span>
-                )}
-                <span aria-hidden className="mx-2">·</span>
-                <time dateTime={publishedAt}>
-                  {format(parseISO(publishedAt), 'd MMMM yyyy')}
-                </time>
-                <span aria-hidden className="mx-2">·</span>
-                <span className="tabular">{readMinutes} MIN READ</span>
-              </p>
-            </div>
-
-            {hero && (
-              <figure className="m-0">
-                <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
-                  <Image
-                    src={hero.src}
-                    /* What the photograph shows — not the headline again,
-                       which tells a screen reader and image search nothing
-                       the h1 above has not already said. */
-                    alt={hero.alt}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 42vw, 100vw"
-                    className="object-cover"
-                  />
+              {/* The photograph is what asks for two columns. Without one
+                  there is nothing to sit beside, and the headline takes
+                  the width. */}
+              <div
+                className={
+                  hero
+                    ? 'grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.72fr)] lg:gap-14'
+                    : ''
+                }
+              >
+                <div>
+                  {/* 300, not 500. Large serif at a heavy weight shouts; at
+                      300 the same words are unhurried. The negative tracking
+                      pulls a loose-by-default large serif into one shape. */}
+                  <h1 className="mb-4 text-balance font-article text-[2.125rem] font-light leading-[1.08] tracking-[-0.018em] text-navy sm:text-[2.75rem] lg:text-[3.5rem]">
+                    {title}
+                  </h1>
+                  {/* The standfirst keeps a measure of its own. A headline
+                      can run the width of the page; two sentences of italic
+                      cannot. */}
+                  <p className="mb-5 max-w-[44rem] text-pretty font-article text-[1.1875rem] font-light italic leading-[1.45] text-ink-700 sm:text-[1.375rem]">
+                    {dek}
+                  </p>
+                  <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
+                    {author.href ? (
+                      <Link
+                        href={author.href}
+                        rel="author"
+                        className="transition-colors hover:text-gold"
+                      >
+                        {author.name}
+                      </Link>
+                    ) : (
+                      <span>{author.name}</span>
+                    )}
+                    <span aria-hidden className="mx-2">·</span>
+                    <time dateTime={publishedAt}>
+                      {format(parseISO(publishedAt), 'd MMMM yyyy')}
+                    </time>
+                    <span aria-hidden className="mx-2">·</span>
+                    <span className="tabular">{readMinutes} MIN READ</span>
+                  </p>
                 </div>
-                {hero.caption && (
-                  <figcaption className="mt-3 text-xs leading-snug text-ink-subtle">
-                    {hero.caption}
-                  </figcaption>
+
+                {hero && (
+                  <figure className="m-0">
+                    <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
+                      <Image
+                        src={hero.src}
+                        /* What the photograph shows — not the headline
+                           again, which tells a screen reader and image
+                           search nothing the h1 above has not already
+                           said. */
+                        alt={hero.alt}
+                        fill
+                        priority
+                        sizes="(min-width: 1024px) 42vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    {hero.caption && (
+                      <figcaption className="mt-3 text-xs leading-snug text-ink-subtle">
+                        {hero.caption}
+                      </figcaption>
+                    )}
+                  </figure>
                 )}
-              </figure>
-            )}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -168,7 +199,7 @@ export function ArticleLayout({
             list at the head of the article. In every case the tracks are
             centred, so the slack is a margin on both sides rather than a
             void on one. */}
-        <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14">
+        <div className={`${TRACKS} pb-24 pt-12`}>
           {/* min-w-0, because a grid item is min-width:auto by default and
               a table or a chart wider than the phone would otherwise push
               the track — and with it the whole page — sideways. The blocks
