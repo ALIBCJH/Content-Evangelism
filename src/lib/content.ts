@@ -434,35 +434,68 @@ export const faithArticles = [
 
 /**
  * Kenya's forty-seven counties, in the order the Constitution numbers
- * them, and the altar each one is known to gather at.
+ * them, and the altars each one gathers at.
  *
- * A county carries an `altar` only where the altar is named and findable
- * — the four below are. The rest are listed because the ministry gathers
- * across the whole country, and left unlinked because sending someone to
- * a map pin nobody has checked is worse than telling them we do not have
- * it yet. Adding one is a name and a maps query, nothing more.
+ * Every altar here carries the ministry's own coordinates and the Google
+ * place the ministry gave for it, so the pin a reader opens is the pin
+ * the ministry named rather than a guess this desk made from a search
+ * box. Where the clergy leading that altar published a number, it is on
+ * the card: a reader who wants to ask about a service should not have to
+ * find the head office first.
  *
- * `maps` is what Google Maps is asked to search for, not a coordinate we
- * have invented: the query runs, and the reader sees whatever Maps holds
- * for that name today.
+ * `confirmed: false` marks an altar whose place has been matched but not
+ * checked on the ground. It still links — a probable pin with a warning
+ * on it is more use than nothing — but it says so, in the same voice the
+ * prophecy records use for a date that is still to be confirmed.
+ *
+ * A county with no altars is listed all the same. The ministry gathers
+ * across the whole country; it is only the meeting place we do not have.
  */
+export interface Altar {
+  name: string
+  area: string
+  /** The Google place, as the ministry supplied it. */
+  placeId: string
+  /** [latitude, longitude] — the authority behind the pin. */
+  at: [number, number]
+  /** The clergy leading this altar, where a number is published. */
+  phone?: string
+  /** Absent means confirmed; false means matched but not yet checked. */
+  confirmed?: false
+}
+
 export interface County {
   no: number
   name: string
-  altar?: { name: string; where?: string; maps: string }
+  altars?: Altar[]
 }
 
 export const counties: County[] = [
   {
     no: 1,
     name: 'Mombasa',
-    altar: {
-      name: 'Kongowea Main Altar',
-      maps: 'Ministry of Repentance and Holiness Kongowea Main Altar Mombasa',
-    },
+    altars: [
+      {
+        name: 'Mombasa Main Altar Repentance and Holiness Church',
+        area: 'Mathenge Rd, Mombasa',
+        placeId: 'ChIJ5SShzD0TQBgRvGw0KtcmFPc',
+        at: [-4.0712652, 39.670612],
+      },
+    ],
   },
   { no: 2, name: 'Kwale' },
-  { no: 3, name: 'Kilifi' },
+  {
+    no: 3,
+    name: 'Kilifi',
+    altars: [
+      {
+        name: 'Kilifi Main Altar - Mtwapa',
+        area: 'B8, Mtwapa',
+        placeId: 'ChIJaWpdUtMJQBgRD5yW2yMb2Hs',
+        at: [-3.9419321, 39.7407246],
+      },
+    ],
+  },
   { no: 4, name: 'Tana River' },
   { no: 5, name: 'Lamu' },
   { no: 6, name: 'Taita–Taveta' },
@@ -471,69 +504,342 @@ export const counties: County[] = [
   { no: 9, name: 'Mandera' },
   { no: 10, name: 'Marsabit' },
   { no: 11, name: 'Isiolo' },
-  { no: 12, name: 'Meru' },
+  {
+    no: 12,
+    name: 'Meru',
+    altars: [
+      {
+        name: 'Ministry of Repentance and Holiness - Meru Main Altar',
+        area: 'Meru',
+        placeId: 'ChIJid1dDAAZiBcRPbiWaa7qs6E',
+        at: [0.0744152, 37.6280157],
+      },
+    ],
+  },
   { no: 13, name: 'Tharaka-Nithi' },
-  { no: 14, name: 'Embu' },
+  {
+    no: 14,
+    name: 'Embu',
+    altars: [
+      {
+        name: 'Embu Main Altar',
+        area: 'Kamiu, Embu',
+        placeId: 'ChIJpdsedMstJhgRtgE8UKbH3O8',
+        at: [-0.5307793, 37.4606926],
+      },
+    ],
+  },
   { no: 15, name: 'Kitui' },
-  { no: 16, name: 'Machakos' },
+  {
+    no: 16,
+    name: 'Machakos',
+    altars: [
+      {
+        name: 'Machakos Main Altar',
+        area: 'Machakos',
+        placeId: 'ChIJb1xDLQCHLxgRBT7VG5c9r14',
+        at: [-1.5224628, 37.2520603],
+      },
+    ],
+  },
   { no: 17, name: 'Makueni' },
   { no: 18, name: 'Nyandarua' },
-  { no: 19, name: 'Nyeri' },
-  { no: 20, name: 'Kirinyaga' },
-  { no: 21, name: 'Murang’a' },
-  { no: 22, name: 'Kiambu' },
+  {
+    no: 19,
+    name: 'Nyeri',
+    altars: [
+      {
+        name: 'Ministry of Repentance and Holiness, Nyeri Main Altar',
+        area: '2NK Proposed Site, Nyeri',
+        placeId: 'ChIJAQA_2bxgKBgROA5Ov_6vLXg',
+        at: [-0.4329198, 36.9636817],
+        phone: '+254 727 696651',
+      },
+    ],
+  },
+  {
+    no: 20,
+    name: 'Kirinyaga',
+    altars: [
+      {
+        name: 'Kerugoya Main Altar',
+        area: 'Kerugoya',
+        placeId: 'ChIJu3sp6xKBKBgRTLt8cShnlgE',
+        at: [-0.5037984, 37.2765587],
+        phone: '+254 722 579761',
+      },
+    ],
+  },
+  {
+    no: 21,
+    name: 'Murang’a',
+    altars: [
+      {
+        name: 'Murang\'a Main Altar',
+        area: 'Murang\'a',
+        placeId: 'ChIJmUpAeiajKBgRsNXot5FLu3M',
+        at: [-0.7237946, 37.1649933],
+        phone: '+254 722 243841',
+      },
+    ],
+  },
+  {
+    no: 22,
+    name: 'Kiambu',
+    altars: [
+      {
+        name: 'Thika Main Altar',
+        area: 'Garissa Rd, Thika',
+        placeId: 'ChIJzXorAQBPLxgRxsqvLI8xQr0',
+        at: [-1.0523418, 37.0801804],
+        phone: '+254 723 957237',
+      },
+    ],
+  },
   { no: 23, name: 'Turkana' },
   { no: 24, name: 'West Pokot' },
   { no: 25, name: 'Samburu' },
-  { no: 26, name: 'Trans Nzoia' },
-  { no: 27, name: 'Uasin Gishu' },
+  {
+    no: 26,
+    name: 'Trans Nzoia',
+    altars: [
+      {
+        name: 'Ministry of Repentance and Holiness, Kitale',
+        area: 'Kenyatta St, Kitale',
+        placeId: 'ChIJ87bJEqUnghcRFR3bLkagVGQ',
+        at: [1.0155585, 35.0038091],
+        confirmed: false,
+      },
+    ],
+  },
+  {
+    no: 27,
+    name: 'Uasin Gishu',
+    altars: [
+      {
+        name: 'Uasin Gishu Main Altar Eldoret',
+        area: 'Eldoret',
+        placeId: 'ChIJFZ5sUJMBgRcRjIgb_LI9Xd8',
+        at: [0.5153718, 35.2704876],
+        phone: '+254 722 969443',
+      },
+    ],
+  },
   { no: 28, name: 'Elgeyo-Marakwet' },
   { no: 29, name: 'Nandi' },
   { no: 30, name: 'Baringo' },
-  { no: 31, name: 'Laikipia' },
+  {
+    no: 31,
+    name: 'Laikipia',
+    altars: [
+      {
+        name: 'Nanyuki Main Altar',
+        area: 'Nanyuki',
+        placeId: 'ChIJ_w15djr2hxcRmn6ffxSr2-s',
+        at: [0.0099899, 37.0720915],
+      },
+      {
+        name: 'Nyahururu Main Altar',
+        area: 'Nyahururu',
+        placeId: 'ChIJw1hPVQBjhxcR0YjH6ze-WF0',
+        at: [0.0241365, 36.3526969],
+        confirmed: false,
+      },
+    ],
+  },
   {
     no: 32,
     name: 'Nakuru',
-    altar: {
-      name: 'Kenlands Main Altar',
-      maps: 'Kenlands Main Altar Repentance and Holiness Nakuru',
-    },
+    altars: [
+      {
+        name: 'Repentance & Holiness Ministry - Nakuru Main Altar',
+        area: 'Nakuru Showground',
+        placeId: 'ChIJ9ewI7KSNKRgRJdhhpH8AhhM',
+        at: [-0.2743667, 36.0596523],
+        phone: '+254 721 861407',
+      },
+    ],
   },
-  { no: 33, name: 'Narok' },
-  { no: 34, name: 'Kajiado' },
-  { no: 35, name: 'Kericho' },
-  { no: 36, name: 'Bomet' },
-  { no: 37, name: 'Kakamega' },
+  {
+    no: 33,
+    name: 'Narok',
+    altars: [
+      {
+        name: 'Jerusalem Main Altar, Narok',
+        area: 'Narok',
+        placeId: 'ChIJ9WZfVAADLBgRO2XYL3hq0WY',
+        at: [-1.0906984, 35.8586848],
+        confirmed: false,
+      },
+    ],
+  },
+  {
+    no: 34,
+    name: 'Kajiado',
+    altars: [
+      {
+        name: 'Noonkopir Altar, Kitengela',
+        area: 'Kitengela',
+        placeId: 'ChIJy_QboQGgLxgRVoAGA0DCkWY',
+        at: [-1.4668018, 36.951629],
+        phone: '+254 720 333500',
+        confirmed: false,
+      },
+    ],
+  },
+  {
+    no: 35,
+    name: 'Kericho',
+    altars: [
+      {
+        name: 'Kericho Main Altar',
+        area: 'Kericho',
+        placeId: 'ChIJw4uKLgBZKhgR4k3j7pprFlw',
+        at: [-0.3626601, 35.2886314],
+      },
+    ],
+  },
+  {
+    no: 36,
+    name: 'Bomet',
+    altars: [
+      {
+        name: 'Repentance and Holiness Church Bomet',
+        area: 'Bomet',
+        placeId: 'ChIJw6etoCCZKxgRJhgkiYvnnF4',
+        at: [-0.7774142, 35.3341957],
+        phone: '+254 724 384785',
+        confirmed: false,
+      },
+    ],
+  },
+  {
+    no: 37,
+    name: 'Kakamega',
+    altars: [
+      {
+        name: 'Kakamega Main Altar',
+        area: 'Mahiakalo, Kakamega',
+        placeId: 'ChIJJxfTAgA9gBcRzBufvamhTLI',
+        at: [0.2909739, 34.7687923],
+      },
+    ],
+  },
   { no: 38, name: 'Vihiga' },
-  { no: 39, name: 'Bungoma' },
-  { no: 40, name: 'Busia' },
-  { no: 41, name: 'Siaya' },
+  {
+    no: 39,
+    name: 'Bungoma',
+    altars: [
+      {
+        name: 'Bungoma Main Altar',
+        area: 'Bungoma',
+        placeId: 'ChIJQT8QGQDXgRcR12J0h9sRnBw',
+        at: [0.5894625, 34.5803594],
+      },
+    ],
+  },
+  {
+    no: 40,
+    name: 'Busia',
+    altars: [
+      {
+        name: 'Busia Main Altar',
+        area: 'Busia',
+        placeId: 'ChIJiy4zCfyhfxcRpOu74UfFDbs',
+        at: [0.4611057, 34.1082479],
+      },
+    ],
+  },
+  {
+    no: 41,
+    name: 'Siaya',
+    altars: [
+      {
+        name: 'Siaya Main Altar',
+        area: 'Siaya',
+        placeId: 'ChIJoey-5YDjfxcR0ih0_9sGl2U',
+        at: [0.060188, 34.2829487],
+      },
+    ],
+  },
   {
     no: 42,
     name: 'Kisumu',
-    altar: {
-      name: 'Oasis Altar',
-      maps: 'Oasis Altar Repentance and Holiness Kisumu',
-    },
+    altars: [
+      {
+        name: 'Ministry of Repentance and Holiness, Oasis Altar',
+        area: 'Kisumu',
+        placeId: 'ChIJyYhhvGWlKhgRCl-52qjyPgA',
+        at: [-0.1101394, 34.7727818],
+        phone: '+254 725 946177',
+        confirmed: false,
+      },
+    ],
   },
-  { no: 43, name: 'Homa Bay' },
-  { no: 44, name: 'Migori' },
-  { no: 45, name: 'Kisii' },
+  {
+    no: 43,
+    name: 'Homa Bay',
+    altars: [
+      {
+        name: 'Homa Bay Main Altar',
+        area: 'Homa Bay',
+        placeId: 'ChIJG15EXt7V1BkRUeBb3JzKc_w',
+        at: [-0.5248316, 34.4583264],
+        phone: '+254 727 233488',
+      },
+    ],
+  },
+  {
+    no: 44,
+    name: 'Migori',
+    altars: [
+      {
+        name: 'Shiloam Altar, Migori',
+        area: 'Ulanda, Migori',
+        placeId: 'ChIJ8wMT6cyrLBgRoxdhixNUmhI',
+        at: [-1.0081886, 34.5850229],
+        confirmed: false,
+      },
+    ],
+  },
+  {
+    no: 45,
+    name: 'Kisii',
+    altars: [
+      {
+        name: 'Repentance and Holiness Ministry - Kisii Main Altar',
+        area: 'Kisii',
+        placeId: 'ChIJqcueUgQ7KxgR0sPv2AHUWjQ',
+        at: [-0.6799777, 34.7675027],
+        phone: '+254 721 363158',
+      },
+    ],
+  },
   { no: 46, name: 'Nyamira' },
   {
     no: 47,
     name: 'Nairobi City',
-    altar: {
-      name: 'Nairobi Main Altar',
-      where: 'Behind Muthurwa Market, next to LandMawe Playground',
-      maps: 'Nairobi Main Altar Repentance and Holiness Muthurwa',
-    },
+    altars: [
+      {
+        name: 'Repentance and Holiness Nairobi Main Altar',
+        area: 'Muthurwa, Nairobi',
+        placeId: 'ChIJ8cVzNDsRLxgRZfapeiZMmdc',
+        at: [-1.2899457, 36.8360263],
+        phone: '+254 722 654518',
+      },
+    ],
   },
 ]
 
-/** What Google Maps is asked, for a county that has an altar. */
-export const mapsHref = (query: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+/**
+ * The place, opened on the map.
+ *
+ * Coordinates first and the place id second is Google's documented way of
+ * saying "this exact place": if the id is ever retired the pin still
+ * lands on the right ground rather than on a search page.
+ */
+export const altarHref = (altar: Altar) =>
+  `https://www.google.com/maps/search/?api=1&query=${altar.at[0]},${altar.at[1]}&query_place_id=${altar.placeId}`
 
 /* ── The footer ──────────────────────────────────────────────────── */
 
