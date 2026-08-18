@@ -40,6 +40,10 @@ one is known it belongs here, and if the ministry cannot show a right to
 publish them they should come down.
 
 - **dress-code-portrait.jpg** — a woman in a purple brocade coat over a
-  green skirt, tea hills behind. Supplied by the publisher.
+  green skirt, tea hills behind. 526×701. Supplied by the publisher.
 - **dress-code-headscarves.jpg** — ten women in a line, coats and
-  headscarves in ten colours. Supplied by the publisher.
+  headscarves in ten colours. 1635×962, converted from the supplied
+  PNG. The supplied file was named `ChatGPT Image Aug 18, 2026…png`,
+  so whether it is a photograph of the ministry or a generated image
+  is not established. If it is generated it should not sit in a
+  teaching as documentary evidence of how the women dress.

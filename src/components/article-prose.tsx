@@ -272,7 +272,9 @@ export function ArticleProse({ body }: { body: string }) {
                the diagram so a teaching's figures are recognisably one
                family. It is never given a fixed height: the frame takes
                the shape the photograph is, which is what stops a portrait
-               and a group shot being cropped to the same letterbox. */
+               and a group shot being cropped to the same letterbox — and
+               the body's own WxH is what reserves that shape before the
+               file lands, so nothing under it moves. */
             return (
               <figure
                 key={index}
@@ -281,8 +283,8 @@ export function ArticleProse({ body }: { body: string }) {
                 <Image
                   src={block.src}
                   alt={block.alt}
-                  width={1600}
-                  height={1067}
+                  width={block.width ?? 1600}
+                  height={block.height ?? 1067}
                   sizes="(min-width: 1280px) 34rem, (min-width: 640px) 90vw, 100vw"
                   className="h-auto w-full"
                 />
