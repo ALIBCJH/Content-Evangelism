@@ -115,7 +115,7 @@ function Turning({
 function PropheticTimeline() {
   return (
     <svg
-      viewBox="0 0 560 268"
+      viewBox="0 0 560 276"
       role="img"
       aria-labelledby="timeline-title timeline-desc"
       className="block h-auto w-full min-w-[32rem]"
@@ -127,7 +127,7 @@ function PropheticTimeline() {
         second coming. Then the thousand-year millennial reign of Christ, the great white throne
         judgment, and the eternal state — the new heaven, new earth and new Jerusalem, which has no
         end. Beneath the chart, the present heaven spans everything up to the second coming,
-        Christ&apos;s reign spans the thousand years, and the new heaven follows the judgment.
+        believers are with Jesus here on earth through the thousand years, and the new heaven follows the judgment.
       </desc>
 
       {/* ── The verse the chart is drawn under ────────────────────── */}
@@ -299,17 +299,19 @@ function PropheticTimeline() {
       {/* ── Where the dead in Christ are, and when ────────────────── */}
       <text
         x={mid(X.start, X.secondComing)}
-        y={BOTTOM + 76}
+        y={BOTTOM + 78}
         textAnchor="middle"
         className="fill-navy font-display text-[14px] uppercase tracking-[0.04em]"
       >
         The present heaven
       </text>
-      {['Christ reigning', 'here on earth'].map((line, i) => (
+      {/* Not "Christ reigning": the row is about where the believer is,
+          which is the whole contrast with the present heaven above it. */}
+      {['Christians', 'with Jesus', 'here on earth'].map((line, i) => (
         <text
           key={line}
           x={mid(X.secondComing, X.judgment)}
-          y={BOTTOM + 71 + i * 11}
+          y={BOTTOM + 64 + i * 11}
           textAnchor="middle"
           className="fill-navy font-apparatus text-[9.5px] font-semibold uppercase tracking-[0.07em]"
         >
@@ -318,16 +320,16 @@ function PropheticTimeline() {
       ))}
       <text
         x={mid(X.judgment, X.end)}
-        y={BOTTOM + 76}
+        y={BOTTOM + 75}
         textAnchor="middle"
         className="fill-navy font-apparatus text-[9.5px] font-semibold uppercase tracking-[0.07em]"
       >
         The new heaven
       </text>
 
-      <Span from={X.start} to={X.secondComing} y={BOTTOM + 90} />
-      <Span from={X.secondComing} to={X.judgment} y={BOTTOM + 90} />
-      <Span from={X.judgment} to={X.end} y={BOTTOM + 90} />
+      <Span from={X.start} to={X.secondComing} y={BOTTOM + 96} />
+      <Span from={X.secondComing} to={X.judgment} y={BOTTOM + 96} />
+      <Span from={X.judgment} to={X.end} y={BOTTOM + 96} />
 
       <defs>
         <pattern
@@ -376,7 +378,7 @@ const TIMELINE_KEY: { heading: string; refs: string[] }[] = [
     refs: ['2 Corinthians 5:6–8', '2 Peter 3:7', 'Luke 23:43', 'Luke 16:19–31', 'John 14:1–3'],
   },
   {
-    heading: 'Christ reigning here on earth',
+    heading: 'Christians with Jesus here on earth',
     refs: ['Revelation 20:1–6', 'Isaiah 65:17–20'],
   },
   {
