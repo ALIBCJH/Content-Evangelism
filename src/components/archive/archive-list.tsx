@@ -6,16 +6,22 @@ import type { ArchiveItem } from '@/lib/archive-items'
 import { useSaved } from '@/lib/saved'
 import { FeaturedPiece } from '@/components/archive/featured-piece'
 import { PieceRow } from '@/components/archive/piece-row'
-import { SelectMenu } from '@/components/ui/select-menu'
 
 /**
  * The archive as a reader handles it: filtered, ordered, and marked up
  * with whatever they have put aside.
  *
- * All three happen here rather than on the server, because all three are
- * instant and none of them is a page a search engine should be asked to
- * crawl: the canonical archive is the whole set, newest first, which is
- * what renders before a single control is touched.
+ * Both happen here rather than on the server, because both are instant
+ * and neither is a page a search engine should be asked to crawl: the
+ * canonical archive is the whole set, newest first, which is what renders
+ * before a single control is touched.
+ *
+ * Newest first is the only order. The archive had a sort menu offering
+ * oldest, longest and shortest as well, and it was answering a question
+ * nobody asks of a ministry's teaching: the thing a reader wants is what
+ * was published most recently, and that is what the page already does
+ * before it is touched. A control whose default is the only useful
+ * setting is furniture.
  *
  * What the box searches is what the page shows — titles, standfirsts,
  * opening lines, references and sections. It deliberately does not search
@@ -23,31 +29,13 @@ import { SelectMenu } from '@/components/ui/select-menu'
  * the browser, and the site already has a page that does it properly.
  */
 
-type Sort = 'newest' | 'oldest' | 'longest' | 'shortest'
-
-const SORTS: { value: Sort; label: string }[] = [
-  { value: 'newest', label: 'Newest first' },
-  { value: 'oldest', label: 'Oldest first' },
-  { value: 'longest', label: 'Longest read' },
-  { value: 'shortest', label: 'Shortest read' },
-]
-
-const order = (sort: Sort) => (a: ArchiveItem, b: ArchiveItem) => {
-  switch (sort) {
-    case 'oldest':
-      return a.publishedAt.localeCompare(b.publishedAt)
-    case 'longest':
-      return b.readMinutes - a.readMinutes
-    case 'shortest':
-      return a.readMinutes - b.readMinutes
-    default:
-      return b.publishedAt.localeCompare(a.publishedAt)
-  }
-}
+/* Newest first, always. The rows arrive in this order already; sorting
+   here is what keeps that true of a filtered set as well. */
+const newestFirst = (a: ArchiveItem, b: ArchiveItem) =>
+  b.publishedAt.localeCompare(a.publishedAt)
 
 export function ArchiveList({ items }: { items: ArchiveItem[] }) {
   const [query, setQuery] = React.useState('')
-  const [sort, setSort] = React.useState<Sort>('newest')
   const [onlySaved, setOnlySaved] = React.useState(false)
   const { ready, toggle, isSaved, saved } = useSaved()
 
@@ -56,14 +44,14 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
     return items
       .filter((item) => (onlySaved ? saved.includes(item.slug) : true))
       .filter((item) => (q ? item.haystack.includes(q) : true))
-      .sort(order(sort))
-  }, [items, query, sort, onlySaved, saved])
+      .sort(newestFirst)
+  }, [items, query, onlySaved, saved])
 
   const [lead, ...rest] = shown
-  /* The lead card is the newest piece, not whatever a sort happened to
-     put first — a "shortest read" at the head of the page dressed as the
-     latest teaching would be a lie told by a control. */
-  const featured = sort === 'newest' && !query && !onlySaved
+  /* The lead card is the newest piece. Once a reader has filtered the
+     set, the first row is the first match rather than the latest
+     teaching, and dressing it as the latter would be a lie. */
+  const featured = !query && !onlySaved
 
   return (
     <>
@@ -77,7 +65,7 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search articles or a verse"
+              placeholder="Search for articles"
               className="focus-ring w-full rounded-chip border border-rule bg-card py-2.5 pl-10 pr-4 text-[0.9375rem] text-ink-900 placeholder:text-ink-subtle"
             />
           </label>
@@ -101,8 +89,6 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
                 Saved <span className="tabular">({saved.length})</span>
               </button>
             )}
-
-            <SelectMenu label="Sort" value={sort} options={SORTS} onChange={setSort} />
           </div>
         </div>
       </section>
