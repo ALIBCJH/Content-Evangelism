@@ -7,7 +7,7 @@ import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
 import type { Heading } from '@/lib/toc'
 import { ArticleContents } from '@/components/article-contents'
-import { ArticleRail } from '@/components/article-rail'
+import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { ContinueReading } from '@/components/continue-reading'
 import { ReadingProgress } from '@/components/progress-bar'
@@ -154,18 +154,27 @@ export function ArticleLayout({
         </section>
 
         {/* ── The reading column ─────────────────────────────────── */}
-        {/* The reading column is tracked at --read rather than 1fr. With a
-            34rem measure a 1fr track leaves the text at one edge and the
-            rail at the other with a quarter of the page empty between
-            them; tracking the measure sets the rail beside the column it
-            annotates, and turns the remainder into a right margin. */}
-        <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,var(--read))_280px] lg:gap-[72px]">
+        {/* Three columns where there is room for three: where you are in
+            the teaching on the left, the teaching itself in the middle at
+            the measure it should be read at, and what it rests on to the
+            right. The reading column is tracked at --read rather than 1fr
+            because 34rem is the measure whatever the screen does; what a
+            wider screen buys is not a longer line but somewhere to put the
+            apparatus, and a column that sits in the middle of the page
+            rather than against its left edge.
+
+            One screen down there is room for one rail, and it carries both
+            halves stacked. Below that the rails fold into the contents
+            list at the head of the article. In every case the tracks are
+            centred, so the slack is a margin on both sides rather than a
+            void on one. */}
+        <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14">
           {/* min-w-0, because a grid item is min-width:auto by default and
               a table or a chart wider than the phone would otherwise push
               the track — and with it the whole page — sideways. The blocks
               that are wider than the measure scroll inside their own
               frames; this is what keeps that promise. */}
-          <article className="min-w-0 max-w-read font-reading">
+          <article className="min-w-0 max-w-read font-reading xl:col-start-2 xl:row-start-1">
             {/* The chapter list, for every width the rail does not reach. */}
             <ArticleContents
               headings={headings}
@@ -193,9 +202,25 @@ export function ArticleLayout({
             <ContinueReading rows={related} category={category} />
           </article>
 
-          <div className="hidden lg:block">
+          {/* The one-rail width. Both halves, stacked, on the right. */}
+          {/* No explicit row here: a grid item with a definite row is
+              placed before the auto-placed ones, which would hand the rail
+              the reading track and squeeze the teaching into the rail. */}
+          <div className="hidden lg:block xl:hidden">
             <ArticleRail headings={headings} scriptures={refs} />
           </div>
+
+          {/* The three-column width, where they part company. */}
+          {headings.length > 1 && (
+            <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-1 xl:row-start-1 xl:block">
+              <ChapterNav headings={headings} />
+            </aside>
+          )}
+          {refs.length > 0 && (
+            <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-3 xl:row-start-1 xl:block">
+              <ScriptureList scriptures={refs} />
+            </aside>
+          )}
         </div>
       </main>
     </>
