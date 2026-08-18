@@ -2,6 +2,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
+import { ArrowLeft } from 'lucide-react'
 import { topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
@@ -12,6 +13,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { ContinueReading } from '@/components/continue-reading'
 import { ReadingProgress } from '@/components/progress-bar'
 import { ShareRow } from '@/components/share-row'
+import { buttonVariants } from '@/components/ui/button'
 
 /**
  * One article page, for every article.
@@ -102,15 +104,27 @@ export function ArticleLayout({
               picture that was never there. */}
           <div className={`${TRACKS} pb-11 pt-8`}>
             <div className="col-span-full">
-              <Breadcrumbs
-                className="mb-7"
-                crumbs={[
-                  /* The archive is the front page, so "Home" and "Articles"
-                     would be the same URL twice. One crumb. */
-                  { name: 'Articles', href: '/' },
-                  { name: category, href: topicHref(category) },
-                ]}
-              />
+              {/* The way back, at the head of the teaching rather than
+                  only at its foot. A breadcrumb is a trail, and a reader
+                  who wants the archive reads it as ornament — so the trail
+                  keeps its job and the button says the thing plainly. */}
+              <div className="mb-7 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+                <Breadcrumbs
+                  crumbs={[
+                    /* The archive is the front page, so "Home" and
+                       "Articles" would be the same URL twice. One crumb. */
+                    { name: 'Articles', href: '/' },
+                    { name: category, href: topicHref(category) },
+                  ]}
+                />
+                <Link
+                  href="/"
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  <ArrowLeft aria-hidden />
+                  All articles
+                </Link>
+              </div>
 
               {/* The photograph is what asks for two columns. Without one
                   there is nothing to sit beside, and the headline takes
