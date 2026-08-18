@@ -160,7 +160,12 @@ export function ArticleLayout({
             them; tracking the measure sets the rail beside the column it
             annotates, and turns the remainder into a right margin. */}
         <div className="shell grid gap-12 pb-24 pt-14 lg:grid-cols-[minmax(0,var(--read))_280px] lg:gap-[72px]">
-          <article className="max-w-read font-reading">
+          {/* min-w-0, because a grid item is min-width:auto by default and
+              a table or a chart wider than the phone would otherwise push
+              the track — and with it the whole page — sideways. The blocks
+              that are wider than the measure scroll inside their own
+              frames; this is what keeps that promise. */}
+          <article className="min-w-0 max-w-read font-reading">
             {/* The chapter list, for every width the rail does not reach. */}
             <ArticleContents
               headings={headings}

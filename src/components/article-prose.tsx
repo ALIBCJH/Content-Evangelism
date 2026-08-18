@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Link from 'next/link'
+import { ArticleDiagram } from '@/components/article-diagram'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
 import { embedSrc, watchHref } from '@/lib/youtube'
 
@@ -261,6 +262,9 @@ export function ArticleProse({ body }: { body: string }) {
                 </figcaption>
               </figure>
             )
+
+          case 'diagram':
+            return <ArticleDiagram key={index} name={block.name} caption={block.caption} />
 
           case 'list': {
             /* marker:text-gold would paint the bright chrome gold on

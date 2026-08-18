@@ -32,9 +32,18 @@ import { headingId } from '@/lib/toc'
  *   @video 29PZpK0CKts | Title | Prophet Dr. David Edward Owuor | Watch · 20 seconds
  *   @video wide O0Yw0HKTc1k | Title | Prophet Dr. David Edward Owuor | Watch · 8 minutes
  *
+ *   @diagram prophetic-timeline | The timeline as commonly taught
+ *
  * A short is filmed upright and takes the narrow frame the block was
  * built for; a sermon is filmed landscape, and `wide` gives it the 16:9
  * frame rather than letterboxing an hour of preaching into a column.
+ *
+ * A diagram names a drawing the site holds rather than a file it serves.
+ * A prophetic sequence is a picture before it is a paragraph, and a
+ * screenshot of one is a picture the reader cannot search, a screen
+ * reader cannot read, and the dark theme cannot follow — so the drawings
+ * are drawn in the page, in the palette the page is already using, and a
+ * body asks for one by name.
  *
  * A teaching that answers the questions readers actually type carries them
  * at the foot, where the devotional has ended and the apparatus begins:
@@ -70,6 +79,7 @@ export type Block =
   | { kind: 'table'; caption?: string; head: string[]; rows: string[][] }
   | { kind: 'callout'; tone: CalloutTone; label?: string; inlines: Inline[]; cite?: string }
   | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string; wide?: boolean }
+  | { kind: 'diagram'; name: string; caption?: string }
   | { kind: 'faq'; items: FaqItem[] }
 
 export interface FaqItem {
@@ -163,6 +173,13 @@ export function parseBody(body: string): Block[] {
           ...(eyebrow ? { eyebrow } : {}),
         }
       }
+    }
+
+    /* A drawing the site holds, named rather than linked. An unknown
+       name renders as nothing at all rather than as a broken frame. */
+    if (lines.length === 1 && lines[0].startsWith('@diagram ')) {
+      const [name, caption] = cells(lines[0].slice(9)).map((part) => part.trim())
+      if (name) return { kind: 'diagram', name, ...(caption ? { caption } : {}) }
     }
 
     /* Two columns set side by side. The first row is the header; a leading
@@ -279,6 +296,11 @@ export function bodyToPlainText(body: string): string {
             .join('\n')
         case 'video':
           return [block.title, block.byline].filter(Boolean).join(' — ')
+        case 'diagram':
+          /* The drawing carries its own labels, which a reader searching
+             for "millennial reign" is entitled to match on; the caption
+             is the part this side of the parser can see. */
+          return block.caption ?? ''
         case 'faq':
           /* The questions are part of the page a reader searches, so they
              belong in the haystack and in the word count. */
@@ -360,6 +382,12 @@ export function bodyToHtml(body: string, origin: string): string {
           const href = `https://www.youtube.com/watch?v=${escapeXml(block.id)}`
           const byline = block.byline ? ` — ${escapeXml(block.byline)}` : ''
           return `<p><a href="${href}">${escapeXml(block.title)}</a>${byline}</p>`
+        }
+        case 'diagram': {
+          /* A feed reader cannot draw the diagram, and the teaching sets
+             the same sequence out as a table directly beneath it — so the
+             caption goes across and nothing essential is lost. */
+          return block.caption ? `<p><em>${escapeXml(block.caption)}</em></p>` : ''
         }
         case 'faq':
           /* A definition list is what this is, and it survives the trip
