@@ -4,10 +4,10 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { navSections, siteInfo } from '@/lib/content'
+import { navSections } from '@/lib/content'
 import type { SearchDoc } from '@/lib/search-docs'
 import { SearchOverlay } from '@/components/search-overlay'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -38,8 +38,14 @@ import { ThemeToggle } from '@/components/theme-toggle'
  * The sheet is built to full dialog standards, because at those widths it
  * is the only navigation there is: focus moves into it on open and back to
  * the button on close, Tab is trapped inside, Escape and the backdrop both
- * dismiss it, and the page behind it cannot scroll. Pressing "/" anywhere
- * opens search.
+ * dismiss it, and the page behind it cannot scroll.
+ *
+ * It holds the four sections and nothing else. It used to open with a
+ * search box and close with a card carrying the ministry's tagline, and
+ * both cost the reader the thing they opened the menu for: the sections
+ * arrived one at a time behind a staggered entrance that took a third of
+ * a second to finish. The sheet slides up and its contents are already
+ * there. Pressing "/" still opens search on a keyboard.
  */
 export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
   const [open, setOpen] = React.useState(false)
@@ -55,9 +61,9 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
 
   const panelRef = React.useRef<HTMLDivElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  /* Search has no button of its own in the masthead any more — it opens
-     from the drawer or from the "/" key — so closing it hands focus back
-     to whatever had it when it opened, rather than to a fixed control. */
+  /* Search has no button in the masthead or in the sheet — it opens from
+     the "/" key and from the footer — so closing it hands focus back to
+     whatever had it when it opened, rather than to a fixed control. */
   const searchOpener = React.useRef<HTMLElement | null>(null)
   const wasOpen = React.useRef(false)
 
@@ -281,7 +287,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: still ? 0 : 0.2 }}
-              className="absolute inset-0 h-full w-full cursor-default bg-plate-deep/70 backdrop-blur-[3px]"
+              className="absolute inset-0 h-full w-full cursor-default bg-plate-deep/70"
             />
 
             <motion.div
@@ -318,29 +324,12 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               </div>
 
               <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-                <motion.button
-                  type="button"
-                  onClick={openSearch}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: still ? 0 : 0.04, ...spring }}
-                  className="focus-ring mb-5 flex w-full items-center gap-2.5 rounded-tile border border-rule bg-card px-4 py-3.5 text-left text-[0.9375rem] text-ink-subtle"
-                >
-                  <Search aria-hidden className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  Search articles or a verse
-                </motion.button>
-
                 <nav aria-label="Sections">
                   <ul>
-                    {navSections.map((section, index) => {
+                    {navSections.map((section) => {
                       const current = isCurrent(section.href)
                       return (
-                        <motion.li
-                          key={section.href}
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: still ? 0 : 0.06 + index * 0.055, ...spring }}
-                        >
+                        <li key={section.href}>
                           <Link
                             href={section.href}
                             aria-current={current ? 'page' : undefined}
@@ -350,10 +339,8 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                             )}
                           >
                             {current && (
-                              <motion.span
-                                layoutId="sheet-current"
+                              <span
                                 aria-hidden
-                                transition={spring}
                                 className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-gold"
                               />
                             )}
@@ -369,23 +356,11 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                               →
                             </span>
                           </Link>
-                        </motion.li>
+                        </li>
                       )
                     })}
                   </ul>
                 </nav>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: still ? 0 : 0.06 + navSections.length * 0.055, ...spring }}
-                  className="mt-6 rounded-figure bg-plate p-5"
-                >
-                  <p className="kicker mb-2 text-gold-pale">The ministry</p>
-                  <p className="font-display text-[1.3125rem] leading-tight text-plate-pale">
-                    {siteInfo.tagline}
-                  </p>
-                </motion.div>
               </div>
             </motion.div>
           </div>

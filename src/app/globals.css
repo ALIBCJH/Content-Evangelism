@@ -347,14 +347,14 @@
   }
 }
 
-/* The theme is a property of the whole page, so it fades as one rather
-   than each surface arriving on its own transition. */
-@media (prefers-reduced-motion: no-preference) {
-  html[data-theme-ready] body,
-  html[data-theme-ready] body * {
-    transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
-  }
-}
+/* The theme used to cross-fade: after the first toggle, every element on
+   the page carried a 220ms transition on background, border and colour.
+   It was a nice idea and an expensive one. The rule matched `body *`, so
+   switching the theme repainted the whole tree at once — a visible stall
+   on a phone — and, because the attribute was never removed, every hover
+   and every panel opened after it inherited the same transition for the
+   rest of the session. The theme changes instantly now. A cut is not a
+   worse answer than a fade; a fade a reader waits for is. */
 
 * {
   box-sizing: border-box;
