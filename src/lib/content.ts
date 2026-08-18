@@ -397,8 +397,10 @@ export const foundingYear = '2005'
 /** The sections of the About page that exist, in the order they appear. */
 export const aboutSections = [
   { label: 'The Ministry', href: '#ministry' },
+  { label: 'What We Publish', href: '#publishing' },
   { label: 'Mission', href: '#mission' },
   { label: 'Statement of Faith', href: '#faith' },
+  { label: 'How This Archive Is Kept', href: '#editorial' },
   { label: 'Locations', href: '#locations' },
 ]
 

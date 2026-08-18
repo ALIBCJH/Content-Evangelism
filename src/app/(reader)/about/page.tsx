@@ -2,13 +2,16 @@ import * as React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
+  CATEGORIES,
   aboutSections,
+  categoryBlurb,
   faithArticles,
   foundingYear,
   locations,
   missionStatement,
   siteInfo,
   siteUrl,
+  topicHref,
   visionStatement,
 } from '@/lib/content'
 import { prophecyRecords } from '@/lib/prophecies'
@@ -31,14 +34,68 @@ import { JsonLd } from '@/components/json-ld'
 export const metadata: Metadata = {
   title: 'About the Ministry',
   description:
-    'About the Ministry of Repentance and Holiness — calling the nations to repentance, righteousness, and holiness in preparation for the coming of the Messiah.',
+    'Who publishes this archive and what is in it. The Ministry of Repentance and Holiness — founded in Nairobi and led by Prophet Dr. David Owuor — calls the nations to repentance, righteousness and holiness in preparation for the coming of the Messiah. Its teachings, doctrine, prophetic record and editorial rules are set out here.',
   alternates: { canonical: '/about', types: rssAlternate },
 }
 
 export const revalidate = 300
 
+/**
+ * The rules the desk publishes under.
+ *
+ * Every one of them is already visible in the archive — the dates on the
+ * teachings, the labelled panels inside them, the prophetic records held
+ * with their publication dates, and the blocks that say a source is
+ * missing rather than filling the gap. Writing them down here lets a
+ * reader hold the site to them.
+ */
+const editorialRules = [
+  {
+    title: 'Dated, attributed, and left where it was written',
+    body: 'Every teaching carries the day it was published and the desk that wrote it. Nothing is quietly back-dated, and an edited piece says when it was edited.',
+  },
+  {
+    title: 'Scripture is quoted, not alluded to',
+    body: 'A passage that carries an argument is set out in full, with book, chapter and verse, so a reader can check it against their own Bible rather than take our word for the sense of it.',
+  },
+  {
+    title: "The ministry's teaching is labelled as the ministry's teaching",
+    body: 'Where a page states what this ministry holds rather than what the text plainly says, it is marked as such. A reader is entitled to know which of the two they are reading.',
+  },
+  {
+    title: 'Where Christians disagree, the page says so',
+    body: 'On the rapture, the millennium, the gifts and much else, serious Christians read the same passages and reach different conclusions. The archive states its own position openly and does not pretend it is the only reading available.',
+  },
+  {
+    title: 'Prophecy is kept with its record',
+    body: 'A prophetic word is held with its original recording and the date it was published, separately from any later event — so that a source, an event, and an interpretation of that event are never read as one another.',
+  },
+  {
+    title: 'Testimony is called testimony',
+    body: 'An account of a healing is a first-hand report of what witnesses believe took place. It is published as that, and never dressed as an independently documented medical finding.',
+  },
+  {
+    title: 'Prayer is never set against medicine',
+    body: 'Scripture does not oppose the two, and assuming it does has cost people their health. Where a teaching touches illness, it says plainly: continue your treatment.',
+  },
+  {
+    title: 'A missing source is admitted, not filled in',
+    body: 'Where the ministry\u2019s own published wording is needed and has not been supplied, the page says so in the open rather than printing a paraphrase nobody can check.',
+  },
+]
+
 export default async function AboutPage() {
   const rows = await listRealRows()
+
+  /* What the archive actually holds, by subject. A section with nothing
+     under it is not a section a reader should be sent to, so the list is
+     counted from the archive rather than typed out — the same rule the
+     stat row follows. */
+  const subjects = CATEGORIES.map((category) => ({
+    category,
+    blurb: categoryBlurb[category],
+    count: rows.filter((row) => row.category === category).length,
+  })).filter((subject) => subject.count > 0)
 
   const stats = [
     { value: foundingYear, label: 'Year the ministry was founded' },
@@ -72,16 +129,42 @@ export default async function AboutPage() {
         <div className="shell pb-16 pt-11">
           <Breadcrumbs className="mb-7" crumbs={[{ name: 'Home', href: '/' }, { name: 'About' }]} />
 
-          <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-[72px]">
+          {/* items-start, not items-end: the description is long enough
+              now that a bottom-aligned nav floats in the middle of the
+              band with nothing above it. */}
+          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-[72px]">
             <div>
-              <h1 className="mb-5 font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
+              <p className="kicker mb-4 text-gold">Who publishes here</p>
+              <h1 className="mb-6 font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
                 About the Ministry
               </h1>
-              <p className="max-w-[640px] text-pretty text-[1.0625rem] leading-[1.7] text-ink-700 sm:text-[1.125rem]">
-                The Ministry of Repentance and Holiness is a Christian ministry calling
-                the nations to repentance, holiness, and preparation for the coming of
-                the Messiah. This section sets out what it works from, what it holds
-                to, and where it meets.
+
+              {/* The lead is set larger than the paragraphs under it. A
+                  reader who gets no further than this should still be able
+                  to say who publishes here and what they are saying. */}
+              <p className="mb-5 max-w-[46rem] text-pretty font-reading text-[1.25rem] leading-[1.6] text-ink-900 sm:text-[1.4375rem]">
+                The Ministry of Repentance and Holiness is a Christian ministry
+                founded in {foundingYear}, working from Nairobi and led by{' '}
+                {siteInfo.head}. It exists to say one thing to the nations, and it has
+                never varied it: the Messiah is coming, and the Church must be found
+                ready when He arrives.
+              </p>
+
+              <p className="mb-5 max-w-[42rem] text-pretty text-[1.0625rem] leading-[1.75] text-ink-700 sm:text-[1.125rem]">
+                That message is unfashionably direct, and this archive does not soften
+                it. Repentance is a turning, not a feeling. Holiness is not an advanced
+                course for the devout few — it is the condition Scripture sets on
+                seeing God at all. And the return of Christ is not a figure of speech
+                to be handled carefully; it is an appointment. Every teaching published
+                here serves those three sentences.
+              </p>
+
+              <p className="max-w-[42rem] text-pretty text-[1.0625rem] leading-[1.75] text-ink-700 sm:text-[1.125rem]">
+                What you will find is writing meant to be read rather than skimmed: the
+                Scriptures opened at length, doctrine set out with the passages it
+                rests on, the prophetic record held with its original recordings, and
+                the plain admission — where it applies — that Christians who take the
+                same Bible equally seriously have read a passage in more than one way.
               </p>
             </div>
 
@@ -146,6 +229,39 @@ export default async function AboutPage() {
             ))}
           </dl>
 
+          {/* ── What we publish ────────────────────────────────── */}
+          <h2
+            id="publishing"
+            className="mb-6 scroll-mt-stick font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy"
+          >
+            What We Publish
+          </h2>
+          <p className="mb-7 max-w-measure text-[1.0625rem] leading-[1.8] text-ink-700">
+            The archive is one body of writing filed under the subjects below. A
+            subject appears here only once something is published under it, so this
+            list is what the site holds today rather than what it hopes to hold.
+          </p>
+          <ul className="mb-14 grid gap-4 sm:grid-cols-2">
+            {subjects.map(({ category, blurb, count }) => (
+              <li key={category}>
+                <Link
+                  href={topicHref(category)}
+                  className="focus-ring block h-full rounded-panel border border-rule bg-card p-6 transition-colors hover:border-gold/60"
+                >
+                  <span className="mb-2 flex items-baseline justify-between gap-4">
+                    <span className="font-display text-[1.25rem] text-navy">{category}</span>
+                    <span className="tabular font-mono text-[0.6875rem] text-gold">
+                      {count}
+                    </span>
+                  </span>
+                  <span className="block text-[0.9375rem] leading-[1.7] text-ink-700">
+                    {blurb}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
           {/* ── Vision and mission ─────────────────────────────── */}
           <h2
             id="mission"
@@ -198,6 +314,39 @@ export default async function AboutPage() {
                   </span>
                   <span className="block font-mono text-[0.6875rem] text-ink-subtle">
                     {article.refs}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+
+          {/* ── How this archive is kept ───────────────────────── */}
+          <h2
+            id="editorial"
+            className="mb-6 mt-14 scroll-mt-stick font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy"
+          >
+            How This Archive Is Kept
+          </h2>
+          <p className="mb-7 max-w-measure text-[1.0625rem] leading-[1.8] text-ink-700">
+            A ministry that asks people to test what they are told owes them the means
+            of testing it. These are the rules this desk publishes under, and they are
+            the reason some pages here say less than a reader might expect.
+          </p>
+          <ol className="mb-9 overflow-hidden rounded-panel border border-rule bg-card">
+            {editorialRules.map((rule, index) => (
+              <li
+                key={rule.title}
+                className="grid grid-cols-[32px_minmax(0,1fr)] gap-5 border-b border-rule-soft px-6 py-5 last:border-b-0 sm:px-7"
+              >
+                <span className="tabular pt-1 font-mono text-xs text-gold">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="block">
+                  <span className="mb-1.5 block font-display text-[1.25rem] leading-[1.25] text-navy">
+                    {rule.title}
+                  </span>
+                  <span className="block text-[0.9375rem] leading-[1.7] text-ink-700">
+                    {rule.body}
                   </span>
                 </span>
               </li>
