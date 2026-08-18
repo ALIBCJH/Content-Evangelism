@@ -92,21 +92,27 @@ export function ScriptureList({ scriptures }: { scriptures: string[] }) {
   )
 }
 
-/** Both halves in one rail, for the width that has room for only one. */
+/**
+ * Both halves in one rail, for the width that has room for only one.
+ *
+ * The lower half is a slot rather than a fixed block: this file is client
+ * code, and what sits under the chapters is read off the archive at build
+ * time. Passing it in as children keeps that work on the server, where a
+ * list of records costs the reader nothing to receive.
+ */
 export function ArticleRail({
   headings,
-  scriptures,
+  children,
 }: {
   headings: Heading[]
-  /** Pulled from the teaching's own text — see lib/scripture.ts. */
-  scriptures: string[]
+  children?: React.ReactNode
 }) {
-  if (headings.length < 2 && scriptures.length === 0) return null
+  if (headings.length < 2 && !children) return null
 
   return (
-    <aside className="flex flex-col gap-8 self-start lg:sticky lg:top-stick">
+    <aside className="flex flex-col gap-10 self-start lg:sticky lg:top-stick">
       <ChapterNav headings={headings} />
-      <ScriptureList scriptures={scriptures} />
+      {children}
     </aside>
   )
 }

@@ -11,6 +11,7 @@ import { ArticleContents } from '@/components/article-contents'
 import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { ContinueReading } from '@/components/continue-reading'
+import { FulfilledNow } from '@/components/fulfilled-now'
 import { ReadingProgress } from '@/components/progress-bar'
 import { ShareRow } from '@/components/share-row'
 import { buttonVariants } from '@/components/ui/button'
@@ -269,6 +270,11 @@ export function ArticleLayout({
             {children}
 
             <div className="mt-16 border-t border-rule pt-8">
+              {refs.length > 0 && (
+                <div className="mb-10">
+                  <ScriptureList scriptures={refs} />
+                </div>
+              )}
               {colophon}
               <div className="ornament mx-auto mt-8 max-w-xs">
                 <span aria-hidden className="text-base leading-none">✦</span>
@@ -292,7 +298,9 @@ export function ArticleLayout({
               placed before the auto-placed ones, which would hand the rail
               the reading track and squeeze the teaching into the rail. */}
           <div className="hidden lg:block xl:hidden">
-            <ArticleRail headings={headings} scriptures={refs} />
+            <ArticleRail headings={headings}>
+              <FulfilledNow />
+            </ArticleRail>
           </div>
 
           {/* The three-column width, where they part company. */}
@@ -301,11 +309,15 @@ export function ArticleLayout({
               <ChapterNav headings={headings} />
             </aside>
           )}
-          {refs.length > 0 && (
-            <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-3 xl:row-start-1 xl:block">
-              <ScriptureList scriptures={refs} />
-            </aside>
-          )}
+          {/* The right-hand rail used to list the Scriptures the teaching
+              cites, which is apparatus: a reader consults it after the
+              reading, not during it. What belongs beside a teaching about
+              repentance is the ministry's own record of what it said would
+              happen — so the scriptures moved to the close, where they are
+              consulted, and the archive took the rail. */}
+          <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-3 xl:row-start-1 xl:block">
+            <FulfilledNow />
+          </aside>
         </div>
       </main>
     </>

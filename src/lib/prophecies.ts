@@ -186,6 +186,25 @@ export { embedSrc, posterSrc } from '@/lib/youtube'
 export const recordHref = (record: Pick<ProphecyRecord, 'id'>): string =>
   `/prophecies/${record.id}`
 
+/**
+ * The fulfilled records, newest first, for the rail beside a teaching.
+ *
+ * A record whose publication date has not been checked against the source
+ * sorts last rather than being given a guessed date to sort by: the whole
+ * point of the archive is that the date a thing was said is the claim, so
+ * an unconfirmed one cannot be allowed to sit at the top of a list that
+ * reads as newest-first.
+ */
+export function recentlyFulfilled(limit = 4): ProphecyRecord[] {
+  const dated = (record: ProphecyRecord) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(record.published) ? record.published : ''
+  return prophecyRecords
+    .filter((record) => record.fulfilled)
+    .slice()
+    .sort((a, b) => dated(b).localeCompare(dated(a)))
+    .slice(0, limit)
+}
+
 /** The scripture cards that stand beside every record. */
 export const recordScriptures = [
   { text: '“But of that day and hour knoweth no man…”', ref: 'Matthew 24:36' },
