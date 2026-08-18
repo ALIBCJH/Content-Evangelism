@@ -1,3 +1,4 @@
+import { bodyToPlainText } from '@/lib/article-body'
 import {
   categoryArt,
   type ArticleArt as ArticleArtSpec,
@@ -47,7 +48,9 @@ export async function listRealRows(): Promise<RealRow[]> {
     imageUrl: a.imageUrl,
     imageAlt: a.imageAlt,
     art: categoryArt[a.category],
-    text: `${a.title}\n${a.dek}\n${a.body}`.toLowerCase(),
+    /* The body as a reader sees it, not as it is written: search should
+       match the caption under a photograph, never the path to its file. */
+    text: `${a.title}\n${a.dek}\n${bodyToPlainText(a.body)}`.toLowerCase(),
     body: a.body,
   }))
   return rows.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))

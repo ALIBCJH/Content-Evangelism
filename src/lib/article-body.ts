@@ -33,7 +33,7 @@ import { headingId } from '@/lib/toc'
  *   @video wide O0Yw0HKTc1k | Title | Prophet Dr. David Edward Owuor | Watch · 8 minutes
  *
  *   @diagram prophetic-timeline | The timeline as commonly taught
- *   @figure /images/articles/x.jpg | What the photograph shows | A caption
+ *   @figure /images/articles/x.jpg 1600x1067 | What it shows | A caption
  *
  * A short is filmed upright and takes the narrow frame the block was
  * built for; a sermon is filmed landscape, and `wide` gives it the 16:9
@@ -43,6 +43,11 @@ import { headingId } from '@/lib/toc'
  * than at the head of the page. Alt text is not optional: a body that can
  * carry a photograph can carry one nobody can see, and the second field is
  * what a reader on a screen reader is given instead of it.
+ *
+ * The `WxH` after the path is the file's own pixel size, and it is what
+ * the page reserves before the photograph arrives. Without it a portrait
+ * is held a landscape's worth of space and the paragraph under it jumps
+ * when the picture lands — on the reader's phone, mid-sentence.
  *
  * A diagram names a drawing the site holds rather than a file it serves.
  * A prophetic sequence is a picture before it is a paragraph, and a
@@ -86,7 +91,7 @@ export type Block =
   | { kind: 'callout'; tone: CalloutTone; label?: string; inlines: Inline[]; cite?: string }
   | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string; wide?: boolean }
   | { kind: 'diagram'; name: string; caption?: string }
-  | { kind: 'figure'; src: string; alt: string; caption?: string }
+  | { kind: 'figure'; src: string; alt: string; width?: number; height?: number; caption?: string }
   | { kind: 'faq'; items: FaqItem[] }
 
 export interface FaqItem {
@@ -186,9 +191,17 @@ export function parseBody(body: string): Block[] {
        alt text; without either it is not a figure, and falls through to
        being read as a paragraph rather than published half-made. */
     if (lines.length === 1 && lines[0].startsWith('@figure ')) {
-      const [src, alt, caption] = cells(lines[0].slice(8)).map((part) => part.trim())
+      const [head, alt, caption] = cells(lines[0].slice(8)).map((part) => part.trim())
+      const [src, size] = (head ?? '').split(/\s+/)
+      const shape = size?.match(/^(\d+)x(\d+)$/)
       if (src?.startsWith('/') && alt) {
-        return { kind: 'figure', src, alt, ...(caption ? { caption } : {}) }
+        return {
+          kind: 'figure',
+          src,
+          alt,
+          ...(shape ? { width: Number(shape[1]), height: Number(shape[2]) } : {}),
+          ...(caption ? { caption } : {}),
+        }
       }
     }
 
