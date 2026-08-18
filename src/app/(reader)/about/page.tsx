@@ -4,10 +4,10 @@ import Link from 'next/link'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import {
   aboutSections,
+  altarHref,
   counties,
   faithArticles,
   foundingYear,
-  mapsHref,
   pastoralCare,
   siteInfo,
   siteUrl,
@@ -441,24 +441,25 @@ export default async function AboutPage() {
             <span>{pastoralCare.office.replace('Head office · ', '')}</span>
           </p>
 
-          {/* A county whose altar is named opens that altar on the map. A
-              county without one is still listed, because the ministry
-              gathers there — it is only the location we cannot yet point
-              at, and pointing at an unchecked pin is how a reader ends up
-              somewhere else on a Sunday morning. */}
+          {/* A county with an altar opens it on the map at the ministry's
+              own coordinates, and carries the number of the clergy leading
+              it where one is published. A county without one is listed all
+              the same — the ministry gathers there; it is the meeting
+              place we do not have. */}
           <ul className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {counties.map((county) => {
-              const chrome =
-                'flex items-start gap-3 rounded-tile border p-4 transition-colors'
               const numeral = (
                 <span aria-hidden className="tabular pt-0.5 font-mono text-[0.6875rem] text-gold">
                   {String(county.no).padStart(2, '0')}
                 </span>
               )
 
-              if (!county.altar) {
+              if (!county.altars) {
                 return (
-                  <li key={county.no} className={`${chrome} border-rule-soft bg-transparent`}>
+                  <li
+                    key={county.no}
+                    className="flex items-start gap-3 rounded-tile border border-rule-soft p-4"
+                  >
                     {numeral}
                     <span className="block text-[0.9375rem] leading-[1.4] text-ink-500">
                       {county.name}
@@ -468,44 +469,75 @@ export default async function AboutPage() {
               }
 
               return (
-                <li key={county.no}>
-                  <a
-                    href={mapsHref(county.altar.maps)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`focus-ring group ${chrome} border-rule bg-card hover:border-gold/60`}
-                  >
-                    {numeral}
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-display text-[1.125rem] leading-[1.25] text-navy">
-                        {county.name}
-                      </span>
-                      <span className="mt-1 block text-[0.8125rem] leading-[1.5] text-ink-700">
-                        {county.altar.name}
-                      </span>
-                      {county.altar.where && (
-                        <span className="mt-1 block text-[0.75rem] leading-[1.5] text-ink-subtle">
-                          {county.altar.where}
-                        </span>
-                      )}
-                      <span className="kicker mt-2.5 flex items-center gap-1.5 text-gold-ink">
-                        Open in Maps
-                        <ArrowUpRight
-                          aria-hidden
-                          className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                        />
-                      </span>
-                    </span>
-                  </a>
+                <li
+                  key={county.no}
+                  className="flex items-start gap-3 rounded-tile border border-rule bg-card p-4"
+                >
+                  {numeral}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-display text-[1.125rem] leading-[1.25] text-navy">
+                      {county.name}
+                    </h3>
+
+                    {/* A county can hold more than one altar — Laikipia
+                        holds two — so the card lists them rather than
+                        picking one and calling it the county's. */}
+                    <ul className="mt-2 space-y-3">
+                      {county.altars.map((altar) => (
+                        <li
+                          key={altar.placeId}
+                          className="border-t border-rule-soft pt-3 first:border-t-0 first:pt-0"
+                        >
+                          <span className="block text-[0.8125rem] font-medium leading-[1.4] text-ink-900">
+                            {altar.name}
+                          </span>
+                          <span className="mt-0.5 block text-[0.75rem] leading-[1.5] text-ink-subtle">
+                            {altar.area}
+                          </span>
+
+                          {altar.confirmed === false && (
+                            <span className="mt-1.5 block font-mono text-[0.625rem] uppercase tracking-[0.08em] text-source-label">
+                              Location to confirm
+                            </span>
+                          )}
+
+                          <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                            <a
+                              href={altarHref(altar)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="focus-ring group kicker flex items-center gap-1.5 text-gold-ink"
+                            >
+                              Open in Maps
+                              <ArrowUpRight
+                                aria-hidden
+                                className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                              />
+                            </a>
+                            {altar.phone && (
+                              <a
+                                href={`tel:${altar.phone.replace(/\s/g, '')}`}
+                                className="focus-ring font-mono text-[0.75rem] text-ink-700 underline-offset-4 hover:text-gold-ink hover:underline"
+                              >
+                                {altar.phone}
+                              </a>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </li>
               )
             })}
           </ul>
 
           <p className="mt-8 max-w-measure text-[0.9375rem] leading-[1.75] text-ink-subtle">
-            A county listed without an altar is one the ministry gathers in, whose meeting place is
-            not yet recorded here. We would rather say that than send someone to a pin nobody has
-            checked. If you know the altar in your county, tell us its name and we will add it.
+            The numbers belong to the clergy leading each altar, where one has been published. A
+            county listed without an altar is one the ministry gathers in whose meeting place is not
+            recorded here yet, and an altar marked <em>location to confirm</em> is one whose place
+            has been matched but not checked on the ground. If you know either, tell us and it is
+            added.
           </p>
         </Section>
       </div>
