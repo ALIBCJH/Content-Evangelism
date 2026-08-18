@@ -117,9 +117,13 @@ export function ArticleLayout({
                     { name: category, href: topicHref(category) },
                   ]}
                 />
+                {/* Full size, not `sm`. This is the way out of a ten-minute
+                    read, and at the small size it read as a caption sitting
+                    next to the breadcrumb rather than as something to
+                    press. */}
                 <Link
                   href="/"
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                  className={buttonVariants({ variant: 'outline', className: 'gap-2.5 px-7' })}
                 >
                   <ArrowLeft aria-hidden />
                   All articles
