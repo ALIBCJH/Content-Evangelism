@@ -108,6 +108,16 @@ const config: Config = {
           400: 'rgb(var(--ink-400-rgb) / <alpha-value>)',
         },
 
+        /* The pastoral care band, which speaks in the ministry's own
+           voice and so carries its own set rather than the page's. */
+        care: {
+          DEFAULT: 'rgb(var(--care-bg-rgb) / <alpha-value>)',
+          rule: 'rgb(var(--care-rule-rgb) / <alpha-value>)',
+          tile: 'rgb(var(--care-tile-rgb) / <alpha-value>)',
+          head: 'rgb(var(--care-head-rgb) / <alpha-value>)',
+          body: 'rgb(var(--care-body-rgb) / <alpha-value>)',
+          mark: 'rgb(var(--care-mark-rgb) / <alpha-value>)',
+        },
         /* ── The teaching's editorial panels ───────────────────── */
         statement: {
           bg: 'rgb(var(--statement-bg-rgb) / <alpha-value>)',

@@ -63,6 +63,21 @@
   --source-label-rgb: 168 91 50;
   --source-cite-rgb: 138 106 85;
 
+  /* The pastoral care band: the ministry offering to pick up the phone.
+     It used to be painted on the plate and stayed navy in the light
+     theme, which left the page dark at the bottom whatever the reader
+     chose. It keeps its own voice instead of the page's — the cream the
+     statement panel is set on, which is the same device: the ministry
+     speaking rather than more of the page — and it turns over with the
+     theme like everything else. In the dark theme it is the plate again,
+     so nothing there moves. */
+  --care-bg-rgb: 251 247 236;
+  --care-rule-rgb: 232 222 194;
+  --care-tile-rgb: 255 255 255;
+  --care-head-rgb: 18 59 93;      /* navy */
+  --care-body-rgb: 64 80 94;      /* ink-700 */
+  --care-mark-rgb: 122 95 30;     /* gold-ink: the kicker and the icons */
+
   /* The primary call to action. Navy on paper; in the dark theme a navy
      button on a navy page is a rectangle you have to look for, so it
      becomes the gold — the one place gold is a field rather than a rule. */
@@ -239,6 +254,16 @@
   --source-label-rgb: 224 146 100;
   --source-cite-rgb: 186 158 140;
 
+  /* The band goes back to the plate here — in the dark theme the page is
+     already navy, and the cream would be the thing that stands out for
+     the wrong reason. */
+  --care-bg-rgb: var(--plate-rgb);
+  --care-rule-rgb: var(--plate-rule-rgb);
+  --care-tile-rgb: var(--plate-deep-rgb);
+  --care-head-rgb: var(--plate-pale-rgb);
+  --care-body-rgb: var(--plate-soft-rgb);
+  --care-mark-rgb: var(--gold-sand-rgb);
+
   /* Shadows on navy are cast in black, not in navy — navy on navy is
      invisible, and the card would lose its edge. */
   --shadow-rgb: 0 0 0;
@@ -299,6 +324,13 @@
     --source-ink-rgb: 224 205 192;
     --source-label-rgb: 224 146 100;
     --source-cite-rgb: 186 158 140;
+
+    --care-bg-rgb: var(--plate-rgb);
+    --care-rule-rgb: var(--plate-rule-rgb);
+    --care-tile-rgb: var(--plate-deep-rgb);
+    --care-head-rgb: var(--plate-pale-rgb);
+    --care-body-rgb: var(--plate-soft-rgb);
+    --care-mark-rgb: var(--gold-sand-rgb);
 
     --shadow-rgb: 0 0 0;
     --card-shadow-hover: 0 2px 4px rgb(0 0 0 / 0.30), 0 18px 40px -24px rgb(0 0 0 / 0.75);
