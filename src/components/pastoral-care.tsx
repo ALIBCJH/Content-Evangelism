@@ -11,15 +11,19 @@ import { pastoralCare } from '@/lib/content'
  * the page and the footer: what to call, what to write to, and where the
  * altar is.
  *
- * It is set on the ministry's navy in both themes. That is deliberate —
- * the band should read as the ministry speaking rather than as more of
- * the page, and it is the same plate the Scripture is set on elsewhere.
+ * It speaks in the ministry's own voice rather than the page's, and it is
+ * coloured to say so: cream and navy ink on paper, the plate in the dark
+ * theme. It used to be the plate in both, which meant a reader who chose
+ * the light theme got a band that stayed dark at the foot of every page.
+ * Keeping a voice of its own and keeping one colour in both themes turned
+ * out to be different things — the `care` set in globals.css is the first,
+ * without the second.
  */
 export function PastoralCare() {
   return (
     <section
       aria-labelledby="pastoral-care"
-      className="border-t border-plate-rule bg-plate"
+      className="border-t border-care-rule bg-care"
     >
       <div className="shell relative isolate overflow-hidden py-14 sm:py-16">
         <span
@@ -27,20 +31,20 @@ export function PastoralCare() {
           className="pointer-events-none absolute -right-24 -top-32 -z-10 h-80 w-80 rounded-full bg-gold/[0.10] blur-3xl"
         />
 
-        <p className="kicker mb-4 text-gold-sand">{pastoralCare.kicker}</p>
+        <p className="kicker mb-4 text-care-mark">{pastoralCare.kicker}</p>
         <h2
           id="pastoral-care"
-          className="font-display text-[1.75rem] font-medium leading-[1.1] text-plate-pale sm:text-[2.125rem]"
+          className="font-display text-[1.75rem] font-medium leading-[1.1] text-care-head sm:text-[2.125rem]"
         >
           {pastoralCare.title}
         </h2>
         <span aria-hidden className="mt-5 block h-[3px] w-14 rounded-full bg-gold" />
 
-        <p className="mt-6 max-w-[46ch] text-pretty text-[1.0625rem] leading-[1.6] text-plate-soft">
+        <p className="mt-6 max-w-[46ch] text-pretty text-[1.0625rem] leading-[1.6] text-care-body">
           {pastoralCare.body}
         </p>
 
-        <p className="mt-6 flex items-start gap-2.5 font-mono text-[0.75rem] uppercase leading-[1.5] tracking-[0.08em] text-plate-soft">
+        <p className="mt-6 flex items-start gap-2.5 font-mono text-[0.75rem] uppercase leading-[1.5] tracking-[0.08em] text-care-body">
           <PinIcon />
           {pastoralCare.office}
         </p>
@@ -49,20 +53,20 @@ export function PastoralCare() {
           {pastoralCare.lines.map((line) => (
             <li
               key={line.kind}
-              className="flex items-center gap-4 rounded-panel border border-plate-rule bg-plate-deep/60 px-5 py-4"
+              className="flex items-center gap-4 rounded-panel border border-care-rule bg-care-tile px-5 py-4"
             >
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold/[0.14] text-gold-sand">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gold/[0.14] text-care-mark">
                 <LineIcon kind={line.kind} />
               </span>
               <span className="min-w-0">
-                <span className="block font-semibold text-plate-pale">{line.label}</span>
+                <span className="block font-semibold text-care-head">{line.label}</span>
                 {line.contacts.map((contact) => (
                   <a
                     key={contact.href}
                     href={contact.href}
                     /* A phone number is not a page: it opens the dialer, and
                        on a desktop it is still the thing to copy. */
-                    className="focus-ring block truncate font-mono text-[0.8125rem] text-gold-pale underline-offset-4 transition-colors hover:text-gold-sand hover:underline"
+                    className="focus-ring block truncate font-mono text-[0.8125rem] text-care-mark underline-offset-4 transition-colors hover:text-gold hover:underline"
                   >
                     {contact.text}
                   </a>
@@ -88,7 +92,7 @@ function PinIcon() {
       strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="mt-[3px] shrink-0 text-gold"
+      className="mt-[3px] shrink-0 text-care-mark"
     >
       <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z" />
       <circle cx="12" cy="10" r="2.6" />
