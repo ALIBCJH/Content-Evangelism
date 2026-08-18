@@ -1,4 +1,5 @@
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArticleDiagram } from '@/components/article-diagram'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
@@ -265,6 +266,33 @@ export function ArticleProse({ body }: { body: string }) {
 
           case 'diagram':
             return <ArticleDiagram key={index} name={block.name} caption={block.caption} />
+
+          case 'figure':
+            /* A photograph in the running text, framed like the table and
+               the diagram so a teaching's figures are recognisably one
+               family. It is never given a fixed height: the frame takes
+               the shape the photograph is, which is what stops a portrait
+               and a group shot being cropped to the same letterbox. */
+            return (
+              <figure
+                key={index}
+                className="my-9 overflow-hidden rounded-panel border border-rule bg-card"
+              >
+                <Image
+                  src={block.src}
+                  alt={block.alt}
+                  width={1600}
+                  height={1067}
+                  sizes="(min-width: 1280px) 34rem, (min-width: 640px) 90vw, 100vw"
+                  className="h-auto w-full"
+                />
+                {block.caption && (
+                  <figcaption className="border-t border-rule px-6 py-4 font-apparatus text-[0.8125rem] leading-[1.6] text-ink-subtle">
+                    {block.caption}
+                  </figcaption>
+                )}
+              </figure>
+            )
 
           case 'list': {
             /* marker:text-gold would paint the bright chrome gold on

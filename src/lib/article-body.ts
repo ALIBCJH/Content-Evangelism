@@ -33,10 +33,16 @@ import { headingId } from '@/lib/toc'
  *   @video wide O0Yw0HKTc1k | Title | Prophet Dr. David Edward Owuor | Watch · 8 minutes
  *
  *   @diagram prophetic-timeline | The timeline as commonly taught
+ *   @figure /images/articles/x.jpg | What the photograph shows | A caption
  *
  * A short is filmed upright and takes the narrow frame the block was
  * built for; a sermon is filmed landscape, and `wide` gives it the 16:9
  * frame rather than letterboxing an hour of preaching into a column.
+ *
+ * A figure is a photograph, set into the teaching where it belongs rather
+ * than at the head of the page. Alt text is not optional: a body that can
+ * carry a photograph can carry one nobody can see, and the second field is
+ * what a reader on a screen reader is given instead of it.
  *
  * A diagram names a drawing the site holds rather than a file it serves.
  * A prophetic sequence is a picture before it is a paragraph, and a
@@ -80,6 +86,7 @@ export type Block =
   | { kind: 'callout'; tone: CalloutTone; label?: string; inlines: Inline[]; cite?: string }
   | { kind: 'video'; id: string; title: string; byline?: string; eyebrow?: string; wide?: boolean }
   | { kind: 'diagram'; name: string; caption?: string }
+  | { kind: 'figure'; src: string; alt: string; caption?: string }
   | { kind: 'faq'; items: FaqItem[] }
 
 export interface FaqItem {
@@ -172,6 +179,16 @@ export function parseBody(body: string): Block[] {
           ...(byline ? { byline } : {}),
           ...(eyebrow ? { eyebrow } : {}),
         }
+      }
+    }
+
+    /* A photograph the site serves. It needs a path this site owns and
+       alt text; without either it is not a figure, and falls through to
+       being read as a paragraph rather than published half-made. */
+    if (lines.length === 1 && lines[0].startsWith('@figure ')) {
+      const [src, alt, caption] = cells(lines[0].slice(8)).map((part) => part.trim())
+      if (src?.startsWith('/') && alt) {
+        return { kind: 'figure', src, alt, ...(caption ? { caption } : {}) }
       }
     }
 
@@ -301,6 +318,8 @@ export function bodyToPlainText(body: string): string {
              for "millennial reign" is entitled to match on; the caption
              is the part this side of the parser can see. */
           return block.caption ?? ''
+        case 'figure':
+          return [block.caption, block.alt].filter(Boolean).join(' ')
         case 'faq':
           /* The questions are part of the page a reader searches, so they
              belong in the haystack and in the word count. */
@@ -388,6 +407,16 @@ export function bodyToHtml(body: string, origin: string): string {
              the same sequence out as a table directly beneath it — so the
              caption goes across and nothing essential is lost. */
           return block.caption ? `<p><em>${escapeXml(block.caption)}</em></p>` : ''
+        }
+        case 'figure': {
+          /* A feed is read off-site, so the photograph needs an absolute
+             source or it resolves against the reader's own host. */
+          const caption = block.caption
+            ? `<figcaption>${escapeXml(block.caption)}</figcaption>`
+            : ''
+          return `<figure><img src="${escapeXml(origin + block.src)}" alt="${escapeXml(
+            block.alt
+          )}" />${caption}</figure>`
         }
         case 'faq':
           /* A definition list is what this is, and it survives the trip
