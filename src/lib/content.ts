@@ -397,18 +397,41 @@ export const foundingYear = '2005'
 /** The sections of the About page that exist, in the order they appear. */
 export const aboutSections = [
   { label: 'The Ministry', href: '#ministry' },
-  { label: 'What We Publish', href: '#publishing' },
-  { label: 'Mission', href: '#mission' },
-  { label: 'Statement of Faith', href: '#faith' },
+  { label: 'Why This Platform Exists', href: '#why' },
+  { label: 'The Message', href: '#message' },
+  { label: 'Our Mission', href: '#mission' },
+  { label: 'Explore the Message', href: '#explore' },
+  { label: 'What We Believe', href: '#faith' },
   { label: 'How This Archive Is Kept', href: '#editorial' },
+  { label: 'A Growing Archive', href: '#archive' },
   { label: 'Locations', href: '#locations' },
 ]
 
 export const faithArticles = [
-  { num: '01', title: 'Scripture', refs: '2 Timothy 3:16 · 2 Peter 1:21' },
-  { num: '02', title: 'Repentance and Holiness', refs: 'Acts 3:19 · Hebrews 12:14' },
-  { num: '03', title: 'The Rapture of the Church', refs: '1 Thessalonians 4:16–17 · Matthew 24' },
-  { num: '04', title: 'The Second Coming of the Messiah', refs: 'Revelation 19 · Zechariah 14' },
+  {
+    num: '01',
+    title: 'The Scriptures',
+    body: 'We believe the Holy Scriptures are the Word of God and the foundation for Christian faith and life.',
+    refs: '2 Timothy 3:16–17 · 2 Peter 1:20–21',
+  },
+  {
+    num: '02',
+    title: 'Repentance and Holiness',
+    body: 'We believe God calls people to turn away from sin, return to Him, and pursue holiness.',
+    refs: 'Acts 3:19 · Hebrews 12:14',
+  },
+  {
+    num: '03',
+    title: 'The Coming of the Messiah',
+    body: 'We believe Jesus Christ will return, and that His Church is called to remain watchful and ready.',
+    refs: '1 Thessalonians 4:16–17 · Matthew 24',
+  },
+  {
+    num: '04',
+    title: 'The Kingdom of God',
+    body: 'We look forward to the fulfilment of God\u2019s promises and the eternal reign of Christ.',
+    refs: 'Revelation 19 · Zechariah 14',
+  },
 ]
 
 export const locations = [
