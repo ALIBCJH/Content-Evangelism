@@ -148,20 +148,12 @@ export default async function AboutPage() {
   const rows = await listRealRows()
   const countOf = (category: string) => rows.filter((row) => row.category === category).length
 
-  const stats = [
-    { value: foundingYear, label: 'Year the ministry was founded' },
-    {
-      value: String(prophecyRecords.length),
-      label:
-        prophecyRecords.length === 1
-          ? 'Prophetic record in the archive'
-          : 'Prophetic records in the archive',
-    },
-    {
-      value: String(rows.length),
-      label: rows.length === 1 ? 'Article published' : 'Articles published',
-    },
-  ]
+  /* Counties that can be gone to, and counties that cannot yet. Both
+     keep the number the Constitution gives them, so the order inside each
+     group is still the country's own. */
+  const located = counties.filter((county) => county.altars?.length)
+  const awaiting = counties.filter((county) => !county.altars?.length)
+
 
   return (
     <main>
@@ -441,104 +433,111 @@ export default async function AboutPage() {
             <span>{pastoralCare.office.replace('Head office · ', '')}</span>
           </p>
 
-          {/* A county with an altar opens it on the map at the ministry's
-              own coordinates, and carries the number of the clergy leading
-              it where one is published. A county without one is listed all
-              the same — the ministry gathers there; it is the meeting
-              place we do not have. */}
+          {/* The altars first. A reader on this section is looking for a
+              place to go on Sunday, and making them read past twenty-one
+              counties we cannot direct them to is answering a question
+              they did not ask before the one they did. */}
           <ul className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {counties.map((county) => {
-              const numeral = (
+            {located.map((county) => (
+              <li
+                key={county.no}
+                className="flex items-start gap-3 rounded-tile border border-rule bg-card p-4"
+              >
                 <span aria-hidden className="tabular pt-0.5 font-mono text-[0.6875rem] text-gold">
                   {String(county.no).padStart(2, '0')}
                 </span>
-              )
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-display text-[1.125rem] leading-[1.25] text-navy">
+                    {county.name}
+                  </h3>
 
-              if (!county.altars) {
-                return (
-                  <li
-                    key={county.no}
-                    className="flex items-start gap-3 rounded-tile border border-rule-soft p-4"
-                  >
-                    {numeral}
-                    <span className="block text-[0.9375rem] leading-[1.4] text-ink-500">
-                      {county.name}
-                    </span>
-                  </li>
-                )
-              }
+                  {/* A county can hold more than one altar — Laikipia
+                      holds two — so the card lists them rather than
+                      picking one and calling it the county's. */}
+                  <ul className="mt-2 space-y-3">
+                    {county.altars?.map((altar) => (
+                      <li
+                        key={altar.placeId}
+                        className="border-t border-rule-soft pt-3 first:border-t-0 first:pt-0"
+                      >
+                        <span className="block text-[0.8125rem] font-medium leading-[1.4] text-ink-900">
+                          {altar.name}
+                        </span>
+                        <span className="mt-0.5 block text-[0.75rem] leading-[1.5] text-ink-subtle">
+                          {altar.area}
+                        </span>
 
-              return (
-                <li
-                  key={county.no}
-                  className="flex items-start gap-3 rounded-tile border border-rule bg-card p-4"
-                >
-                  {numeral}
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-display text-[1.125rem] leading-[1.25] text-navy">
-                      {county.name}
-                    </h3>
-
-                    {/* A county can hold more than one altar — Laikipia
-                        holds two — so the card lists them rather than
-                        picking one and calling it the county's. */}
-                    <ul className="mt-2 space-y-3">
-                      {county.altars.map((altar) => (
-                        <li
-                          key={altar.placeId}
-                          className="border-t border-rule-soft pt-3 first:border-t-0 first:pt-0"
-                        >
-                          <span className="block text-[0.8125rem] font-medium leading-[1.4] text-ink-900">
-                            {altar.name}
+                        {altar.confirmed === false && (
+                          <span className="mt-1.5 block font-mono text-[0.625rem] uppercase tracking-[0.08em] text-source-label">
+                            Location to confirm
                           </span>
-                          <span className="mt-0.5 block text-[0.75rem] leading-[1.5] text-ink-subtle">
-                            {altar.area}
-                          </span>
+                        )}
 
-                          {altar.confirmed === false && (
-                            <span className="mt-1.5 block font-mono text-[0.625rem] uppercase tracking-[0.08em] text-source-label">
-                              Location to confirm
-                            </span>
-                          )}
-
-                          <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <a
+                            href={altarHref(altar)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="focus-ring group kicker flex items-center gap-1.5 text-gold-ink"
+                          >
+                            Open in Maps
+                            <ArrowUpRight
+                              aria-hidden
+                              className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                            />
+                          </a>
+                          {altar.phone && (
                             <a
-                              href={altarHref(altar)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="focus-ring group kicker flex items-center gap-1.5 text-gold-ink"
+                              href={`tel:${altar.phone.replace(/\s/g, '')}`}
+                              className="focus-ring font-mono text-[0.75rem] text-ink-700 underline-offset-4 hover:text-gold-ink hover:underline"
                             >
-                              Open in Maps
-                              <ArrowUpRight
-                                aria-hidden
-                                className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                              />
+                              {altar.phone}
                             </a>
-                            {altar.phone && (
-                              <a
-                                href={`tel:${altar.phone.replace(/\s/g, '')}`}
-                                className="focus-ring font-mono text-[0.75rem] text-ink-700 underline-offset-4 hover:text-gold-ink hover:underline"
-                              >
-                                {altar.phone}
-                              </a>
-                            )}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
-              )
-            })}
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))}
           </ul>
 
-          <p className="mt-8 max-w-measure text-[0.9375rem] leading-[1.75] text-ink-subtle">
-            The numbers belong to the clergy leading each altar, where one has been published. A
-            county listed without an altar is one the ministry gathers in whose meeting place is not
-            recorded here yet, and an altar marked <em>location to confirm</em> is one whose place
-            has been matched but not checked on the ground. If you know either, tell us and it is
-            added.
+          <p className="mt-7 max-w-measure text-[0.9375rem] leading-[1.75] text-ink-subtle">
+            The numbers belong to the clergy leading each altar, where one has been published. An
+            altar marked <em>location to confirm</em> is one whose place has been matched but not
+            checked on the ground.
           </p>
+
+          {/* The rest, set as names rather than as cards. Twenty-one empty
+              boxes look like something failed to load; twenty-one names
+              under a line that says what they are look like what they are,
+              which is a list still being filled in. */}
+          {awaiting.length > 0 && (
+            <div className="mt-12 border-t border-rule pt-9">
+              <h3 className="kicker mb-3 text-ink-subtle">
+                Counties whose meeting place is not recorded here yet
+              </h3>
+              <p className="mb-6 max-w-measure text-[0.9375rem] leading-[1.75] text-ink-subtle">
+                The ministry gathers in these too. We would rather list them plainly than send
+                anyone to a pin nobody has checked — if you know the altar in your county, tell us
+                and it is added.
+              </p>
+              <ul className="flex flex-wrap gap-2">
+                {awaiting.map((county) => (
+                  <li
+                    key={county.no}
+                    className="flex items-baseline gap-2 rounded-chip border border-rule-soft px-3.5 py-2"
+                  >
+                    <span aria-hidden className="tabular font-mono text-[0.625rem] text-gold/70">
+                      {String(county.no).padStart(2, '0')}
+                    </span>
+                    <span className="text-[0.875rem] leading-none text-ink-500">{county.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Section>
       </div>
     </main>
