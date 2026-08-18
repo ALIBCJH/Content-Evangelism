@@ -50,6 +50,12 @@ export interface PostedArticle {
   publishedAt: string
   /** Set on every edit; absent from articles written before the field shipped. */
   updatedAt?: string
+  /**
+   * Whether the desk has checked the piece against the ministry's own
+   * published teaching. Absent means not checked — a badge that appears
+   * only when it is true cannot be forgotten into saying yes.
+   */
+  verified?: boolean
   readMinutes: number
 }
 

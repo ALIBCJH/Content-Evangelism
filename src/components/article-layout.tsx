@@ -2,7 +2,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, CircleDashed } from 'lucide-react'
 import { topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
@@ -44,6 +44,13 @@ export interface ArticleLayoutProps {
   author: { name: string; href?: string }
   publishedAt: string
   readMinutes: number
+  /**
+   * Whether the desk has checked this teaching against the ministry's own
+   * published teaching. The badge states either answer, because a page
+   * that marks only what it has checked leaves a reader to guess what the
+   * silence on every other page means.
+   */
+  verified?: boolean
   hero?: { src: string; alt: string; caption?: string }
   /** Chapters, for the rail and the in-flow contents list. */
   headings: Heading[]
@@ -80,6 +87,7 @@ export function ArticleLayout({
   author,
   publishedAt,
   readMinutes,
+  verified,
   hero,
   headings,
   related,
@@ -141,6 +149,34 @@ export function ArticleLayout({
                 }
               >
                 <div>
+                  {/* Whether the desk has checked the teaching, said before
+                      the teaching rather than after it. Green is the site's
+                      fulfilled colour and carries the same meaning here —
+                      this was looked at and it holds. The unchecked state is
+                      grey and deliberately quiet: it reports that no one has
+                      been through the piece yet, which is not an accusation
+                      against it. */}
+                  <p className="mb-4">
+                    <span
+                      title={
+                        verified
+                          ? "Checked by the editorial desk against the ministry's published teaching."
+                          : 'Not yet checked by the editorial desk.'
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-apparatus text-[0.6875rem] font-medium uppercase tracking-[0.08em] ${
+                        verified
+                          ? 'border-fulfilled/35 bg-fulfilled/10 text-fulfilled'
+                          : 'border-rule bg-card text-ink-subtle'
+                      }`}
+                    >
+                      {verified ? (
+                        <BadgeCheck aria-hidden className="h-3.5 w-3.5" />
+                      ) : (
+                        <CircleDashed aria-hidden className="h-3.5 w-3.5" />
+                      )}
+                      {verified ? 'Verified' : 'Not verified'}
+                    </span>
+                  </p>
                   {/* 300, not 500. Large serif at a heavy weight shouts; at
                       300 the same words are unhurried. The negative tracking
                       pulls a loose-by-default large serif into one shape. */}
