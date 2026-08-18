@@ -29,3 +29,17 @@ CC BY / CC BY-SA images require this attribution to remain with the project.
   carries a stock-library watermark across the lettering, visible over the
   word itself. Buy or substitute a licensed image, overwrite this file, and
   move its line up into the list above.
+
+## Supplied for publication — provenance not established
+
+Photographs of the ministry itself, supplied by the publisher rather than
+sourced from an openly-licensed library. They are used in the body of
+**why-do-women-in-the-ministry-of-repentance-and-holiness-dress-that-way**.
+No photographer, licence or source page has been recorded for either; if
+one is known it belongs here, and if the ministry cannot show a right to
+publish them they should come down.
+
+- **dress-code-portrait.jpg** — a woman in a purple brocade coat over a
+  green skirt, tea hills behind. Supplied by the publisher.
+- **dress-code-headscarves.jpg** — ten women in a line, coats and
+  headscarves in ten colours. Supplied by the publisher.
