@@ -5,7 +5,6 @@ import { CATEGORIES, articleSubjects, categoryBlurb, siteUrl, topicHref } from '
 import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
 import { teachingRecordings } from '@/lib/teachings'
-import { Breadcrumbs } from '@/components/breadcrumbs'
 import { RecordingList } from '@/components/teaching/recording-list'
 import { JsonLd } from '@/components/json-ld'
 
@@ -50,19 +49,34 @@ export default async function TeachingsPage() {
         }}
       />
 
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Teachings',
+              item: `${siteUrl}/teachings`,
+            },
+          ],
+        }}
+      />
+
+      {/* A signpost, at signpost size: the name of the library and nothing
+          else. The trail above it went one hop, to a masthead that carries
+          a Teachings link and marks it as the page you are on. */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell pb-9 pt-7">
-          <Breadcrumbs
-            className="mb-6"
-            crumbs={[{ name: 'Home', href: '/' }, { name: 'Teachings' }]}
-          />
-          <h1 className="font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
+        <div className="shell py-7">
+          <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
             Teachings
           </h1>
         </div>
       </section>
 
-      <div className="shell pb-24 pt-14">
+      <div className="shell pb-24 pt-10">
         {/* The recordings open the page: they are teachings, where the two
             lists below them are ways of finding written pieces. The rail
             and the card are the archive's, because a published recording
