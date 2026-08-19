@@ -200,23 +200,42 @@ export default async function AboutPage() {
               </p>
             </div>
 
+            {/* Set the way the other two rails on this site are set: the
+                label weighted and sitting on a gold bar rather than a
+                hairline, the entries numbered so the list reads as one
+                object, and the whole row a target with a gold wash under
+                it. A contents list nobody notices is a contents list
+                nobody uses. */}
             <nav aria-label="In this section" className="lg:border-l lg:border-rule lg:pl-10">
-              <p className="kicker mb-3.5 text-ink-subtle">In this section</p>
-              <ul>
-                {aboutSections.map((section) => (
-                  <li key={section.href}>
+              <p className="mb-3 inline-block border-b-[3px] border-gold pb-2 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-navy">
+                In this section
+              </p>
+              <ol>
+                {aboutSections.map((section, index) => (
+                  <li key={section.href} className="border-b border-rule last:border-b-0">
                     <a
                       href={section.href}
-                      className="flex justify-between gap-4 border-b border-rule-soft py-2.5 text-sm text-ink-700 transition-colors hover:text-gold"
+                      className="group -mx-2 flex items-center gap-3 rounded-tile px-2 py-3 transition-colors hover:bg-chip-gold/50"
                     >
-                      <span>{section.label}</span>
-                      <span aria-hidden className="font-mono text-[0.6875rem] text-gold">
+                      <span
+                        aria-hidden
+                        className="tabular w-5 shrink-0 font-apparatus text-[1.0625rem] font-bold leading-none text-gold"
+                      >
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 font-apparatus text-[0.9375rem] font-semibold leading-[1.3] text-navy transition-colors group-hover:text-gold-ink">
+                        {section.label}
+                      </span>
+                      <span
+                        aria-hidden
+                        className="shrink-0 font-mono text-[0.6875rem] text-gold transition-transform group-hover:translate-x-0.5"
+                      >
                         →
                       </span>
                     </a>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </nav>
           </div>
         </div>
