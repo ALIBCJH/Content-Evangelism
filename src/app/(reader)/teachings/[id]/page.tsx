@@ -14,6 +14,7 @@ import { embedSrc, posterSrc, watchHref } from '@/lib/youtube'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { RecordAside } from '@/components/record/record-aside'
+import { RecordDescription } from '@/components/record/record-description'
 import { AskQuestion } from '@/components/ask-question'
 
 /**
@@ -146,50 +147,42 @@ export default function TeachingRecordPage({ params }: Params) {
             .
           </p>
 
-          <h2
-            id="about-this-teaching"
-            className="mb-5 mt-12 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
-          >
+          {/* The recording, described the way a recording is described
+              anywhere else: a shaded panel under the player, holding the
+              dateline and the first lines of the summary, and unfolding
+              into what was stated and the transcript when asked. The
+              prophecy record uses the same panel, so the two kinds of
+              record are read the same way. */}
+          <h2 id="about-this-teaching" className="sr-only">
             About this teaching
           </h2>
-
-          {recording.summary && (
-            <p className="mb-7 max-w-measure text-[1.0625rem] leading-[1.75] text-ink-900 sm:text-[1.125rem]">
-              {recording.summary}
-            </p>
-          )}
-
-          <dl className="rounded-panel border border-rule bg-card px-6 py-2 sm:px-8">
-            {rows.map((row) => (
-              <div
-                key={row.k}
-                className="flex justify-between gap-5 border-b border-rule-soft py-3.5 text-[0.9375rem] last:border-b-0"
-              >
-                <dt className="text-ink-muted">{row.k}</dt>
-                <dd className="text-right font-mono text-[0.8125rem] text-navy">{row.v}</dd>
-              </div>
-            ))}
-          </dl>
-
-          {recording.date === 'DATE TO CONFIRM' && (
-            <p className="mt-4 text-[0.8125rem] leading-[1.7] text-ink-muted">
-              The publication date of this recording has not yet been checked
-              against the source, so none is stated. It is left open rather than
-              guessed.
-            </p>
-          )}
-
-          <h2
-            id="transcript"
-            className="mb-5 mt-14 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
+          <RecordDescription
+            dateline={`${recording.date}${
+              recording.place ? ` · ${recording.place.toUpperCase()}` : ''
+            } · RECORDING`}
+            summary={
+              recording.summary ??
+              `A recording published by the ministry on its own channel${
+                recording.place ? `, preached at ${recording.place}` : ''
+              }. What is stated about it is set out below; nothing that has not been checked against the source is stated at all.`
+            }
+            meta={rows}
           >
-            Transcript
-          </h2>
-          <p className="max-w-measure text-[1.0625rem] leading-[1.75] text-ink-900 sm:text-[1.125rem]">
-            None has been set down for this teaching yet. When one is supplied it
-            is published here as it was preached, rather than summarised — and the
-            teaching joins the archive and search with it.
-          </p>
+            {recording.date === 'DATE TO CONFIRM' && (
+              <p className="mt-5 text-[0.8125rem] leading-[1.7] text-ink-muted">
+                The publication date of this recording has not yet been checked
+                against the source, so none is stated. It is left open rather
+                than guessed.
+              </p>
+            )}
+
+            <h3 className="kicker mt-8 text-ink-subtle">Transcript</h3>
+            <p className="mt-2.5 border-t border-rule-soft pt-4 text-[0.9375rem] leading-[1.7] text-ink-muted">
+              None has been set down for this teaching yet. When one is supplied
+              it is published here as it was preached, rather than summarised —
+              and the teaching joins the archive and search with it.
+            </p>
+          </RecordDescription>
         </article>
 
         <RecordAside
@@ -204,10 +197,7 @@ export default function TeachingRecordPage({ params }: Params) {
             { href: '/prophecies', label: 'PROPHECY ARCHIVE' },
             { href: '/articles', label: 'THE ARTICLES' },
           ]}
-          contents={[
-            ['About this teaching', 'about-this-teaching'],
-            ['Transcript', 'transcript'],
-          ]}
+          contents={[]}
         />
       </div>
 

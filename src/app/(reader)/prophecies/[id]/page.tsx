@@ -189,8 +189,32 @@ export default function RecordPage({ params }: Params) {
             dateline={`${record.date} · ${record.location.toUpperCase()} · ${record.subject.toUpperCase()}`}
             summary={record.summary}
             meta={meta}
-            timeline={record.timeline}
-          />
+          >
+            <h3 className="kicker mt-8 text-ink-subtle">Timeline</h3>
+            <p className="mb-1 mt-2.5 text-[0.8125rem] text-ink-muted">
+              Dates as published. Each entry names its own source.
+            </p>
+            <ol>
+              {record.timeline.map((event) => (
+                <li
+                  key={`${event.date}-${event.title}`}
+                  className="grid gap-2 border-t border-rule-soft py-5 sm:grid-cols-[90px_1fr] sm:gap-7"
+                >
+                  <span className="pt-0.5 font-mono text-xs tracking-[0.06em] text-gold">
+                    {event.date}
+                  </span>
+                  <span className="block">
+                    <span className="mb-1.5 block font-display text-[1.1875rem] text-navy">
+                      {event.title}
+                    </span>
+                    <span className="block text-sm leading-[1.65] text-ink-muted">
+                      {event.detail}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </RecordDescription>
         </article>
 
         <RecordAside
