@@ -246,6 +246,18 @@ export default function AdminPage() {
             {tabButton('write', editingSlug ? 'Editing' : 'Write', PenLine)}
             {tabButton('manage', 'Manage', Layers)}
           </div>
+
+          {/* The other two rooms at the desk. They were reachable only by
+              typing the URL, and a queue of readers' questions that nobody
+              can find is a queue nobody works. */}
+          <p className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-sans text-sm text-ink-muted">
+            <Link href="/admin/questions" className="transition-colors hover:text-gold">
+              Questions from readers →
+            </Link>
+            <Link href="/admin/insight" className="transition-colors hover:text-gold">
+              How the site is read →
+            </Link>
+          </p>
         </header>
 
         {/* ── DASHBOARD ───────────────────────────────────────── */}

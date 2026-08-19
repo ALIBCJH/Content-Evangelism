@@ -14,6 +14,7 @@ import { embedSrc, posterSrc, watchHref } from '@/lib/youtube'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { RecordAside } from '@/components/record/record-aside'
+import { AskQuestion } from '@/components/ask-question'
 
 /**
  * One recorded teaching.
@@ -209,6 +210,8 @@ export default function TeachingRecordPage({ params }: Params) {
           ]}
         />
       </div>
+
+      <AskQuestion title={recording.title} subject="this teaching" />
     </main>
   )
 }
