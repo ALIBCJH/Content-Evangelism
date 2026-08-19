@@ -8,15 +8,16 @@ import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
 import { RecordAside } from '@/components/record/record-aside'
+import { RecordDescription } from '@/components/record/record-description'
 
 /**
  * One prophecy record.
  *
  * The page is built around a single rule, which is the reason the archive
  * exists in this shape at all: what was published is labelled as what it
- * is. The recording carries a *Primary Source* pill, and everything below
- * it — the summary, the published details, the timeline — is drawn from
- * that recording and dated as published.
+ * is. The recording carries a *Primary Source* pill, and the description
+ * panel under it — the summary, the published details, the timeline — is
+ * drawn from that recording and dated as published.
  *
  * A reader can therefore take the record apart: watch what was published,
  * see when it was published, and follow the dates that followed, without
@@ -159,60 +160,19 @@ export default function RecordPage({ params }: Params) {
             drawn from it.
           </p>
 
-          {/* When it happened, as published — under the recording it
-              describes rather than beside the title, where it was
-              competing with the headline for the same glance. */}
-          <h2
-            id="when-it-happened"
-            className="mb-5 mt-12 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
-          >
+          {/* The record, described the way a video is described: a shaded
+              panel under the player that opens with the dateline and the
+              first lines of the summary, and unfolds into the published
+              details and the timeline when a reader asks for them. */}
+          <h2 id="when-it-happened" className="sr-only">
             When it happened
           </h2>
-          <p className="mb-7 max-w-measure text-[1.0625rem] leading-[1.75] text-ink-900 sm:text-[1.125rem]">
-            {record.summary}
-          </p>
-          <dl className="rounded-panel border border-rule bg-card px-6 py-2 sm:px-8">
-            {meta.map((row) => (
-              <div
-                key={row.k}
-                className="flex justify-between gap-5 border-b border-rule-soft py-3.5 text-[0.9375rem] last:border-b-0"
-              >
-                <dt className="text-ink-muted">{row.k}</dt>
-                <dd className="text-right font-mono text-[0.8125rem] text-navy">{row.v}</dd>
-              </div>
-            ))}
-          </dl>
-
-          {/* ── The timeline ─────────────────────────────────────── */}
-          <h2
-            id="timeline"
-            className="mb-2 mt-14 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
-          >
-            Timeline
-          </h2>
-          <p className="mb-7 text-[0.9375rem] text-ink-muted">
-            Dates as published. Each entry names its own source.
-          </p>
-          <ol className="rounded-panel border border-rule bg-card px-6 py-2 sm:px-8">
-            {record.timeline.map((event) => (
-              <li
-                key={`${event.date}-${event.title}`}
-                className="grid gap-3 border-b border-rule-soft py-6 last:border-b-0 sm:grid-cols-[90px_1fr] sm:gap-7"
-              >
-                <span className="pt-0.5 font-mono text-xs tracking-[0.06em] text-gold">
-                  {event.date}
-                </span>
-                <span className="block">
-                  <span className="mb-1.5 block font-display text-[1.25rem] text-navy">
-                    {event.title}
-                  </span>
-                  <span className="block text-sm leading-[1.65] text-ink-muted">
-                    {event.detail}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ol>
+          <RecordDescription
+            dateline={`${record.date} · ${record.location.toUpperCase()} · ${record.subject.toUpperCase()}`}
+            summary={record.summary}
+            meta={meta}
+            timeline={record.timeline}
+          />
         </article>
 
         <RecordAside
@@ -222,10 +182,7 @@ export default function RecordPage({ params }: Params) {
             { href: '/teachings', label: 'THE TEACHINGS' },
             { href: '/articles', label: 'THE ARTICLES' },
           ]}
-          contents={[
-            ['When it happened', 'when-it-happened'],
-            ['Timeline', 'timeline'],
-          ]}
+          contents={[]}
         />
       </div>
     </main>
