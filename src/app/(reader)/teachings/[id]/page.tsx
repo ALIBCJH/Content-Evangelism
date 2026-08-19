@@ -15,6 +15,7 @@ import { embedSrc, posterSrc, watchHref } from '@/lib/youtube'
 import { JsonLd } from '@/components/json-ld'
 import { buttonVariants } from '@/components/ui/button'
 import { RecordAside } from '@/components/record/record-aside'
+import { RecordFrame } from '@/components/record/record-frame'
 import { RecordDescription } from '@/components/record/record-description'
 import { AskQuestion } from '@/components/ask-question'
 
@@ -147,7 +148,20 @@ export default function TeachingRecordPage({ params }: Params) {
         <article className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
           {/* The recording leads: it is the teaching, and the rest of the
               page is description of it. */}
-          <div className="relative h-0 overflow-hidden rounded-figure border border-navy-rule bg-navy-deep pb-[56.25%]">
+          <RecordFrame
+            kicker="Recording"
+            note="Published by the ministry on its own channel."
+            action={
+              <a
+                href={watchHref(recording.video)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="focus-ring rounded-chip border border-gold-pale/60 px-3 py-1.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-gold-sand transition-colors hover:border-gold hover:text-plate-pale"
+              >
+                YouTube ↗
+              </a>
+            }
+          >
             <iframe
               src={embedSrc(recording.video)}
               title={recording.title}
@@ -156,19 +170,7 @@ export default function TeachingRecordPage({ params }: Params) {
               loading="lazy"
               className="absolute inset-0 h-full w-full border-0"
             />
-          </div>
-          <p className="mt-3 text-xs text-ink-subtle">
-            Published by the ministry on its own channel.{' '}
-            <a
-              href={watchHref(recording.video)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-navy underline-offset-2 hover:text-gold hover:underline"
-            >
-              Watch on YouTube
-            </a>
-            .
-          </p>
+          </RecordFrame>
 
           {/* The recording, described the way a recording is described
               anywhere else: a shaded panel under the player, holding the

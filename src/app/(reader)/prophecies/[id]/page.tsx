@@ -10,6 +10,7 @@ import { JsonLd } from '@/components/json-ld'
 import { buttonVariants } from '@/components/ui/button'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
 import { RecordAside } from '@/components/record/record-aside'
+import { RecordFrame } from '@/components/record/record-frame'
 import { RecordDescription } from '@/components/record/record-description'
 import { AskQuestion } from '@/components/ask-question'
 
@@ -58,18 +59,6 @@ export function generateMetadata({ params }: Params): Metadata {
       ...(record.published !== 'To confirm' ? { publishedTime: record.published } : {}),
     },
   }
-}
-
-/** A labelled provenance pill — the one piece of chrome this page insists on. */
-function Provenance({ label, note }: { label: string; note: string }) {
-  return (
-    <p className="mb-4 flex flex-wrap items-center gap-3">
-      <span className="kicker shrink-0 whitespace-nowrap rounded-chip bg-chip-gold px-3 py-1.5 text-gold-ink">
-        {label}
-      </span>
-      <span className="text-[0.8125rem] text-ink-muted">{note}</span>
-    </p>
-  )
 }
 
 export default function RecordPage({ params }: Params) {
@@ -155,7 +144,14 @@ export default function RecordPage({ params }: Params) {
           <h2 id="original-source" className="sr-only">
             Original source
           </h2>
-          <div className="relative h-0 overflow-hidden rounded-figure border border-navy-rule bg-navy-deep pb-[56.25%]">
+          <RecordFrame
+            kicker="Primary Source"
+            note={
+              record.published === 'To confirm'
+                ? 'Official ministry recording. Publication date to confirm against the source.'
+                : `Official ministry recording, published ${record.date}.`
+            }
+          >
             <iframe
               src={embedSrc(record.video)}
               title={`Original recording — ${record.title}`}
@@ -164,16 +160,8 @@ export default function RecordPage({ params }: Params) {
               loading="lazy"
               className="absolute inset-0 h-full w-full border-0"
             />
-          </div>
-          <Provenance
-            label="Primary Source"
-            note={
-              record.published === 'To confirm'
-                ? 'Official ministry recording. Publication date to confirm against the source.'
-                : `Official ministry recording, published ${record.date}.`
-            }
-          />
-          <p className="-mt-1 text-xs text-ink-subtle">
+          </RecordFrame>
+          <p className="mt-3 text-xs text-ink-subtle">
             The video is the primary source of this page; everything below is
             drawn from it.
           </p>
