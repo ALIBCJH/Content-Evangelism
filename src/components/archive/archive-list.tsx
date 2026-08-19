@@ -64,17 +64,21 @@ export function ArchiveList({
     <>
       {/* ── The band: the title, and the controls beside it ───────── */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell flex flex-wrap items-center gap-x-8 gap-y-4 py-5">
+        <div className="shell flex flex-wrap items-center gap-x-4 gap-y-4 py-5 sm:gap-x-8">
           {header}
-          <label className="relative min-w-[min(100%,18rem)] flex-1 sm:ml-auto sm:max-w-[22rem] sm:flex-none">
+          {/* On a phone the box sits on the title's line rather than under
+              it, which costs the band a whole row. It is short there
+              because it only has to be recognisable: the icon says what it
+              is, and a reader typing into it sees their own words. */}
+          <label className="relative ml-auto w-[9.5rem] shrink-0 sm:w-auto sm:min-w-[18rem] sm:max-w-[22rem]">
             <span className="sr-only">Search the archive</span>
             <SearchIcon />
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search for articles"
-              className="focus-ring w-full rounded-chip border border-rule bg-card py-2.5 pl-10 pr-4 text-[0.9375rem] text-ink-900 placeholder:text-ink-subtle"
+              placeholder="Search"
+              className="focus-ring w-full rounded-chip border border-rule bg-card py-2 pl-9 pr-3 text-[0.875rem] text-ink-900 placeholder:text-ink-subtle sm:py-2.5 sm:pl-10 sm:pr-4 sm:text-[0.9375rem]"
             />
           </label>
 
@@ -193,7 +197,7 @@ function SearchIcon() {
       stroke="currentColor"
       strokeWidth="1.75"
       strokeLinecap="round"
-      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-subtle"
+      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle sm:left-3.5"
     >
       <circle cx="10.6" cy="10.6" r="6.6" />
       <path d="m15.5 15.5 4 4" />
