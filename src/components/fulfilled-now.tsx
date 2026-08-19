@@ -9,6 +9,10 @@ import { recentlyFulfilled, recordHref } from '@/lib/prophecies'
  * A news site puts its most-read stories here and numbers them, and the
  * numbering is most of why it works — an ordered short list is read as one
  * object rather than four, and a reader who starts it tends to finish it.
+ * The rest of why it works is that it is loud: a heavy label on a coloured
+ * bar, numerals that carry, and headlines set in the sans rather than the
+ * reading face. This rail is set the same way, in gold, which is the
+ * ministry's colour and not a news channel's orange.
  * The same device carries something better than page views here: the
  * archive is the ministry's own evidence, and a teaching about repentance
  * is the moment a reader is most likely to want to see it.
@@ -29,48 +33,50 @@ export function FulfilledNow({ limit = 4 }: { limit?: number }) {
 
   return (
     <section aria-labelledby="fulfilled-now" className="font-apparatus">
-      {/* The rule sits under the words rather than across the column: it
-          marks the heading, not the top of a box. */}
+      {/* The heading is set to be seen from across the column: uppercase,
+          weighted, and sitting on a solid gold bar rather than a hairline.
+          The rule still marks the words rather than the top of a box. */}
       <p
         id="fulfilled-now"
-        className="kicker inline-block border-b-2 border-gold pb-2 text-navy"
+        className="inline-block border-b-[3px] border-gold pb-2 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-navy"
       >
         Recently fulfilled
       </p>
 
-      <ol className="mt-4">
+      <ol className="mt-3">
         {records.map((record, index) => (
-          <li
-            key={record.id}
-            className="flex gap-3.5 border-b border-dotted border-rule py-3.5 first:pt-0"
-          >
-            {/* The numeral is the whole device. Set in the reading face at
-                a size the headline beside it does not have to compete
-                with, and in gold, which is the site's own accent rather
-                than a borrowed one. */}
-            <span
-              aria-hidden
-              className="tabular mt-[0.15rem] font-article text-[1.5rem] font-light leading-none text-gold"
+          <li key={record.id} className="border-b border-rule last:border-b-0">
+            {/* The whole row is the target, not the title alone: this rail
+                exists to be clicked from, and a two-line headline is a
+                small thing to hit beside four lines of card. */}
+            <Link
+              href={recordHref(record)}
+              className="group -mx-2 flex gap-3 rounded-tile px-2 py-3.5 transition-colors hover:bg-chip-gold/50"
             >
-              {index + 1}
-            </span>
-            <div className="min-w-0">
-              <Link
-                href={recordHref(record)}
-                className="block text-balance font-article text-[0.9375rem] leading-[1.35] text-navy transition-colors hover:text-gold"
+              {/* The numeral is the whole device — set in the sans at a
+                  weight that carries, and in gold, which is the site's own
+                  accent rather than a borrowed one. */}
+              <span
+                aria-hidden
+                className="tabular w-5 shrink-0 text-[1.25rem] font-bold leading-[1.1] text-gold"
               >
-                {record.title}
-              </Link>
-              <p className="mt-1.5 text-[0.75rem] leading-none text-ink-subtle">
-                {record.location}
-                <span aria-hidden className="mx-1.5">
-                  ·
+                {index + 1}
+              </span>
+              <span className="block min-w-0">
+                <span className="block text-balance text-[0.9375rem] font-semibold leading-[1.3] text-navy transition-colors group-hover:text-gold-ink">
+                  {record.title}
                 </span>
-                {/^\d{4}-\d{2}-\d{2}$/.test(record.published)
-                  ? format(parseISO(record.published), 'd MMM yyyy')
-                  : 'Date to confirm'}
-              </p>
-            </div>
+                <span className="mt-1.5 block font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-subtle">
+                  <span className="text-gold-ink">{record.location}</span>
+                  <span aria-hidden className="mx-1.5">
+                    ·
+                  </span>
+                  {/^\d{4}-\d{2}-\d{2}$/.test(record.published)
+                    ? format(parseISO(record.published), 'd MMM yyyy')
+                    : 'Date to confirm'}
+                </span>
+              </span>
+            </Link>
           </li>
         ))}
       </ol>
