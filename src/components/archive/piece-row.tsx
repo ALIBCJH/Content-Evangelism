@@ -1,17 +1,35 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { ArchiveItem } from '@/lib/archive-items'
 import { QuotePlate } from '@/components/archive/quote-plate'
 import { SaveButton } from '@/components/archive/save-button'
 
 /**
- * One piece below the lead: the same two-part card, set quieter.
+ * One piece below the lead.
  *
- * The plate is narrower and its kicker is the reference rather than the
- * words "key text" — on a row the label has to earn its line, and the
- * reference is the thing a reader is scanning for.
+ * Two cards, one component, because a phone and a desk are not reading
+ * the same way.
+ *
+ * From `sm` up it is the design's two-part card: the passage on the
+ * navy plate, and what the teaching does with it beside the plate. That
+ * composition is the archive's signature and it holds at a width where
+ * both halves can be read at once.
+ *
+ * Below `sm` it is a row. Stacked, the plate put four lines of italic
+ * Scripture *above* every headline, which meant each card opened on its
+ * quietest part and buried the line that does the work — eleven pieces
+ * ran to fourteen phone screens, one article to a screen, with never two
+ * headlines in sight to choose between. So the plate comes off, the
+ * headline leads, the references collapse to one line, and the piece's
+ * own picture — or the passage it stands on, set as a small tile — holds
+ * the right edge to keep the column in rhythm.
+ *
+ * Nothing is hidden that was not repeated elsewhere: the button below the
+ * excerpt went to the same place the card already goes, and the chips are
+ * the same references the tile now names.
  */
 export function PieceRow({
   item,
@@ -24,60 +42,141 @@ export function PieceRow({
   ready: boolean
   onToggle: () => void
 }) {
+  /* The passage on the tile, unless the piece has a picture for it. */
+  const tileRef = item.image ? undefined : plainRef(item.quote?.cite ?? item.refs[0])
+  const total = item.refs.length + item.moreRefs
+  const references = tileRef
+    ? total > 1
+      ? `+${total - 1} more references`
+      : ''
+    : [item.refs[0], total > 1 ? `+${total - 1} more` : ''].filter(Boolean).join(' · ')
+
   return (
     <article className="card card-interactive group relative h-full overflow-hidden sm:grid sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,36%)_minmax(0,1fr)]">
       <QuotePlate
         item={item}
         label={item.quote?.cite ?? item.category}
-        className="min-h-[180px] sm:min-h-[240px]"
+        className="hidden min-h-[180px] sm:flex sm:min-h-[240px]"
       />
 
-      <div className="flex min-w-0 flex-col p-5 sm:p-7">
-        <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
-          <span className="kicker rounded-chip border border-gold-pale/70 px-2.5 py-1 text-gold">
-            {item.category}
-          </span>
-          <time
-            dateTime={item.publishedAt}
-            className="font-mono text-[0.6875rem] tracking-[0.08em] text-ink-subtle"
-          >
-            {item.dated} · <span className="tabular">{item.readMinutes}</span> MIN
-          </time>
-          <span className="ml-auto">
-            <SaveButton saved={saved} ready={ready} onToggle={onToggle} title={item.title} compact />
-          </span>
+      <div className="flex min-w-0 gap-4 p-4 sm:block sm:p-7">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 sm:mb-3.5">
+            <span className="kicker rounded-chip border border-gold-pale/70 px-2.5 py-1 text-gold">
+              {item.category}
+            </span>
+            <time
+              dateTime={item.publishedAt}
+              className="font-mono text-[0.625rem] tracking-[0.08em] text-ink-subtle sm:text-[0.6875rem]"
+            >
+              {item.dated} · <span className="tabular">{item.readMinutes}</span> MIN
+            </time>
+            <span className="ml-auto hidden sm:block">
+              <SaveButton
+                saved={saved}
+                ready={ready}
+                onToggle={onToggle}
+                title={item.title}
+                compact
+              />
+            </span>
+          </div>
+
+          <h3 className="mb-2 font-display text-[1.125rem] font-medium leading-[1.2] text-navy sm:mb-3 sm:text-balance sm:text-[1.75rem] sm:leading-[1.15]">
+            <Link
+              href={item.href}
+              className="focus-ring rounded-sm before:absolute before:inset-0 before:z-0"
+            >
+              <span className="headline-link">{item.title}</span>
+            </Link>
+          </h3>
+
+          <p className="line-clamp-2 max-w-[62ch] text-[0.875rem] leading-[1.6] text-ink-muted sm:mb-5 sm:text-[0.9375rem] sm:leading-[1.7]">
+            {item.excerpt}
+          </p>
+
+          {/* The references, as one line a thumb can scan past. The chips
+              below say the same thing with room to be tapped, which a
+              phone has no width for. The passage itself is on the tile
+              unless a photograph has the tile, so this says whichever of
+              the two the tile is not saying. */}
+          {references && (
+            <p className="mt-2.5 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-subtle sm:hidden">
+              {references}
+            </p>
+          )}
+
+          <div className="mt-auto hidden flex-wrap items-center justify-between gap-4 border-t border-rule-soft pt-4 sm:flex">
+            <span className="flex flex-wrap gap-2">
+              {item.refs.map((ref) => (
+                <span
+                  key={ref}
+                  className="rounded-chip bg-chip px-3 py-1.5 font-mono text-xs text-ink-700"
+                >
+                  {ref}
+                </span>
+              ))}
+            </span>
+            <Link
+              href={item.href}
+              data-track="read-article"
+              className="focus-ring relative z-10 inline-flex items-center gap-2 whitespace-nowrap rounded-tile bg-gold px-5 py-2.5 text-[0.875rem] font-semibold text-plate-deep transition-colors hover:bg-gold-light"
+            >
+              Read article <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
 
-        <h3 className="mb-3 text-balance font-display text-[1.375rem] font-medium leading-[1.15] text-navy sm:text-[1.75rem]">
-          <Link href={item.href} className="focus-ring rounded-sm before:absolute before:inset-0 before:z-0">
-            <span className="headline-link">{item.title}</span>
-          </Link>
-        </h3>
-
-        <p className="mb-5 line-clamp-2 max-w-[62ch] text-[0.9375rem] leading-[1.7] text-ink-muted">
-          {item.excerpt}
-        </p>
-
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-rule-soft pt-4">
-          <span className="flex flex-wrap gap-2">
-            {item.refs.map((ref) => (
-              <span
-                key={ref}
-                className="rounded-chip bg-chip px-3 py-1.5 font-mono text-xs text-ink-700"
-              >
-                {ref}
-              </span>
-            ))}
-          </span>
-          <Link
-            href={item.href}
-            data-track="read-article"
-            className="focus-ring relative z-10 inline-flex items-center gap-2 whitespace-nowrap rounded-tile bg-gold px-5 py-2.5 text-[0.875rem] font-semibold text-plate-deep transition-colors hover:bg-gold-light"
-          >
-            Read article <span aria-hidden>→</span>
-          </Link>
+        {/* The right edge of the row, on a phone only. */}
+        <div className="flex shrink-0 flex-col items-center gap-2.5 sm:hidden">
+          <Thumb item={item} reference={tileRef} />
+          <SaveButton saved={saved} ready={ready} onToggle={onToggle} title={item.title} compact />
         </div>
       </div>
     </article>
+  )
+}
+
+/**
+ * The square at the end of a row: the piece's photograph where it has
+ * one, and where it has not, the passage it stands on set as a plate.
+ *
+ * A row with nothing at its edge and a row with a picture read as two
+ * different lists, so the fallback is not blank — it is the same navy and
+ * the same reference the wide card gives the plate, at the size a thumb
+ * needs it.
+ */
+/** "Matthew 6:24, KJV" → "Matthew 6:24". The translation is apparatus. */
+function plainRef(reference: string | undefined): string | undefined {
+  return reference?.split(',')[0]?.trim() || undefined
+}
+
+function Thumb({ item, reference }: { item: ArchiveItem; reference?: string }) {
+  if (item.image) {
+    return (
+      <Image
+        src={item.image.src}
+        alt={item.image.alt}
+        width={80}
+        height={80}
+        sizes="80px"
+        className="h-20 w-20 rounded-tile border border-rule object-cover"
+      />
+    )
+  }
+
+  return (
+    <span
+      aria-hidden
+      className="grid h-20 w-20 place-items-center rounded-tile border border-navy-rule bg-plate px-2 text-center"
+    >
+      {reference ? (
+        <span className="font-mono text-[0.5625rem] uppercase leading-[1.4] tracking-[0.06em] text-gold-pale">
+          {reference}
+        </span>
+      ) : (
+        <span className="font-display text-[1.5rem] leading-none text-gold/60">&ldquo;</span>
+      )}
+    </span>
   )
 }
