@@ -33,18 +33,30 @@ export interface ArchiveItem {
   moreRefs: number
   /** The passage the teaching leads with, set on the plate beside it. */
   quote?: { text: string; cite?: string }
+  /** The piece's own picture, where it has one — the thumbnail on a phone. */
+  image?: { src: string; alt: string }
   /** Lowercased title, standfirst, opening line and references. */
   haystack: string
 }
 
-/** The opening line of a piece — what a reader sees in the listing. */
+/**
+ * The opening line of a piece — what a reader sees in the listing.
+ *
+ * Read through the body parser rather than off the raw text, so what the
+ * card shows is words. Splitting on blank lines handed the listing
+ * whatever markup the paragraph opened with, and a card reading
+ * "**Ministry of Repentance and Holiness**" is the listing showing a
+ * reader the machinery.
+ */
 export function openingLine(body: string | undefined, dek: string): string {
   if (!body) return dek
-  const first = body
-    .split(/\n\s*\n/)
-    .map((block) => block.trim())
-    .find((block) => block && !block.startsWith('## ') && !block.startsWith('> '))
-  return first ?? dek
+  const paragraph = parseBody(body).find((block) => block.kind === 'paragraph')
+  if (!paragraph || paragraph.kind !== 'paragraph') return dek
+  const text = paragraph.inlines
+    .map((inline) => inline.text)
+    .join('')
+    .trim()
+  return text || dek
 }
 
 /**
@@ -93,6 +105,9 @@ export function toArchiveItems(rows: RealRow[]): ArchiveItem[] {
       refs,
       moreRefs: Math.max(0, all.length - refs.length),
       quote: leadQuote(row.body),
+      ...(row.imageUrl
+        ? { image: { src: row.imageUrl, alt: row.imageAlt ?? '' } }
+        : {}),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
     }
   })
