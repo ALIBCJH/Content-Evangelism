@@ -1,11 +1,13 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { siteInfo, siteUrl } from '@/lib/content'
 import { embedSrc, prophecyRecords, recordById, recordHref } from '@/lib/prophecies'
 import { rssAlternate } from '@/lib/seo'
-import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
+import { buttonVariants } from '@/components/ui/button'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
 import { RecordAside } from '@/components/record/record-aside'
 import { RecordDescription } from '@/components/record/record-description'
@@ -99,27 +101,42 @@ export default function RecordPage({ params }: Params) {
         }}
       />
 
-      {/* ── The band above the record: the way back, and nothing else ── */}
-      <section className="bg-plate text-plate-pale">
-        <div className="shell py-5">
-          <Breadcrumbs
-            className="text-navy-soft [&_a:hover]:text-gold-pale [&_span[aria-current]]:text-gold-pale"
-            crumbs={[
-              { name: 'Home', href: '/' },
-              { name: 'Prophecy Archive', href: '/prophecies' },
-              { name: `${record.location} · ${record.subject}` },
-            ]}
-          />
-        </div>
-        <div className="gold-rule" />
-      </section>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Prophecy Archive',
+              item: `${siteUrl}/prophecies`,
+            },
+            { '@type': 'ListItem', position: 3, name: record.title },
+          ],
+        }}
+      />
+
+      {/* The way back, at the head of the record. A trail of crumbs read as
+          ornament above a page that is mostly a video; the button says the
+          one thing a reader leaving this record wants said. */}
+      <div className="shell pt-8">
+        <Link
+          href="/prophecies"
+          className={buttonVariants({ variant: 'outline', className: 'gap-2.5 px-7' })}
+        >
+          <ArrowLeft aria-hidden />
+          All prophecies
+        </Link>
+      </div>
 
       {/* Two columns, two rows: the recording runs the full height of the
           left column, and the rail begins with the record's own title —
           so the reader meets the name of the thing beside the thing
           itself rather than above it. Below the column break the rail
           stacks first, which puts the title back over the video. */}
-      <div className="shell grid gap-x-12 gap-y-9 pb-24 pt-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[auto_1fr] lg:gap-x-[72px] lg:gap-y-10 lg:pt-12">
+      <div className="shell grid gap-x-12 gap-y-9 pb-24 pt-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[auto_1fr] lg:gap-x-[72px] lg:gap-y-10 lg:pt-10">
         <header className="lg:col-start-2 lg:row-start-1">
           <h1 className="mb-3.5 text-balance font-display text-[2rem] font-medium leading-[1.06] tracking-[-0.02em] text-navy sm:text-[2.5rem] lg:text-[1.9375rem] lg:leading-[1.1]">
             {record.title}
