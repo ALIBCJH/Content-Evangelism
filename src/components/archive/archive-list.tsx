@@ -136,13 +136,33 @@ export function ArchiveList({
           </div>
         ) : (
           <>
+            {/* The newest piece, twice over and one at a time. The lead
+                card is a front page and needs a page to be one on; at
+                phone width it filled the screen and the archive looked
+                like a single article. So a phone gets the piece as a row
+                marked Latest, and the wide page keeps the card. Only one
+                of the two is ever rendered to a reader or to assistive
+                technology, the other being display:none at that width. */}
             {featured && lead && (
-              <FeaturedPiece
-                item={lead}
-                saved={ready && isSaved(lead.slug)}
-                ready={ready}
-                onToggle={() => toggle(lead.slug)}
-              />
+              <>
+                <div className="sm:hidden">
+                  <PieceRow
+                    item={lead}
+                    latest
+                    saved={ready && isSaved(lead.slug)}
+                    ready={ready}
+                    onToggle={() => toggle(lead.slug)}
+                  />
+                </div>
+                <div className="hidden sm:block">
+                  <FeaturedPiece
+                    item={lead}
+                    saved={ready && isSaved(lead.slug)}
+                    ready={ready}
+                    onToggle={() => toggle(lead.slug)}
+                  />
+                </div>
+              </>
             )}
 
             {(featured ? rest : shown).length > 0 && (
