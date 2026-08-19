@@ -9,8 +9,12 @@ import * as React from 'react'
  * web, because that is where a reader has learnt to look for it: a shaded
  * box under the player, opening with the dateline, then the first lines of
  * the summary and a "…more". Press anywhere on it and the rest unfolds —
- * the whole summary, the published details, and the timeline — with a
- * "Show less" to put it away again.
+ * the whole summary, the published details, and whatever else the page
+ * puts inside it — with a "Show less" to put it away again.
+ *
+ * Both kinds of record use it. A prophecy unfolds into its timeline and a
+ * teaching into its transcript, which is the same panel holding a
+ * different second half, so the two are read the same way.
  *
  * Everything is in the markup at all times and the closed state only hides
  * it, so a crawler, a reader without JavaScript, and Cmd-F all see the
@@ -22,23 +26,18 @@ export interface DescriptionMeta {
   v: string
 }
 
-export interface DescriptionEvent {
-  date: string
-  title: string
-  detail: string
-}
-
 export function RecordDescription({
   dateline,
   summary,
   meta,
-  timeline,
+  children,
 }: {
   /** "JULY 16, 2026 · COLOMBIA · EARTHQUAKE" — the line above the summary. */
   dateline: string
   summary: string
   meta: DescriptionMeta[]
-  timeline: DescriptionEvent[]
+  /** Whatever else the unfolded panel holds: a timeline, a transcript. */
+  children?: React.ReactNode
 }) {
   const [open, setOpen] = React.useState(false)
 
@@ -88,30 +87,7 @@ export function RecordDescription({
           ))}
         </dl>
 
-        <h3 className="kicker mt-8 text-ink-subtle">Timeline</h3>
-        <p className="mb-1 mt-2.5 text-[0.8125rem] text-ink-muted">
-          Dates as published. Each entry names its own source.
-        </p>
-        <ol>
-          {timeline.map((event) => (
-            <li
-              key={`${event.date}-${event.title}`}
-              className="grid gap-2 border-t border-rule-soft py-5 sm:grid-cols-[90px_1fr] sm:gap-7"
-            >
-              <span className="pt-0.5 font-mono text-xs tracking-[0.06em] text-gold">
-                {event.date}
-              </span>
-              <span className="block">
-                <span className="mb-1.5 block font-display text-[1.1875rem] text-navy">
-                  {event.title}
-                </span>
-                <span className="block text-sm leading-[1.65] text-ink-muted">
-                  {event.detail}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ol>
+        {children}
 
         <button
           type="button"
