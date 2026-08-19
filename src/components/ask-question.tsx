@@ -91,7 +91,7 @@ export function AskQuestion({
 
   return (
     <section aria-labelledby="ask-a-question" className="border-t border-rule bg-raised">
-      <div className="shell grid gap-10 py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:gap-16 lg:py-20">
+      <div className="shell grid gap-10 py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.92fr)] lg:gap-14 lg:py-16">
         {/* ── What may be asked, and what it costs to ask ─────────── */}
         <div>
           <p className="kicker mb-4 text-gold-ink">Ask a question</p>
@@ -141,7 +141,7 @@ export function AskQuestion({
         {state === 'sent' ? (
           <div
             role="status"
-            className="flex flex-col justify-center rounded-panel border border-rule bg-card p-8 shadow-sm sm:p-10"
+            className="self-center rounded-panel border border-rule bg-card p-7 shadow-sm sm:p-8"
           >
             <span aria-hidden className="mb-5 block h-[3px] w-14 rounded-full bg-gold" />
             <p className="font-display text-[1.5rem] leading-snug text-navy">
@@ -163,7 +163,7 @@ export function AskQuestion({
         ) : (
           <form
             onSubmit={send}
-            className="flex flex-col rounded-panel border border-rule bg-card p-6 shadow-sm sm:p-8"
+            className="self-center rounded-panel border border-rule bg-card p-6 shadow-sm sm:p-7"
           >
             <div className="mb-2.5 flex items-baseline justify-between gap-4">
               <label htmlFor="question-body" className="kicker text-ink-subtle">
@@ -178,26 +178,26 @@ export function AskQuestion({
                 {length > 0 ? `${length}/${MAX}` : ''}
               </span>
             </div>
-            {/* The field grows into whatever height the column has, rather
-                than leaving the card half empty beside the list of what may
-                be asked. A long box also says, without saying it, that a
-                long question is welcome here. */}
+            {/* Four lines, and a handle to pull down for more. The field
+                used to grow into whatever height the column beside it had,
+                which made a card the size of a page out of a box that only
+                ever needs a sentence or two to start with. */}
             <textarea
               id="question-body"
               name="body"
               required
-              rows={6}
+              rows={4}
               maxLength={MAX}
               onChange={(event) => setLength(event.target.value.length)}
               placeholder="For example: what does the ministry mean by repentance, and where is it taught in Scripture?"
-              className="focus-ring min-h-[9rem] w-full flex-1 resize-y rounded-2xl border border-hairline-strong bg-surface px-5 py-4 text-[1rem] leading-[1.7] text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
+              className="focus-ring w-full resize-y rounded-2xl border border-hairline-strong bg-surface px-5 py-3.5 text-[0.9375rem] leading-[1.7] text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
             />
 
-            <p className="mt-6 border-t border-rule-soft pt-5 text-[0.8125rem] leading-[1.6] text-ink-muted">
+            <p className="mt-5 border-t border-rule-soft pt-4 text-[0.8125rem] leading-[1.6] text-ink-muted">
               Both of these are optional. Fill them in only if you would like a
               reply meant for you.
             </p>
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <div className="mt-3.5 grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="question-name" className="kicker block text-ink-subtle">
                   Your name
@@ -241,7 +241,7 @@ export function AskQuestion({
               />
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Button type="submit" disabled={state === 'sending'} className="gap-2.5 px-7">
                 {state === 'sending' ? (
                   <LoaderCircle aria-hidden className="animate-spin" />
