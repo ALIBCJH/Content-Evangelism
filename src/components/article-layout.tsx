@@ -112,13 +112,13 @@ export function ArticleLayout({
               0.85fr one — half the band blank, and the headline broken over
               three lines to fit a column that was only narrow because of a
               picture that was never there. */}
-          <div className={`${TRACKS} pb-11 pt-8`}>
+          <div className={`${TRACKS} pb-8 pt-6`}>
             <div className="col-span-full">
               {/* The way back, at the head of the teaching rather than
                   only at its foot. A breadcrumb is a trail, and a reader
                   who wants the archive reads it as ornament — so the trail
                   keeps its job and the button says the thing plainly. */}
-              <div className="mb-7 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
                 <Breadcrumbs
                   crumbs={[
                     /* The archive is the front page, so "Home" and
@@ -127,13 +127,20 @@ export function ArticleLayout({
                     { name: category, href: topicHref(category) },
                   ]}
                 />
-                {/* Full size, not `sm`. This is the way out of a ten-minute
-                    read, and at the small size it read as a caption sitting
-                    next to the breadcrumb rather than as something to
-                    press. */}
+                {/* It was full size, on the argument that the way out of a
+                    ten-minute read should not read as a caption. But the
+                    band around it has come down a step, and a full-height
+                    button beside a one-line trail was most of why the head
+                    of a teaching took a third of the screen. `sm` with the
+                    padding kept is still a target, and it no longer sets
+                    the height of the whole band. */}
                 <Link
                   href="/"
-                  className={buttonVariants({ variant: 'outline', className: 'gap-2.5 px-7' })}
+                  className={buttonVariants({
+                    variant: 'outline',
+                    size: 'sm',
+                    className: 'gap-2 px-5',
+                  })}
                 >
                   <ArrowLeft aria-hidden />
                   All articles
@@ -158,7 +165,7 @@ export function ArticleLayout({
                       grey and deliberately quiet: it reports that no one has
                       been through the piece yet, which is not an accusation
                       against it. */}
-                  <p className="mb-4">
+                  <p className="mb-3">
                     <span
                       title={
                         verified
@@ -182,13 +189,13 @@ export function ArticleLayout({
                   {/* 300, not 500. Large serif at a heavy weight shouts; at
                       300 the same words are unhurried. The negative tracking
                       pulls a loose-by-default large serif into one shape. */}
-                  <h1 className="mb-4 text-balance font-article text-[2.125rem] font-light leading-[1.08] tracking-[-0.018em] text-navy sm:text-[2.75rem] lg:text-[3.5rem]">
+                  <h1 className="mb-3.5 text-balance font-article text-[1.875rem] font-light leading-[1.1] tracking-[-0.018em] text-navy sm:text-[2.375rem] lg:text-[2.875rem]">
                     {title}
                   </h1>
                   {/* The standfirst keeps a measure of its own. A headline
                       can run the width of the page; two sentences of italic
                       cannot. */}
-                  <p className="mb-5 max-w-[44rem] text-pretty font-article text-[1.1875rem] font-light italic leading-[1.45] text-ink-700 sm:text-[1.375rem]">
+                  <p className="mb-4 max-w-[44rem] text-pretty font-article text-[1.0625rem] font-light italic leading-[1.5] text-ink-700 sm:text-[1.1875rem]">
                     {dek}
                   </p>
                   <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
