@@ -59,19 +59,20 @@ export default function PropheciesPage() {
         }}
       />
 
+      {/* The head of the archive, which is a signpost and not a page of
+          its own: the trail, the name of the thing, and nothing else. The
+          standfirst explaining what a record holds was describing the
+          records rather than the archive, and it is the record pages that
+          carry that — said there beside the thing it describes. */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell pb-9 pt-7">
+        <div className="shell pb-6 pt-6">
           <Breadcrumbs
-            className="mb-6"
+            className="mb-4"
             crumbs={[{ name: 'Home', href: '/' }, { name: 'Prophecy Archive' }]}
           />
-          <h1 className="font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem]">
-            Prophecy Archive
+          <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
+            Prophecies and their fulfilment
           </h1>
-          <p className="mt-4 max-w-[660px] text-[1.0625rem] leading-[1.7] text-ink-700">
-            Each record holds the original recording as its primary source, with the
-            publication date, location, and subject as the ministry published them.
-          </p>
         </div>
       </section>
 
