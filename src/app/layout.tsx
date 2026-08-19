@@ -94,7 +94,9 @@ const gentium = Gentium_Book_Plus({
    foot. A neutral grotesque, which is the job — it stays out of the way. */
 const plex = IBM_Plex_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  /* 700 is here for one thing: the headline at the head of a teaching,
+     which is set in this face rather than the reading serif. */
+  weight: ['400', '500', '600', '700'],
   variable: '--font-plex',
   display: 'swap',
 })

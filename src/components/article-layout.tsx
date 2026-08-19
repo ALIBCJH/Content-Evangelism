@@ -186,16 +186,24 @@ export function ArticleLayout({
                       {verified ? 'Verified' : 'Not verified'}
                     </span>
                   </p>
-                  {/* 300, not 500. Large serif at a heavy weight shouts; at
-                      300 the same words are unhurried. The negative tracking
-                      pulls a loose-by-default large serif into one shape. */}
-                  <h1 className="mb-3.5 text-balance font-article text-[1.875rem] font-light leading-[1.1] tracking-[-0.018em] text-navy sm:text-[2.375rem] lg:text-[2.875rem]">
+                  {/* The headline used to be the reading serif at 300 —
+                      unhurried, and easy to read past. A teaching has to
+                      earn a reader who is deciding in a second whether to
+                      stay, so it is set the way a headline is set when that
+                      is its job: the sans at 700, tight, with the tracking
+                      pulled in. The teaching itself is still the serif —
+                      this changes what announces the piece, not what is
+                      read for ten minutes. */}
+                  <h1 className="mb-3.5 text-balance font-apparatus text-[1.875rem] font-bold leading-[1.08] tracking-[-0.022em] text-navy sm:text-[2.375rem] lg:text-[2.75rem]">
                     {title}
                   </h1>
-                  {/* The standfirst keeps a measure of its own. A headline
-                      can run the width of the page; two sentences of italic
-                      cannot. */}
-                  <p className="mb-4 max-w-[44rem] text-pretty font-article text-[1.0625rem] font-light italic leading-[1.5] text-ink-700 sm:text-[1.1875rem]">
+                  {/* The standfirst keeps a measure of its own — a headline
+                      can run the width of the page, two sentences cannot —
+                      and it follows the headline out of the italic serif.
+                      Set upright in the same face, it reads as the second
+                      line of the announcement rather than as a caption
+                      apologising under it. */}
+                  <p className="mb-4 max-w-[44rem] text-pretty font-apparatus text-[1rem] leading-[1.55] text-ink-700 sm:text-[1.0625rem]">
                     {dek}
                   </p>
                   <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
