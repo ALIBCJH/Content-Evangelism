@@ -3,14 +3,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { ArrowLeft, BadgeCheck, CircleDashed } from 'lucide-react'
-import { topicHref, type Category } from '@/lib/content'
+import { siteUrl, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
 import type { Heading } from '@/lib/toc'
 import { ArticleContents } from '@/components/article-contents'
 import { AskQuestion } from '@/components/ask-question'
 import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
-import { Breadcrumbs } from '@/components/breadcrumbs'
+import { JsonLd } from '@/components/json-ld'
 import { ContinueReading } from '@/components/continue-reading'
 import { FulfilledNow } from '@/components/fulfilled-now'
 import { ReadingProgress } from '@/components/progress-bar'
@@ -102,6 +102,22 @@ export function ArticleLayout({
 
   return (
     <>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Articles', item: siteUrl },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: category,
+              item: `${siteUrl}${topicHref(category)}`,
+            },
+            { '@type': 'ListItem', position: 3, name: title },
+          ],
+        }}
+      />
       <ReadingProgress />
 
       <main>
@@ -112,21 +128,22 @@ export function ArticleLayout({
               0.85fr one — half the band blank, and the headline broken over
               three lines to fit a column that was only narrow because of a
               picture that was never there. */}
-          <div className={`${TRACKS} pb-8 pt-6`}>
+          <div className={`${TRACKS} pb-6 pt-5`}>
             <div className="col-span-full">
               {/* The way back, at the head of the teaching rather than
                   only at its foot. A breadcrumb is a trail, and a reader
                   who wants the archive reads it as ornament — so the trail
                   keeps its job and the button says the thing plainly. */}
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-                <Breadcrumbs
-                  crumbs={[
-                    /* The archive is the front page, so "Home" and
-                       "Articles" would be the same URL twice. One crumb. */
-                    { name: 'Articles', href: '/' },
-                    { name: category, href: topicHref(category) },
-                  ]}
-                />
+              {/* The trail is gone from the page. It went one hop — the
+                  archive is the front page, and the section it named is on
+                  the chip under the headline anyway — while taking a line
+                  above a headline that has a second's work to do. The
+                  BreadcrumbList data it carried is emitted below, so a
+                  search result still shows where this sits.
+
+                  What is left is the way back, and it hangs on the left
+                  now, where both record pages put theirs. */}
+              <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3">
                 {/* It was full size, on the argument that the way out of a
                     ten-minute read should not read as a caption. But the
                     band around it has come down a step, and a full-height
@@ -194,7 +211,7 @@ export function ArticleLayout({
                       pulled in. The teaching itself is still the serif —
                       this changes what announces the piece, not what is
                       read for ten minutes. */}
-                  <h1 className="mb-3.5 text-balance font-apparatus text-[1.875rem] font-bold leading-[1.08] tracking-[-0.022em] text-navy sm:text-[2.375rem] lg:text-[2.75rem]">
+                  <h1 className="mb-3 text-balance font-apparatus text-[1.625rem] font-bold leading-[1.1] tracking-[-0.022em] text-navy sm:text-[2rem] lg:text-[2.375rem]">
                     {title}
                   </h1>
                   {/* The standfirst keeps a measure of its own — a headline
@@ -203,7 +220,7 @@ export function ArticleLayout({
                       Set upright in the same face, it reads as the second
                       line of the announcement rather than as a caption
                       apologising under it. */}
-                  <p className="mb-4 max-w-[44rem] text-pretty font-apparatus text-[1rem] leading-[1.55] text-ink-700 sm:text-[1.0625rem]">
+                  <p className="mb-3.5 max-w-[44rem] text-pretty font-apparatus text-[0.9375rem] leading-[1.55] text-ink-700 sm:text-[1rem]">
                     {dek}
                   </p>
                   <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
