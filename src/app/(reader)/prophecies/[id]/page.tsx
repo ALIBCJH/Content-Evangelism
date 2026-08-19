@@ -18,18 +18,14 @@ import { RecordAside } from '@/components/record/record-aside'
  * One prophecy record.
  *
  * The page is built around a single rule, which is the reason the archive
- * exists in this shape at all: the *source*, the *event*, and the
- * *interpretation* are three different kinds of claim, and each is
- * labelled as what it is.
+ * exists in this shape at all: what was published is labelled as what it
+ * is. The recording carries a *Primary Source* pill, and everything below
+ * it — the summary, the transcript excerpts, the timeline — is drawn from
+ * that recording and dated as published.
  *
- *   Primary Source     — the ministry's own recording, embedded whole.
- *   Independent Record — published by somebody other than the ministry.
- *   Interpretation     — how the ministry reads the message.
- *
- * A reader can therefore take the record apart: watch what was published
- * and when, read what independent bodies recorded afterwards, and see the
- * ministry's reading of it — without any of the three being mistaken for
- * either of the others.
+ * A reader can therefore take the record apart: watch what was published,
+ * see when it was published, and follow the dates that followed, without
+ * the ministry's reading of the message being folded into the record of it.
  */
 
 export const revalidate = 300
@@ -62,24 +58,10 @@ export function generateMetadata({ params }: Params): Metadata {
 }
 
 /** A labelled provenance pill — the one piece of chrome this page insists on. */
-function Provenance({
-  label,
-  tone,
-  note,
-}: {
-  label: string
-  tone: 'source' | 'independent'
-  note: string
-}) {
+function Provenance({ label, note }: { label: string; note: string }) {
   return (
     <p className="mb-4 flex flex-wrap items-center gap-3">
-      <span
-        className={`kicker shrink-0 whitespace-nowrap rounded-chip px-3 py-1.5 ${
-          tone === 'source'
-            ? 'bg-chip-gold text-gold-ink'
-            : 'border border-rule bg-chip-blue text-navy'
-        }`}
-      >
+      <span className="kicker shrink-0 whitespace-nowrap rounded-chip bg-chip-gold px-3 py-1.5 text-gold-ink">
         {label}
       </span>
       <span className="text-[0.8125rem] text-ink-muted">{note}</span>
@@ -161,7 +143,6 @@ export default function RecordPage({ params }: Params) {
           </div>
           <Provenance
             label="Primary Source"
-            tone="source"
             note={
               record.published === 'To confirm'
                 ? 'Official ministry recording. Publication date to confirm against the source.'
@@ -241,71 +222,6 @@ export default function RecordPage({ params }: Params) {
               </li>
             ))}
           </ol>
-
-          {/* ── What followed, from other people ─────────────────── */}
-          <h2
-            id="subsequent-events"
-            className="mb-5 mt-14 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
-          >
-            Subsequent Events
-          </h2>
-          <div className="rounded-panel border border-rule bg-raised p-6 sm:p-8">
-            <Provenance
-              label="Independent Record"
-              tone="independent"
-              note="Not produced by the ministry"
-            />
-            {record.independent.length > 0 ? (
-              <ul>
-                {record.independent.map((source) => (
-                  <li
-                    key={source.org}
-                    className="grid gap-4 border-t border-rule py-4 sm:grid-cols-[150px_1fr_auto] sm:gap-6"
-                  >
-                    <span className="font-mono text-xs text-navy">{source.org}</span>
-                    <span className="text-[0.9375rem] leading-[1.6] text-ink-900">
-                      {source.detail}
-                    </span>
-                    {source.href && (
-                      <a
-                        href={source.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="whitespace-nowrap font-mono text-[0.6875rem] text-navy hover:text-gold"
-                      >
-                        SOURCE →
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="border-t border-rule pb-1 pt-5 text-[0.9375rem] text-ink-muted">
-                No independent records added yet.
-              </p>
-            )}
-            <p className="mt-5 border-t border-rule pt-4 text-[0.8125rem] leading-[1.7] text-ink-muted">
-              This section presents the published record of what occurred, with its
-              sources. Readers are left to draw their own conclusions; the ministry&rsquo;s
-              understanding of the event is set out separately below.
-            </p>
-          </div>
-
-          {/* ── How the ministry reads it ────────────────────────── */}
-          <h2
-            id="interpretation"
-            className="mb-5 mt-14 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
-          >
-            Interpretation
-          </h2>
-          <div className="rounded-panel border border-statement-rule bg-statement-bg p-6 sm:p-8">
-            <p className="kicker mb-4 text-gold-ink">Ministry Interpretation</p>
-            <p className="text-[1.0625rem] leading-[1.75] text-ink-900">
-              How the ministry understands this message in the context of Scripture.
-              Written and attributed separately from the record above, so that source,
-              event, and interpretation are never read as one another.
-            </p>
-          </div>
         </article>
 
         <RecordAside
@@ -324,8 +240,6 @@ export default function RecordPage({ params }: Params) {
             ['When it happened', 'when-it-happened'],
             ['What Was Said', 'what-was-said'],
             ['Timeline', 'timeline'],
-            ['Subsequent Events', 'subsequent-events'],
-            ['Interpretation', 'interpretation'],
           ]}
         />
       </div>
