@@ -2,12 +2,7 @@ import * as React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { siteInfo, siteUrl } from '@/lib/content'
-import {
-  embedSrc,
-  prophecyRecords,
-  recordById,
-  recordHref,
-} from '@/lib/prophecies'
+import { embedSrc, prophecyRecords, recordById, recordHref } from '@/lib/prophecies'
 import { rssAlternate } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
@@ -26,6 +21,10 @@ import { RecordAside } from '@/components/record/record-aside'
  * A reader can therefore take the record apart: watch what was published,
  * see when it was published, and follow the dates that followed, without
  * the ministry's reading of the message being folded into the record of it.
+ *
+ * The title sits in the rail rather than over the page. A record is the
+ * recording; the name of it is a label for the recording, and it reads as
+ * one beside the video instead of as a headline above it.
  */
 
 export const revalidate = 300
@@ -73,7 +72,6 @@ export default function RecordPage({ params }: Params) {
   const record = recordById(params.id)
   if (!record) notFound()
 
-  const others = prophecyRecords.filter((other) => other.id !== record.id)
   const meta = [
     { k: 'Prophet', v: siteInfo.head },
     { k: 'Date published', v: record.published },
@@ -100,33 +98,40 @@ export default function RecordPage({ params }: Params) {
         }}
       />
 
-      {/* ── The header ─────────────────────────────────────────────── */}
+      {/* ── The band above the record: the way back, and nothing else ── */}
       <section className="bg-plate text-plate-pale">
-        <div className="shell pb-9 pt-7">
+        <div className="shell py-5">
           <Breadcrumbs
-            className="mb-8 text-navy-soft [&_a:hover]:text-gold-pale [&_span[aria-current]]:text-gold-pale"
+            className="text-navy-soft [&_a:hover]:text-gold-pale [&_span[aria-current]]:text-gold-pale"
             crumbs={[
               { name: 'Home', href: '/' },
               { name: 'Prophecy Archive', href: '/prophecies' },
               { name: `${record.location} · ${record.subject}` },
             ]}
           />
-
-          <h1 className="mb-4 max-w-[900px] text-balance font-display text-[2.25rem] font-medium leading-[1.04] tracking-[-0.02em] sm:text-[2.75rem] lg:text-[3.25rem]">
-            {record.title}
-          </h1>
-          <p className="flex flex-wrap items-center gap-3.5">
-            <span className="font-mono text-xs tracking-[0.06em] text-gold-pale">
-              {record.date} · {record.location.toUpperCase()} · VIDEO RECORD
-            </span>
-            {record.fulfilled && <FulfilledBadge tone="navy" />}
-          </p>
         </div>
         <div className="gold-rule" />
       </section>
 
-      <div className="shell grid gap-12 pb-24 pt-16 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-[72px]">
-        <article>
+      {/* Two columns, two rows: the recording runs the full height of the
+          left column, and the rail begins with the record's own title —
+          so the reader meets the name of the thing beside the thing
+          itself rather than above it. Below the column break the rail
+          stacks first, which puts the title back over the video. */}
+      <div className="shell grid gap-x-12 gap-y-9 pb-24 pt-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[auto_1fr] lg:gap-x-[72px] lg:gap-y-10 lg:pt-12">
+        <header className="lg:col-start-2 lg:row-start-1">
+          <h1 className="mb-3.5 text-balance font-display text-[2rem] font-medium leading-[1.06] tracking-[-0.02em] text-navy sm:text-[2.5rem] lg:text-[1.9375rem] lg:leading-[1.1]">
+            {record.title}
+          </h1>
+          <p className="flex flex-wrap items-center gap-x-3.5 gap-y-2.5">
+            <span className="font-mono text-[0.6875rem] tracking-[0.06em] text-gold-ink">
+              {record.date} · {record.location.toUpperCase()} · VIDEO RECORD
+            </span>
+            {record.fulfilled && <FulfilledBadge />}
+          </p>
+        </header>
+
+        <article className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
           {/* ── The source ───────────────────────────────────────── */}
           <h2 id="original-source" className="sr-only">
             Original source
@@ -211,12 +216,7 @@ export default function RecordPage({ params }: Params) {
         </article>
 
         <RecordAside
-          heading="More prophecies"
-          items={others.map((other) => ({
-            href: recordHref(other),
-            date: other.date,
-            title: other.title,
-          }))}
+          className="lg:col-start-2 lg:row-start-2"
           links={[
             { href: '/prophecies', label: 'PROPHECY ARCHIVE' },
             { href: '/teachings', label: 'THE TEACHINGS' },
