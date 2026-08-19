@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { usePathname } from 'next/navigation'
-import { LoaderCircle, Send } from 'lucide-react'
+import { BookOpen, Church, FileText, LoaderCircle, Send, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -10,17 +10,25 @@ import { Input } from '@/components/ui/input'
  * The question box, at the foot of anything a reader might have a
  * question about.
  *
- * People ask about this ministry constantly — about the dress teaching,
- * about a prophecy, about why any of it is taught — and they ask on other
- * people's platforms, because this site never offered them anywhere. The
- * pastoral lines further down are a different door: they are for someone
- * in trouble, not for someone who wants to know something.
+ * People have always had questions about this ministry — about the dress
+ * teaching, about a prophecy, about why any of it is taught — and about
+ * the Bible itself, which is the harder and more common one. They asked
+ * on other people's platforms, because this site never offered them
+ * anywhere. The pastoral lines further down are a different door: they
+ * are for someone in trouble, not for someone who wants to know.
  *
- * Three things are said plainly on the box, because a reader deciding
- * whether to type is deciding whether to trust it: what happens to the
- * question, that the email is for a reply and is never published, and
- * that a name is optional. Nothing is asked for that the desk does not
- * need to answer.
+ * Two things had to be unmistakable on the box rather than implied, and
+ * both are now said in the reader's line of sight rather than buried in a
+ * paragraph:
+ *
+ *   - What may be asked. Naming the ministry *and* Scripture, as two
+ *     kinds of question rather than one, is what tells somebody holding a
+ *     question about a passage that this is for them too.
+ *   - That asking costs nothing. The name and the email are optional and
+ *     labelled as such; leave them and the question arrives with nobody's
+ *     name on it. No account, no cookie, and no address kept beside it —
+ *     which is a promise the store can actually keep, because it stores
+ *     none of those things.
  *
  * The question carries the page it was asked from. Somebody asking "why
  * is this taught?" from the dress teaching and somebody asking it from
@@ -30,10 +38,12 @@ import { Input } from '@/components/ui/input'
 
 type State = 'idle' | 'sending' | 'sent'
 
+const MAX = 1500
+
 export function AskQuestion({
   /** The title of the page it is standing on, sent with the question. */
   title,
-  /** "this teaching", "this record" — how the box refers to the page. */
+  /** "this teaching", "this record" — the page, in the list of what may be asked. */
   subject = 'this page',
 }: {
   title?: string
@@ -42,6 +52,7 @@ export function AskQuestion({
   const pathname = usePathname()
   const [state, setState] = React.useState<State>('idle')
   const [error, setError] = React.useState('')
+  const [length, setLength] = React.useState(0)
 
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -70,6 +81,7 @@ export function AskQuestion({
         return
       }
       form.reset()
+      setLength(0)
       setState('sent')
     } catch {
       setError('The question did not send. Please check your connection and try again.')
@@ -79,47 +91,71 @@ export function AskQuestion({
 
   return (
     <section aria-labelledby="ask-a-question" className="border-t border-rule bg-raised">
-      <div className="shell grid gap-10 py-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-16 lg:py-16">
+      <div className="shell grid gap-10 py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:gap-16 lg:py-20">
+        {/* ── What may be asked, and what it costs to ask ─────────── */}
         <div>
           <p className="kicker mb-4 text-gold-ink">Ask a question</p>
           <h2
             id="ask-a-question"
-            className="font-display text-[1.75rem] font-medium leading-[1.1] text-navy sm:text-[2.125rem]"
+            className="text-balance font-display text-[1.875rem] font-medium leading-[1.08] text-navy sm:text-[2.375rem]"
           >
-            Is there something here you want to ask about?
+            Ask the ministry. Ask about the Bible.
           </h2>
           <span aria-hidden className="mt-5 block h-[3px] w-14 rounded-full bg-gold" />
+
           <p className="mt-6 max-w-[46ch] text-pretty text-[1.0625rem] leading-[1.7] text-ink-900">
-            Questions about {subject} — or about the ministry, the teaching, or
-            anything published here — go straight to the desk. Ask plainly. A
-            question asked in good faith is welcome even when it is a hard one.
+            Nobody should have to hold a question about what is taught here
+            because there was nowhere to put it. Ask plainly — a hard question
+            asked in good faith is welcome, and it reaches the desk directly.
           </p>
-          <p className="mt-4 max-w-[46ch] text-[0.875rem] leading-[1.7] text-ink-muted">
-            We answer as we are able, and where an answer would serve everyone
-            asking the same thing, we publish it. Your name is yours to give or
-            withhold; your email is only ever used to write back to you, and is
-            never published. If you need help now rather than an answer, the
-            pastoral lines below are the faster door.
+
+          <ul className="mt-8 grid gap-4">
+            <Topic icon={<Church aria-hidden />} name="The Ministry of Repentance and Holiness">
+              What it teaches and why, what it has preached, what stands in the
+              prophecy archive.
+            </Topic>
+            <Topic icon={<BookOpen aria-hidden />} name="The Bible">
+              A passage you are working through, a doctrine, something you have
+              heard taught and want tested against Scripture.
+            </Topic>
+            <Topic icon={<FileText aria-hidden />} name={`Or ${subject}`}>
+              The page you are standing on now — it is sent with your question,
+              so the answer is about the right thing.
+            </Topic>
+          </ul>
+
+          <p className="mt-8 flex max-w-[46ch] items-start gap-3 rounded-panel border border-rule bg-card px-5 py-4 text-[0.875rem] leading-[1.65] text-ink-muted">
+            <UserRound aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+            <span>
+              <strong className="font-semibold text-ink-900">You stay anonymous.</strong>{' '}
+              Your name and email are optional — leave them blank and your
+              question arrives with nobody&rsquo;s name on it. There is no account
+              to make, no cookie set, and no address kept beside what you wrote.
+              An email, if you give one, is used to write back to you and is
+              never published.
+            </span>
           </p>
         </div>
 
+        {/* ── The box itself ──────────────────────────────────────── */}
         {state === 'sent' ? (
           <div
             role="status"
-            className="flex flex-col justify-center rounded-panel border border-rule bg-card p-8"
+            className="flex flex-col justify-center rounded-panel border border-rule bg-card p-8 shadow-sm sm:p-10"
           >
-            <p className="font-display text-[1.375rem] leading-snug text-navy">
+            <span aria-hidden className="mb-5 block h-[3px] w-14 rounded-full bg-gold" />
+            <p className="font-display text-[1.5rem] leading-snug text-navy">
               Your question is with the desk.
             </p>
-            <p className="mt-3 text-[0.9375rem] leading-[1.7] text-ink-muted">
+            <p className="mt-4 text-[0.9375rem] leading-[1.7] text-ink-muted">
               Thank you for asking it. If you left an email address, someone
               writes back to you there. Nothing you sent appears on this site
-              unless it is answered publicly, and never with your address.
+              unless it is answered publicly — and never with your address.
             </p>
             <button
               type="button"
               onClick={() => setState('idle')}
-              className="mt-6 self-start font-mono text-[0.75rem] tracking-[0.06em] text-navy transition-colors hover:text-gold"
+              className="mt-7 self-start font-mono text-[0.75rem] tracking-[0.06em] text-navy transition-colors hover:text-gold"
             >
               ASK ANOTHER →
             </button>
@@ -127,25 +163,44 @@ export function AskQuestion({
         ) : (
           <form
             onSubmit={send}
-            className="rounded-panel border border-rule bg-card p-6 sm:p-8"
+            className="flex flex-col rounded-panel border border-rule bg-card p-6 shadow-sm sm:p-8"
           >
-            <label htmlFor="question-body" className="kicker block text-ink-subtle">
-              Your question
-            </label>
+            <div className="mb-2.5 flex items-baseline justify-between gap-4">
+              <label htmlFor="question-body" className="kicker text-ink-subtle">
+                Your question
+              </label>
+              <span
+                aria-hidden
+                className={`font-mono text-[0.6875rem] tabular-nums ${
+                  length > MAX - 100 ? 'text-gold-ink' : 'text-ink-subtle'
+                }`}
+              >
+                {length > 0 ? `${length}/${MAX}` : ''}
+              </span>
+            </div>
+            {/* The field grows into whatever height the column has, rather
+                than leaving the card half empty beside the list of what may
+                be asked. A long box also says, without saying it, that a
+                long question is welcome here. */}
             <textarea
               id="question-body"
               name="body"
               required
-              rows={5}
-              maxLength={1500}
-              placeholder="What would you like to ask?"
-              className="focus-ring mt-2.5 w-full resize-y rounded-2xl border border-hairline-strong bg-surface px-5 py-4 text-[1rem] leading-[1.7] text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
+              rows={6}
+              maxLength={MAX}
+              onChange={(event) => setLength(event.target.value.length)}
+              placeholder="For example: what does the ministry mean by repentance, and where is it taught in Scripture?"
+              className="focus-ring min-h-[9rem] w-full flex-1 resize-y rounded-2xl border border-hairline-strong bg-surface px-5 py-4 text-[1rem] leading-[1.7] text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
             />
 
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <p className="mt-6 border-t border-rule-soft pt-5 text-[0.8125rem] leading-[1.6] text-ink-muted">
+              Both of these are optional. Fill them in only if you would like a
+              reply meant for you.
+            </p>
+            <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <div>
                 <label htmlFor="question-name" className="kicker block text-ink-subtle">
-                  Your name <span className="normal-case tracking-normal">(optional)</span>
+                  Your name
                 </label>
                 <Input
                   id="question-name"
@@ -153,12 +208,12 @@ export function AskQuestion({
                   maxLength={80}
                   autoComplete="name"
                   className="mt-2.5"
-                  placeholder="If you would like to give it"
+                  placeholder="Only if you wish"
                 />
               </div>
               <div>
                 <label htmlFor="question-email" className="kicker block text-ink-subtle">
-                  Email <span className="normal-case tracking-normal">(optional)</span>
+                  Email
                 </label>
                 <Input
                   id="question-email"
@@ -167,14 +222,14 @@ export function AskQuestion({
                   maxLength={160}
                   autoComplete="email"
                   className="mt-2.5"
-                  placeholder="Only so we can reply"
+                  placeholder="Only for a reply"
                 />
               </div>
             </div>
 
-            {/* The honeypot: off-screen, unlabelled to a reader, skipped by
-                the tab order, and never autofilled. A person does not fill
-                it in; something filling every field does. */}
+            {/* The honeypot: out of sight, out of the tab order, and never
+                autofilled. A person does not fill it in; something filling
+                every field does. */}
             <div aria-hidden className="sr-only">
               <label htmlFor="question-website">Website</label>
               <input
@@ -186,7 +241,7 @@ export function AskQuestion({
               />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-4">
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
               <Button type="submit" disabled={state === 'sending'} className="gap-2.5 px-7">
                 {state === 'sending' ? (
                   <LoaderCircle aria-hidden className="animate-spin" />
@@ -201,12 +256,37 @@ export function AskQuestion({
                   error ? 'text-status-danger' : 'text-ink-muted'
                 }`}
               >
-                {error || 'No account, and nothing else asked of you.'}
+                {error || 'Anonymous unless you say otherwise.'}
               </p>
             </div>
           </form>
         )}
       </div>
     </section>
+  )
+}
+
+/** One kind of question a reader may bring, named and then described. */
+function Topic({
+  icon,
+  name,
+  children,
+}: {
+  icon: React.ReactNode
+  name: string
+  children: React.ReactNode
+}) {
+  return (
+    <li className="flex gap-4">
+      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-chip-gold text-gold-ink [&_svg]:h-4 [&_svg]:w-4">
+        {icon}
+      </span>
+      <span className="block">
+        <span className="block font-display text-[1.0625rem] leading-snug text-navy">{name}</span>
+        <span className="mt-1 block max-w-[42ch] text-[0.875rem] leading-[1.6] text-ink-muted">
+          {children}
+        </span>
+      </span>
+    </li>
   )
 }
