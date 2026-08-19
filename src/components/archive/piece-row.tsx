@@ -25,6 +25,13 @@ import { SaveButton } from '@/components/archive/save-button'
  * the piece's own picture — or the passage it stands on, set as a small
  * tile — holds the right edge to keep the column in rhythm.
  *
+ * On a phone it is also what the newest piece looks like. The lead card
+ * — the plate at full height, the standfirst, two buttons — ran to a
+ * whole screen there, so the archive opened on one piece and a reader had
+ * to scroll before learning there were others. Below `sm` the newest
+ * piece is this row with a Latest chip and a stronger edge, and the wide
+ * page keeps its front page.
+ *
  * The whole card is one link and always has been: the headline's anchor
  * is stretched over the card by a pseudo-element, so a tap lands on the
  * piece wherever it falls. What the card lacked was any sign of that, and
@@ -36,11 +43,14 @@ export function PieceRow({
   saved,
   ready,
   onToggle,
+  latest = false,
 }: {
   item: ArchiveItem
   saved: boolean
   ready: boolean
   onToggle: () => void
+  /** The newest piece, standing in for the lead card on a phone. */
+  latest?: boolean
 }) {
   /* The passage on the tile, unless the piece has a picture for it. */
   const tileRef = item.image ? undefined : plainRef(item.quote?.cite ?? item.refs[0])
@@ -52,7 +62,11 @@ export function PieceRow({
     : [item.refs[0], total > 1 ? `+${total - 1} more` : ''].filter(Boolean).join(' · ')
 
   return (
-    <article className="card card-glow card-interactive group relative h-full overflow-hidden sm:grid sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,36%)_minmax(0,1fr)]">
+    <article
+      className={`card card-glow card-interactive group relative h-full overflow-hidden sm:grid ${
+        latest ? 'card-glow-lead' : ''
+      } sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,36%)_minmax(0,1fr)]`}
+    >
       <QuotePlate
         item={item}
         label={item.quote?.cite ?? item.category}
@@ -64,6 +78,12 @@ export function PieceRow({
         <div className="flex min-w-0 gap-4 sm:block">
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="mb-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 sm:mb-3.5">
+              {latest && (
+                <span className="kicker inline-flex items-center gap-1.5 rounded-chip bg-chip-gold px-2.5 py-1 text-gold-ink">
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-gold" />
+                  Latest
+                </span>
+              )}
               <span className="kicker rounded-chip border border-gold-pale/70 px-2.5 py-1 text-gold">
                 {item.category}
               </span>
