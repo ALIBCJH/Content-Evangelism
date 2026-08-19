@@ -128,10 +128,18 @@ export function PieceRow({
         </div>
 
         {/* The foot of the card, on a phone: what the piece is built on,
-            and the way in. The button is aria-hidden and out of the tab
-            order deliberately — it goes exactly where the headline above
-            it goes, and a screen reader should be handed that destination
-            once rather than twice. */}
+            and the way in.
+
+            The way in is a mark, not a button. A filled button in the
+            corner of every card turned a column of teachings into a column
+            of adverts, all shouting the same word — and it was shouting
+            something the card already does, since the whole surface has
+            always been the link. So it speaks the site's own idiom
+            instead: small gold, an arrow in a disc, the same sentence
+            "SOURCE →" and "VIEW RECORD →" say everywhere else. It is
+            aria-hidden and out of the tab order on purpose, going exactly
+            where the headline above it goes; a screen reader should be
+            handed that destination once, not twice. */}
         <div className="mt-3 flex items-center justify-between gap-3 sm:hidden">
           <span className="min-w-0 truncate font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-subtle">
             {references}
@@ -141,9 +149,15 @@ export function PieceRow({
             data-track="read-article"
             aria-hidden
             tabIndex={-1}
-            className="relative z-10 inline-flex shrink-0 animate-ember items-center gap-1.5 rounded-chip bg-gradient-to-b from-[#FB923C] to-[#EA580C] px-4 py-2 text-[0.8125rem] font-semibold text-white active:from-[#EA580C] active:to-[#C2410C]"
+            className="relative z-10 flex shrink-0 items-center gap-2 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-gold-ink"
           >
-            Read more <span aria-hidden>→</span>
+            Read
+            <span
+              aria-hidden
+              className="grid h-7 w-7 place-items-center rounded-full border border-gold-pale bg-chip-gold text-[0.8125rem] leading-none text-gold-ink transition-transform group-active:translate-x-0.5"
+            >
+              →
+            </span>
           </Link>
         </div>
       </div>
