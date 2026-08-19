@@ -542,7 +542,7 @@ export default async function AboutPage() {
         </Section>
       </div>
 
-      <AskQuestion title="About the ministry" subject="the ministry" />
+      <AskQuestion title="About the ministry" subject="this page" />
     </main>
   )
 }
