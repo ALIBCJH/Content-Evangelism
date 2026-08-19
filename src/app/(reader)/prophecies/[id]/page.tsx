@@ -20,7 +20,7 @@ import { RecordAside } from '@/components/record/record-aside'
  * The page is built around a single rule, which is the reason the archive
  * exists in this shape at all: what was published is labelled as what it
  * is. The recording carries a *Primary Source* pill, and everything below
- * it — the summary, the transcript excerpts, the timeline — is drawn from
+ * it — the summary, the published details, the timeline — is drawn from
  * that recording and dated as published.
  *
  * A reader can therefore take the record apart: watch what was published,
@@ -150,8 +150,8 @@ export default function RecordPage({ params }: Params) {
             }
           />
           <p className="-mt-1 text-xs text-ink-subtle">
-            The video is the primary source of this page; every excerpt below is
-            transcribed from it.
+            The video is the primary source of this page; everything below is
+            drawn from it.
           </p>
 
           {/* When it happened, as published — under the recording it
@@ -177,20 +177,6 @@ export default function RecordPage({ params }: Params) {
               </div>
             ))}
           </dl>
-
-          {/* ── What was said ────────────────────────────────────── */}
-          <h2
-            id="what-was-said"
-            className="mb-5 mt-14 scroll-mt-stick font-display text-[1.75rem] font-medium text-navy sm:text-[2.125rem]"
-          >
-            What Was Said
-          </h2>
-          <p className="max-w-measure text-[1.0625rem] leading-[1.75] text-ink-900 sm:text-[1.125rem]">
-            Excerpts are transcribed from the original recording in the order they
-            were spoken, with timestamps, and nothing added or removed. None have
-            been set down for this record yet — when the transcript is supplied it
-            is published here verbatim rather than summarised.
-          </p>
 
           {/* ── The timeline ─────────────────────────────────────── */}
           <h2
@@ -238,7 +224,6 @@ export default function RecordPage({ params }: Params) {
           ]}
           contents={[
             ['When it happened', 'when-it-happened'],
-            ['What Was Said', 'what-was-said'],
             ['Timeline', 'timeline'],
           ]}
         />
