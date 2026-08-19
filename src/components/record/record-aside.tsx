@@ -9,6 +9,10 @@ import Link from 'next/link'
  * at nothing; the way back into the rest of the site; and the page's own
  * headings, for the widths where the rail is the only navigation.
  *
+ * The first block is optional — a page that gives the rail other work to
+ * do, as the prophecy record does with its title, omits it and keeps the
+ * two blocks that remain.
+ *
  * Both record pages use it, so the two kinds of record are read the same
  * way — which is the point of holding them in one site.
  */
@@ -21,19 +25,22 @@ export interface AsideItem {
 
 export function RecordAside({
   heading,
-  items,
+  items = [],
   links,
   contents,
+  className = '',
 }: {
-  /** "More prophecies", "More teachings". */
-  heading: string
-  items: AsideItem[]
+  /** "More prophecies", "More teachings". Omit with `items`. */
+  heading?: string
+  items?: AsideItem[]
   links: { href: string; label: string }[]
   /** [label, element id] for this page's own sections. */
   contents: [string, string][]
+  /** Where the rail sits in its page's grid. */
+  className?: string
 }) {
   return (
-    <aside className="flex flex-col gap-9 self-start lg:sticky lg:top-stick">
+    <aside className={`flex flex-col gap-9 self-start lg:sticky lg:top-stick ${className}`}>
       {items.length > 0 && (
         <nav aria-label={heading}>
           <p className="kicker mb-1.5 border-b border-rule pb-3 text-ink-subtle">{heading}</p>
