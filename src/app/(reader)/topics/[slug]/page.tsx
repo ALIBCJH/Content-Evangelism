@@ -64,7 +64,6 @@ export default async function TopicPage({ params }: Params) {
 
   return (
     <ArchiveView
-      kicker="Section"
       title={category}
       purpose={categoryBlurb[category]}
       emptyMessage="Nothing is filed here yet."

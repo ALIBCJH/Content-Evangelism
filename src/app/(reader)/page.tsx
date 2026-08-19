@@ -45,7 +45,6 @@ export default function HomePage() {
         }}
       />
       <ArchiveView
-        kicker="Articles"
         title="Articles"
         emptyMessage="Nothing has been published yet. The first piece will open here."
         collection={{

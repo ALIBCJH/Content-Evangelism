@@ -100,7 +100,6 @@ export default async function AuthorPage({ params }: Params) {
     <>
       <JsonLd data={profileLd} />
       <ArchiveView
-        kicker={author.role}
         title={author.name}
         purpose={author.bio}
         emptyMessage="Nothing published here yet."

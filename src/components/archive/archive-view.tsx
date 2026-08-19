@@ -12,9 +12,9 @@ import { ArchiveList } from '@/components/archive/archive-list'
  * A listing of writing: the whole archive at /articles, and the same
  * component filtered to a section or an author.
  *
- * A band carries the title and the count; under it a strip of controls,
- * and under that the writing: the newest piece given the room to be read
- * as a front page, then the rest as rows. Every card is two parts — the
+ * A band carries the title; under it a strip of controls, which is where
+ * the count lives, and under that the writing: the newest piece given the
+ * room to be read as a front page, then the rest as rows. Every card is two parts — the
  * Scripture the piece leads with, on the ministry's navy, and what the
  * teaching does with it.
  *
@@ -28,8 +28,7 @@ import { ArchiveList } from '@/components/archive/archive-list'
  */
 
 export interface ArchiveViewProps {
-  /** Small caps label above the title. */
-  kicker: string
+  /** The listing's name, set as the page's headline. */
   title: string
   /** The line under the title. */
   purpose?: string
@@ -48,7 +47,6 @@ export interface ArchiveViewProps {
 }
 
 export async function ArchiveView({
-  kicker,
   title,
   purpose,
   emptyMessage,
@@ -91,29 +89,27 @@ export async function ArchiveView({
       {collectionLd && <JsonLd data={collectionLd} />}
 
       {/* ── The band ─────────────────────────────────────────────── */}
+      {/* A signpost, not a page of its own. It used to open with the name
+          of the listing and a count of what was in it, above a headline
+          saying the same word again — three lines to tell a reader what
+          they had just clicked on. The count is on the listing below,
+          where it is next to the thing counted. */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell pb-9 pt-7">
-          {crumbs ? (
-            <Breadcrumbs className="mb-6" crumbs={crumbs} />
-          ) : (
-            <p className="kicker-lg mb-4 text-ink-subtle">
-              {kicker}
-              {rows.length > 0 && ` · ${rows.length} ${rows.length === 1 ? 'piece' : 'pieces'}`}
-            </p>
-          )}
+        <div className="shell pb-6 pt-6">
+          {crumbs && <Breadcrumbs className="mb-4" crumbs={crumbs} />}
 
           {/* The title, and the line under it where a filtered listing has
               one. The subject chips that stood beside it are gone, so the
               two-column grid they were the second column of goes too. */}
           <h1
-            className={`font-display text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-navy sm:text-[3.625rem] ${
-              purpose ? 'mb-4' : ''
+            className={`font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem] ${
+              purpose ? 'mb-3' : ''
             }`}
           >
             {title}
           </h1>
           {purpose && (
-            <p className="max-w-[660px] text-pretty text-[1.0625rem] leading-[1.7] text-ink-700">
+            <p className="max-w-[660px] text-pretty text-[0.9375rem] leading-[1.7] text-ink-700">
               {purpose}
             </p>
           )}
