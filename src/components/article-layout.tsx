@@ -72,6 +72,47 @@ export interface ArticleLayoutProps {
 }
 
 /**
+ * The way back, and whether the desk has been through the teaching.
+ *
+ * Green is the site's fulfilled colour and carries the same meaning here:
+ * this was looked at and it holds. The unchecked state is grey and
+ * deliberately quiet — it reports that nobody has been through the piece
+ * yet, which is not an accusation against it.
+ */
+function Controls({ verified, className = '' }: { verified?: boolean; className?: string }) {
+  return (
+    <div className={`flex flex-col items-start gap-3 ${className}`}>
+      <Link
+        href="/"
+        className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 px-5' })}
+      >
+        <ArrowLeft aria-hidden />
+        All articles
+      </Link>
+      <span
+        title={
+          verified
+            ? "Checked by the editorial desk against the ministry's published teaching."
+            : 'Not yet checked by the editorial desk.'
+        }
+        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-apparatus text-[0.6875rem] font-medium uppercase tracking-[0.08em] ${
+          verified
+            ? 'border-fulfilled/35 bg-fulfilled/10 text-fulfilled'
+            : 'border-rule bg-card text-ink-subtle'
+        }`}
+      >
+        {verified ? (
+          <BadgeCheck aria-hidden className="h-3.5 w-3.5" />
+        ) : (
+          <CircleDashed aria-hidden className="h-3.5 w-3.5" />
+        )}
+        {verified ? 'Verified' : 'Not verified'}
+      </span>
+    </div>
+  )
+}
+
+/**
  * The tracks, shared by the band and the reading area.
  *
  * The headline used to sit at the shell's edge while the teaching below it
@@ -128,41 +169,13 @@ export function ArticleLayout({
               0.85fr one — half the band blank, and the headline broken over
               three lines to fit a column that was only narrow because of a
               picture that was never there. */}
-          <div className={`${TRACKS} pb-6 pt-5`}>
+          <div className={`${TRACKS} pb-5 pt-4`}>
             <div className="col-span-full">
-              {/* The way back, at the head of the teaching rather than
-                  only at its foot. A breadcrumb is a trail, and a reader
-                  who wants the archive reads it as ornament — so the trail
-                  keeps its job and the button says the thing plainly. */}
-              {/* The trail is gone from the page. It went one hop — the
-                  archive is the front page, and the section it named is on
-                  the chip under the headline anyway — while taking a line
-                  above a headline that has a second's work to do. The
-                  BreadcrumbList data it carried is emitted below, so a
-                  search result still shows where this sits.
-
-                  What is left is the way back, and it hangs on the left
-                  now, where both record pages put theirs. */}
-              <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3">
-                {/* It was full size, on the argument that the way out of a
-                    ten-minute read should not read as a caption. But the
-                    band around it has come down a step, and a full-height
-                    button beside a one-line trail was most of why the head
-                    of a teaching took a third of the screen. `sm` with the
-                    padding kept is still a target, and it no longer sets
-                    the height of the whole band. */}
-                <Link
-                  href="/"
-                  className={buttonVariants({
-                    variant: 'outline',
-                    size: 'sm',
-                    className: 'gap-2 px-5',
-                  })}
-                >
-                  <ArrowLeft aria-hidden />
-                  All articles
-                </Link>
-              </div>
+              {/* With a photograph beside the headline the right of the
+                  band is spoken for, so the controls stay above it. With
+                  no photograph — which is every teaching so far — they
+                  move into that space instead; see below. */}
+              {hero && <Controls verified={verified} className="mb-4" />}
 
               {/* The photograph is what asks for two columns. Without one
                   there is nothing to sit beside, and the headline takes
@@ -171,38 +184,10 @@ export function ArticleLayout({
                 className={
                   hero
                     ? 'grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.72fr)] lg:gap-14'
-                    : ''
+                    : 'flex flex-col gap-y-5 sm:flex-row sm:items-start sm:justify-between sm:gap-x-12'
                 }
               >
-                <div>
-                  {/* Whether the desk has checked the teaching, said before
-                      the teaching rather than after it. Green is the site's
-                      fulfilled colour and carries the same meaning here —
-                      this was looked at and it holds. The unchecked state is
-                      grey and deliberately quiet: it reports that no one has
-                      been through the piece yet, which is not an accusation
-                      against it. */}
-                  <p className="mb-3">
-                    <span
-                      title={
-                        verified
-                          ? "Checked by the editorial desk against the ministry's published teaching."
-                          : 'Not yet checked by the editorial desk.'
-                      }
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-apparatus text-[0.6875rem] font-medium uppercase tracking-[0.08em] ${
-                        verified
-                          ? 'border-fulfilled/35 bg-fulfilled/10 text-fulfilled'
-                          : 'border-rule bg-card text-ink-subtle'
-                      }`}
-                    >
-                      {verified ? (
-                        <BadgeCheck aria-hidden className="h-3.5 w-3.5" />
-                      ) : (
-                        <CircleDashed aria-hidden className="h-3.5 w-3.5" />
-                      )}
-                      {verified ? 'Verified' : 'Not verified'}
-                    </span>
-                  </p>
+                <div className="min-w-0">
                   {/* The headline used to be the reading serif at 300 —
                       unhurried, and easy to read past. A teaching has to
                       earn a reader who is deciding in a second whether to
@@ -223,26 +208,18 @@ export function ArticleLayout({
                   <p className="mb-3.5 max-w-[44rem] text-pretty font-apparatus text-[0.9375rem] leading-[1.55] text-ink-700 sm:text-[1rem]">
                     {dek}
                   </p>
-                  <p className="font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
-                    {author.href ? (
-                      <Link
-                        href={author.href}
-                        rel="author"
-                        className="transition-colors hover:text-gold"
-                      >
-                        {author.name}
-                      </Link>
-                    ) : (
-                      <span>{author.name}</span>
-                    )}
-                    <span aria-hidden className="mx-2">·</span>
-                    <time dateTime={publishedAt}>
-                      {format(parseISO(publishedAt), 'd MMMM yyyy')}
-                    </time>
-                    <span aria-hidden className="mx-2">·</span>
-                    <span className="tabular">{readMinutes} MIN READ</span>
-                  </p>
                 </div>
+
+                {/* The way back and the desk's verdict, in the width a
+                    headline does not use. They were stacked above the
+                    teaching, which cost two rows before the first word;
+                    on the right of the same rows they cost none.
+
+                    The byline that sat under the standfirst is gone with
+                    them. Author, date and reading time are still in the
+                    page's structured data and in the feed, where a search
+                    result and a reader's app take them from. */}
+                {!hero && <Controls verified={verified} className="order-first shrink-0 sm:order-none sm:items-end" />}
 
                 {hero && (
                   <figure className="m-0">
@@ -308,6 +285,26 @@ export function ArticleLayout({
                   <ScriptureList scriptures={refs} />
                 </div>
               )}
+              {/* Who wrote it and when, at the foot rather than the head.
+                  It was under the standfirst, in front of a reader who had
+                  not yet decided to read; here it is in front of one who
+                  has finished, which is when a person checks how old a
+                  thing is and who stands behind it. The same three facts
+                  are in the page's Article data for a search result. */}
+              <p className="mt-10 border-t border-rule-soft pt-5 font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
+                {author.href ? (
+                  <Link href={author.href} rel="author" className="transition-colors hover:text-gold">
+                    {author.name}
+                  </Link>
+                ) : (
+                  <span>{author.name}</span>
+                )}
+                <span aria-hidden className="mx-2">·</span>
+                <time dateTime={publishedAt}>{format(parseISO(publishedAt), 'd MMMM yyyy')}</time>
+                <span aria-hidden className="mx-2">·</span>
+                <span className="tabular">{readMinutes} MIN READ</span>
+              </p>
+
               {colophon}
               <div className="ornament mx-auto mt-8 max-w-xs">
                 <span aria-hidden className="text-base leading-none">✦</span>
