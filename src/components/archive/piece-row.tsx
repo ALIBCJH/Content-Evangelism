@@ -140,10 +140,13 @@ export function PieceRow({
             </div>
           </div>
 
-          {/* The right edge of the row, on a phone only. */}
-          <div className="flex shrink-0 flex-col items-center gap-2.5 sm:hidden">
+          {/* The right edge of the row, on a phone only. The save
+              bookmark used to hang under the tile, where it was a second
+              control on a card whose whole surface is one link, and it
+              left the corner looking unfinished. Saving stays on the wide
+              card, where the meta line has room for it. */}
+          <div className="shrink-0 sm:hidden">
             <Thumb item={item} reference={tileRef} />
-            <SaveButton saved={saved} ready={ready} onToggle={onToggle} title={item.title} compact />
           </div>
         </div>
 
@@ -192,12 +195,15 @@ function plainRef(reference: string | undefined): string | undefined {
 
 /**
  * The square at the end of a row: the piece's photograph where it has
- * one, and where it has not, the passage it stands on set as a plate.
+ * one, and where it has not, the passage it stands on.
  *
- * A row with nothing at its edge and a row with a picture read as two
- * different lists, so the fallback is not blank — it is the same navy and
- * the same reference the wide card gives the plate, at the size a thumb
- * needs it.
+ * The passage used to be set as one line of mono, which is a label — and
+ * a label of a thing this site treats as the picture. The wide card gives
+ * the same passage a navy plate with a lamp in the corner and the
+ * reference under a gold rule, and there is no reason a phone should get
+ * the caption instead. So the tile is that plate at 80px: the book in
+ * small caps, a hairline, and the chapter and verse set in the display
+ * face, which is where the eye lands.
  */
 function Thumb({ item, reference }: { item: ArchiveItem; reference?: string }) {
   if (item.image) {
@@ -213,18 +219,85 @@ function Thumb({ item, reference }: { item: ArchiveItem; reference?: string }) {
     )
   }
 
+  const passage = reference ? splitRef(reference) : undefined
+
   return (
     <span
       aria-hidden
-      className="grid h-20 w-20 place-items-center rounded-tile border border-navy-rule bg-plate px-2 text-center"
+      className="relative isolate flex h-20 w-20 flex-col items-center justify-center overflow-hidden rounded-tile border border-navy-rule bg-plate px-1.5 text-center"
     >
-      {reference ? (
-        <span className="font-mono text-[0.5625rem] uppercase leading-[1.4] tracking-[0.06em] text-gold-pale">
-          {reference}
-        </span>
+      {/* The same lamp in the corner the wide plate has, so the tile is a
+          surface under a light rather than a swatch of navy. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-5 -top-6 -z-10 h-14 w-14 rounded-full bg-gold/25 blur-xl"
+      />
+
+      {passage ? (
+        <>
+          <span className="block w-full truncate font-mono text-[0.5rem] uppercase tracking-[0.08em] text-gold-pale">
+            {passage.book}
+          </span>
+          <span aria-hidden className="my-1 block h-px w-6 bg-gold/45" />
+          <span className="block w-full truncate font-display text-[0.9375rem] leading-none text-gold-sand">
+            {passage.verse}
+          </span>
+        </>
       ) : (
-        <span className="font-display text-[1.5rem] leading-none text-gold/60">&ldquo;</span>
+        <span className="font-display text-[1.75rem] leading-none text-gold/50">&ldquo;</span>
       )}
     </span>
   )
+}
+
+/**
+ * The books whose names do not fit 80 pixels, in the short forms a
+ * reader of any Bible already knows. Cutting "1 Corinthians" to
+ * "1 Corinthia…" says the tile ran out of room; "1 Cor" says the book.
+ */
+const SHORT: Record<string, string> = {
+  'song of solomon': 'Song',
+  ecclesiastes: 'Eccl',
+  lamentations: 'Lam',
+  deuteronomy: 'Deut',
+  philippians: 'Phil',
+  colossians: 'Col',
+  thessalonians: 'Thess',
+  corinthians: 'Cor',
+  revelation: 'Rev',
+  zechariah: 'Zech',
+  zephaniah: 'Zeph',
+  ephesians: 'Eph',
+  galatians: 'Gal',
+  habakkuk: 'Hab',
+  proverbs: 'Prov',
+  jeremiah: 'Jer',
+  leviticus: 'Lev',
+  nehemiah: 'Neh',
+  philemon: 'Phlm',
+  numbers: 'Num',
+  genesis: 'Gen',
+  hebrews: 'Heb',
+  matthew: 'Matthew',
+  psalms: 'Psalm',
+}
+
+/** "1 Corinthians" → "1 Cor", where the full name will not fit. */
+function shorten(book: string): string {
+  if (book.length <= 10) return book
+  const [, ordinal = '', name = ''] = book.match(/^(\d\s*)?(.+)$/) ?? []
+  const short = SHORT[name.trim().toLowerCase()]
+  return short ? `${ordinal.trim()} ${short}`.trim() : book
+}
+
+/**
+ * "1 Corinthians 12:9-10" → the book, and the numbers under it. A piece
+ * whose lead reference names two passages keeps the first: the tile is a
+ * mark for the ground the teaching stands on, not a citation.
+ */
+function splitRef(reference: string): { book: string; verse: string } {
+  const first = reference.split(/\s+and\s+|;/i)[0]!.trim()
+  const at = first.search(/\s\d+[:.]?\d*/)
+  if (at === -1) return { book: shorten(first), verse: '' }
+  return { book: shorten(first.slice(0, at).trim()), verse: first.slice(at).trim() }
 }
