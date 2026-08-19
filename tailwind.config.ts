@@ -191,11 +191,17 @@ const config: Config = {
         'fade-in': 'fadeIn 0.5s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
         shimmer: 'shimmer 2.4s linear infinite',
+        /* The read-more button on a phone: a slow breath, not a blink. */
+        ember: 'ember 2.8s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
         slideUp: { from: { transform: 'translateY(8px)', opacity: '0' }, to: { transform: 'translateY(0)', opacity: '1' } },
         shimmer: { from: { backgroundPosition: '200% 0' }, to: { backgroundPosition: '-200% 0' } },
+        ember: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgb(249 115 22 / 0.45), 0 6px 16px -4px rgb(234 88 12 / 0.55)' },
+          '50%': { boxShadow: '0 0 0 6px rgb(249 115 22 / 0), 0 8px 22px -4px rgb(234 88 12 / 0.75)' },
+        },
       },
     },
   },
