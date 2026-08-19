@@ -34,7 +34,14 @@ import { PieceRow } from '@/components/archive/piece-row'
 const newestFirst = (a: ArchiveItem, b: ArchiveItem) =>
   b.publishedAt.localeCompare(a.publishedAt)
 
-export function ArchiveList({ items }: { items: ArchiveItem[] }) {
+export function ArchiveList({
+  items,
+  header,
+}: {
+  items: ArchiveItem[]
+  /** The band's title block, rendered on the server and passed in. */
+  header?: React.ReactNode
+}) {
   const [query, setQuery] = React.useState('')
   const [onlySaved, setOnlySaved] = React.useState(false)
   const { ready, toggle, isSaved, saved } = useSaved()
@@ -55,10 +62,11 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
 
   return (
     <>
-      {/* ── The controls ─────────────────────────────────────────── */}
+      {/* ── The band: the title, and the controls beside it ───────── */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell flex flex-wrap items-center gap-x-4 gap-y-3 py-4">
-          <label className="relative min-w-[min(100%,20rem)] flex-1 sm:max-w-[24rem]">
+        <div className="shell flex flex-wrap items-center gap-x-8 gap-y-4 py-5">
+          {header}
+          <label className="relative min-w-[min(100%,18rem)] flex-1 sm:ml-auto sm:max-w-[22rem] sm:flex-none">
             <span className="sr-only">Search the archive</span>
             <SearchIcon />
             <input
@@ -70,7 +78,7 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
             />
           </label>
 
-          <div className="ml-auto flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             {/* Saved is a filter, not a page: the archive is where a
                 reader left the piece, so it is where they come back to
                 it. It appears only once there is something in it. */}
@@ -93,7 +101,7 @@ export function ArchiveList({ items }: { items: ArchiveItem[] }) {
         </div>
       </section>
 
-      <section className="shell pb-24 pt-8">
+      <section className="shell pb-24 pt-9">
         {shown.length === 0 ? (
           <div className="py-16 text-center">
             <p className="font-display text-xl text-ink-muted">
