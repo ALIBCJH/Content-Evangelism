@@ -3,6 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import type { ArchiveItem } from '@/lib/archive-items'
+import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
 import { FeaturedPiece } from '@/components/archive/featured-piece'
 import { PieceRow } from '@/components/archive/piece-row'
@@ -27,6 +28,11 @@ import { PieceRow } from '@/components/archive/piece-row'
  * opening lines, references and sections. It deliberately does not search
  * the full text of every teaching: that would mean shipping every body to
  * the browser, and the site already has a page that does it properly.
+ *
+ * Matching is scored rather than filtered, by the same rules the site-wide
+ * search uses: every word typed has to appear somewhere, and where it
+ * appears decides the order. Typing two words in either order finds the
+ * piece that holds both, which a substring test never did.
  */
 
 /* Newest first, always. The rows arrive in this order already; sorting
@@ -47,11 +53,23 @@ export function ArchiveList({
   const { ready, toggle, isSaved, saved } = useSaved()
 
   const shown = React.useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return items
+    const pool = items
       .filter((item) => (onlySaved ? saved.includes(item.slug) : true))
-      .filter((item) => (q ? item.haystack.includes(q) : true))
       .sort(newestFirst)
+    if (!query.trim()) return pool
+    /* Ranked, not filtered: a word in a headline should bring the piece
+       to the top, where the same word buried in a body should not. */
+    return byScore(pool, (item) =>
+      score(query, [
+        { text: item.title, weight: 10 },
+        { text: item.category, weight: 6 },
+        { text: item.refs.join(' '), weight: 5 },
+        { text: item.dek, weight: 4 },
+        { text: item.dated, weight: 3 },
+        { text: item.excerpt, weight: 2 },
+        { text: item.haystack, weight: 1 },
+      ])
+    )
   }, [items, query, onlySaved, saved])
 
   const [lead, ...rest] = shown

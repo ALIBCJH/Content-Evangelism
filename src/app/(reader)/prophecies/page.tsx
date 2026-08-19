@@ -1,13 +1,10 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
 import { siteUrl } from '@/lib/content'
-import { posterSrc, prophecyRecords, recordHref } from '@/lib/prophecies'
+import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { rssAlternate } from '@/lib/seo'
 import { JsonLd } from '@/components/json-ld'
-import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
-import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
+import { RecordArchive } from '@/components/prophecy/record-archive'
 
 /**
  * The prophecy archive: every published recording, newest first, on a
@@ -59,113 +56,17 @@ export default function PropheciesPage() {
       />
 
       {/* The head of the archive, which is a signpost and not a page of
-          its own: the name of the thing, and nothing else. The
-          standfirst explaining what a record holds was describing the
-          records rather than the archive, and it is the record pages that
-          carry that — said there beside the thing it describes. */}
-      <JsonLd
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
-            {
-              '@type': 'ListItem',
-              position: 2,
-              name: 'Prophecy Archive',
-              item: `${siteUrl}/prophecies`,
-            },
-          ],
-        }}
-      />
-
-      <section className="border-b border-rule bg-raised">
-        <div className="shell py-7">
+          its own: the name of the thing, and the box that searches it. The
+          list below is drawn by the same component, since a filtered rail
+          has to know what was typed. */}
+      <RecordArchive
+        records={records}
+        header={
           <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
             Prophecies and their fulfilment
           </h1>
-        </div>
-      </section>
-
-      <section className="shell pb-24 pt-9">
-        <div className="flex items-center justify-between pb-6 pt-2">
-          <span className="kicker-lg text-ink-subtle">
-            {records.length} {records.length === 1 ? 'record' : 'records'}
-          </span>
-          <span className="kicker-lg text-ink-subtle">Newest first</span>
-        </div>
-
-        {/* The rail is shared with the article archive — see dated-rail.
-            A record whose year is still to be confirmed leaves its marker
-            unlabelled rather than printing a placeholder dash. */}
-        <DatedRail>
-          {records.map((record) => (
-            <DatedRailItem
-              key={record.id}
-              year={record.year === '—' ? null : record.year}
-            >
-              <Link
-                href={recordHref(record)}
-                className="card card-interactive my-3 flex flex-col items-start gap-6 p-5 sm:ml-8 sm:p-8 lg:flex-row lg:gap-7"
-              >
-                <span className="relative block aspect-[16/9] w-full shrink-0 overflow-hidden rounded-tile border border-rule bg-navy-deep lg:w-[260px]">
-                  <Image
-                    src={posterSrc(record.video)}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 260px, 100vw"
-                    className="object-cover"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute left-1/2 top-1/2 flex h-[46px] w-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-plate-deep/80"
-                  >
-                    <svg width="13" height="16" viewBox="0 0 20 24" fill="#F7F4EC">
-                      <path d="M2 2l16 10L2 22z" />
-                    </svg>
-                  </span>
-                </span>
-
-                <span className="block min-w-0 flex-1">
-                  <span className="mb-3.5 flex flex-wrap items-center gap-3">
-                    <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-navy">
-                      {record.date}
-                    </span>
-                    <span className="kicker rounded-chip border border-gold-pale/70 px-2.5 py-1 text-gold">
-                      Primary Source
-                    </span>
-                    {record.fulfilled && <FulfilledBadge />}
-                  </span>
-
-                  <span className="mb-3.5 block text-balance font-display text-[1.375rem] font-medium leading-[1.15] text-navy sm:text-[1.875rem]">
-                    {record.title}
-                  </span>
-
-                  <span className="mb-4 block max-w-[720px] text-[0.9375rem] leading-[1.7] text-ink-muted">
-                    {record.summary}
-                  </span>
-
-                  <span className="flex flex-wrap items-center justify-between gap-4 border-t border-rule-soft pt-4">
-                    <span className="flex flex-wrap gap-2">
-                      {record.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-chip bg-chip px-3 py-1.5 text-xs text-ink-700"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </span>
-                    <span className="whitespace-nowrap font-mono text-[0.6875rem] text-navy">
-                      VIEW RECORD →
-                    </span>
-                  </span>
-                </span>
-              </Link>
-            </DatedRailItem>
-          ))}
-        </DatedRail>
-      </section>
+        }
+      />
     </main>
   )
 }
