@@ -8,6 +8,7 @@ import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
 import type { Heading } from '@/lib/toc'
 import { ArticleContents } from '@/components/article-contents'
+import { AskQuestion } from '@/components/ask-question'
 import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { ContinueReading } from '@/components/continue-reading'
@@ -319,6 +320,8 @@ export function ArticleLayout({
             <FulfilledNow />
           </aside>
         </div>
+
+        <AskQuestion title={title} subject="this teaching" />
       </main>
     </>
   )

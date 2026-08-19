@@ -15,6 +15,7 @@ import {
 import { prophecyRecords } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
+import { AskQuestion } from '@/components/ask-question'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 
@@ -540,6 +541,8 @@ export default async function AboutPage() {
           )}
         </Section>
       </div>
+
+      <AskQuestion title="About the ministry" subject="the ministry" />
     </main>
   )
 }

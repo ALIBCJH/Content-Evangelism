@@ -136,6 +136,12 @@ API (same deployment, Next.js route handlers):
 - `POST /api/articles` — create; requires `Authorization: Bearer <ADMIN_TOKEN>`
 - `GET  /api/articles/:slug` — single article (public)
 - `DELETE /api/articles/:slug` — remove; requires the same bearer token
+- `POST /api/questions` — a reader asking something (public; honeypot and
+  rate limited)
+- `GET  /api/questions` — the queue, worked at `/admin/questions`; requires
+  the bearer token
+- `PATCH`/`DELETE /api/questions/:id` — move a question along the queue, or
+  remove it; same bearer token
 
 Storage is chosen in `src/lib/posted.ts` by what is in the environment:
 
@@ -147,6 +153,11 @@ Storage is chosen in `src/lib/posted.ts` by what is in the environment:
   used instead.
 - **A JSON file** at `data/articles.json` otherwise, created on first
   publish and gitignored, so `npm run dev` needs nothing but the repo.
+
+Readers' questions follow the same pair in `src/lib/questions.ts`, under the
+`questions` key or `data/questions.json`. Nothing about the sender is
+stored beyond what they typed — no address, no user agent, no identifier —
+and an email given for a reply is never published.
 
 Both hold the identical document — the whole article array, newest first
 — under the key `articles`, so moving between them is a copy-paste of one

@@ -11,6 +11,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
 import { RecordAside } from '@/components/record/record-aside'
 import { RecordDescription } from '@/components/record/record-description'
+import { AskQuestion } from '@/components/ask-question'
 
 /**
  * One prophecy record.
@@ -202,6 +203,8 @@ export default function RecordPage({ params }: Params) {
           contents={[]}
         />
       </div>
+
+      <AskQuestion title={record.title} subject="this record" />
     </main>
   )
 }
