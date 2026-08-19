@@ -65,28 +65,24 @@ export default async function TeachingsPage() {
         }}
       />
 
-      {/* A signpost, at signpost size: the name of the library and nothing
-          else. The trail above it went one hop, to a masthead that carries
-          a Teachings link and marks it as the page you are on. */}
-      <section className="border-b border-rule bg-raised">
-        <div className="shell py-7">
+      {/* The recordings open the page: they are teachings, where the two
+          lists below them are ways of finding written pieces. The rail and
+          the card are the archive's, because a published recording held
+          with its dateline is what the prophecy archive already is.
+
+          The band comes with them rather than standing above on its own,
+          because the box in it filters the rail underneath — both belong
+          to the one component that knows what a reader typed. */}
+      <RecordingList
+        recordings={teachingRecordings}
+        header={
           <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
             Teachings
           </h1>
-        </div>
-      </section>
+        }
+      />
 
-      <div className="shell pb-24 pt-10">
-        {/* The recordings open the page: they are teachings, where the two
-            lists below them are ways of finding written pieces. The rail
-            and the card are the archive's, because a published recording
-            held with its dateline is what the prophecy archive already is.
-            They carry no heading and no preamble — each card states its own
-            dateline, what it is, and that it opens YouTube. */}
-        <RecordingList recordings={teachingRecordings} />
-
-        <div className="mb-16" />
-
+      <div className="shell pb-24 pt-16">
         {sections.length > 0 && (
           <>
             <h2 className="rule-heading mb-7 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">

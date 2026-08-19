@@ -36,11 +36,115 @@ export function dateline(iso: string): string {
   return `${month.toUpperCase()} ${day}, ${year}`
 }
 
-/** Substring match over the haystack; an empty query returns everything. */
+/**
+ * How a search is actually matched.
+ *
+ * The whole site used to test one thing: does this lower-cased haystack
+ * contain the query as a substring. That fails the two ways people
+ * actually type. "colombia earthquake" finds nothing, because the words
+ * are in that order nowhere; and a match in a body is worth exactly as
+ * much as a match in a headline, so the right piece can land tenth.
+ *
+ * So: the query is split into terms, every term has to appear somewhere
+ * (a search is an "and", not an "or"), and where it appears decides what
+ * it is worth. A word in a title outranks a word in a body several times
+ * over, a whole word beats a fragment, and a phrase typed in full beats
+ * the same words scattered across a page.
+ *
+ * It is deliberately small — no stemming, no index, no library. The
+ * archive is tens of documents, not thousands, and it is all in memory
+ * already.
+ */
+
+export interface Field {
+  text: string
+  /** What a hit here is worth. Title 10, body 1. */
+  weight: number
+}
+
+/**
+ * Lower-cased and stripped of accents, so that a reader who types
+ * "bogota" finds the conference at Bogotá. Nobody reaching for a phone
+ * keyboard in a matatu is going to hold down the a.
+ */
+function fold(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+/** The query, split into what a reader meant: words and numbers. */
+export function terms(query: string): string[] {
+  return fold(query)
+    .split(/[^a-z0-9:]+/)
+    .filter((term) => term.length > 1 || /\d/.test(term))
+}
+
+/**
+ * What this candidate is worth for this query. Zero means it does not
+ * match at all and should not be shown.
+ */
+export function score(query: string, fields: Field[]): number {
+  const wanted = terms(query)
+  if (wanted.length === 0) return 1
+
+  const hay = fields.map((field) => ({ text: fold(field.text), weight: field.weight }))
+  let total = 0
+
+  for (const term of wanted) {
+    let best = 0
+    for (const field of hay) {
+      const at = field.text.indexOf(term)
+      if (at === -1) continue
+      /* "matt" inside "Matthew" counts; at the start of the word it
+         counts for more, and as the whole word for more again. */
+      const opensWord = at === 0 || !/[a-z0-9]/.test(field.text[at - 1] ?? '')
+      const closesWord = !/[a-z0-9]/.test(field.text[at + term.length] ?? '')
+      const shape = opensWord && closesWord ? 2 : opensWord ? 1.5 : 1
+      best = Math.max(best, field.weight * shape)
+    }
+    /* Every term has to land somewhere. */
+    if (best === 0) return 0
+    total += best
+  }
+
+  /* Typed as a phrase and found as a phrase: worth more than the sum. */
+  if (wanted.length > 1) {
+    const phrase = fold(query.trim())
+    for (const field of hay) {
+      if (field.text.includes(phrase)) {
+        total += field.weight * 3
+        break
+      }
+    }
+  }
+
+  return total
+}
+
+/** Sort by score, keeping the incoming order — newest first — for ties. */
+export function byScore<T>(items: T[], scored: (item: T) => number): T[] {
+  return items
+    .map((item, index) => ({ item, index, score: scored(item) }))
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((row) => row.item)
+}
+
+/** The site-wide index, searched. An empty query returns everything. */
 export function searchDocs(docs: SearchDoc[], query: string): SearchDoc[] {
-  const q = query.trim().toLowerCase()
-  if (!q) return docs
-  return docs.filter((doc) => doc.text.includes(q) || doc.title.toLowerCase().includes(q))
+  if (!query.trim()) return docs
+  return byScore(docs, (doc) =>
+    score(query, [
+      { text: doc.title, weight: 10 },
+      { text: doc.ref, weight: 6 },
+      { text: doc.kind, weight: 5 },
+      { text: doc.excerpt, weight: 4 },
+      { text: doc.date, weight: 3 },
+      { text: doc.text, weight: 1 },
+    ])
+  )
 }
 
 /** The content-type facets on the search page, counted. */
