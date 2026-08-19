@@ -27,7 +27,7 @@ export function FeaturedPiece({
   onToggle: () => void
 }) {
   return (
-    <article className="card card-interactive group relative overflow-hidden lg:grid lg:grid-cols-[minmax(0,34%)_minmax(0,1fr)] xl:grid-cols-[minmax(0,30%)_minmax(0,1fr)]">
+    <article className="card card-glow card-glow-lead card-interactive group relative overflow-hidden lg:grid lg:grid-cols-[minmax(0,34%)_minmax(0,1fr)] xl:grid-cols-[minmax(0,30%)_minmax(0,1fr)]">
       <QuotePlate item={item} mark className="min-h-[220px] lg:min-h-[340px]" />
 
       <div className="flex min-w-0 flex-col p-6 sm:p-8 lg:p-10 xl:p-12">

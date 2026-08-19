@@ -52,7 +52,7 @@ export function PieceRow({
     : [item.refs[0], total > 1 ? `+${total - 1} more` : ''].filter(Boolean).join(' · ')
 
   return (
-    <article className="card card-interactive group relative h-full overflow-hidden sm:grid sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,36%)_minmax(0,1fr)]">
+    <article className="card card-glow card-interactive group relative h-full overflow-hidden sm:grid sm:grid-cols-[minmax(0,34%)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,36%)_minmax(0,1fr)]">
       <QuotePlate
         item={item}
         label={item.quote?.cite ?? item.category}

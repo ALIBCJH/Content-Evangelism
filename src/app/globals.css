@@ -429,6 +429,31 @@ option {
   .card-interactive:active { transform: scale(0.99); }
 }
 
+/* A lit card, on a phone only.
+   
+   On a wide page a card sits in a grid with its neighbours beside it, and
+   the border is enough to say where one piece ends and the next begins.
+   On a phone the listing is a single column on a flat ground, where the
+   same hairline reads as nothing at all — so below the column break each
+   card carries a soft gold edge, the accent the site already uses for
+   everything that matters, and the column reads as a stack of things
+   rather than as a wall of text. */
+@media (max-width: 639px) {
+  .card-glow {
+    border-color: rgb(var(--gold-pale-rgb) / 0.55);
+    box-shadow:
+      0 0 0 1px rgb(var(--gold-rgb) / 0.10),
+      0 0 24px -8px rgb(var(--gold-rgb) / 0.55),
+      0 2px 10px -6px rgb(var(--gold-rgb) / 0.35);
+  }
+  .card-glow-lead {
+    box-shadow:
+      0 0 0 1px rgb(var(--gold-rgb) / 0.16),
+      0 0 34px -8px rgb(var(--gold-rgb) / 0.7),
+      0 4px 16px -8px rgb(var(--gold-rgb) / 0.45);
+  }
+}
+
 /* The gold rule that closes the header and opens the footer. */
 .gold-rule {
   height: 2px;
