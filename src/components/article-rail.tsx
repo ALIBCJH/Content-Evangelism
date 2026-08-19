@@ -55,14 +55,18 @@ export function ChapterNav({ headings }: { headings: Heading[] }) {
 
   return (
     <nav aria-label="On this page" className="font-apparatus">
-      <p className="kicker mb-1 border-b border-rule pb-3 text-ink-subtle">On this page</p>
+      <p className="mb-3 inline-block border-b-[3px] border-gold pb-2 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-navy">
+        On this page
+      </p>
       {headings.map((heading) => (
         <a
           key={heading.id}
           href={`#${heading.id}`}
           aria-current={activeId === heading.id ? 'true' : undefined}
-          className={`block py-2.5 text-[0.875rem] leading-[1.5] transition-colors hover:text-gold ${
-            activeId === heading.id ? 'text-gold' : 'text-ink-700'
+          className={`block border-l-2 py-2 pl-3 text-[0.875rem] leading-[1.45] transition-colors hover:border-gold-pale hover:text-gold ${
+            activeId === heading.id
+              ? 'border-gold font-semibold text-gold-ink'
+              : 'border-transparent text-ink-700'
           }`}
         >
           {heading.text}
