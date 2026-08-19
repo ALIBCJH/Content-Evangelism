@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { siteUrl } from '@/lib/content'
 import { posterSrc, prophecyRecords, recordHref } from '@/lib/prophecies'
 import { rssAlternate } from '@/lib/seo'
-import { Breadcrumbs } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { DatedRail, DatedRailItem } from '@/components/archive/dated-rail'
 import { FulfilledBadge } from '@/components/prophecy/fulfilled-badge'
@@ -60,16 +59,28 @@ export default function PropheciesPage() {
       />
 
       {/* The head of the archive, which is a signpost and not a page of
-          its own: the trail, the name of the thing, and nothing else. The
+          its own: the name of the thing, and nothing else. The
           standfirst explaining what a record holds was describing the
           records rather than the archive, and it is the record pages that
           carry that — said there beside the thing it describes. */}
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Prophecy Archive',
+              item: `${siteUrl}/prophecies`,
+            },
+          ],
+        }}
+      />
+
       <section className="border-b border-rule bg-raised">
-        <div className="shell pb-6 pt-6">
-          <Breadcrumbs
-            className="mb-4"
-            crumbs={[{ name: 'Home', href: '/' }, { name: 'Prophecy Archive' }]}
-          />
+        <div className="shell py-7">
           <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
             Prophecies and their fulfilment
           </h1>
