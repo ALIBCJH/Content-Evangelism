@@ -154,6 +154,25 @@ named by slug and set as an aside where the tangent comes up — the way out
 of a piece for a reader who will not reach the foot of it. A slug the site
 no longer holds is dropped; if none of them resolve, nothing renders.
 
+## Asking the archive
+
+The panel at the corner of every reader page answers questions from what
+this site has published, and only from that.
+
+The site's own scorer cuts each teaching at its chapter headings and picks
+the handful of passages that bear on the question; those passages, and
+nothing else, go to Claude with instructions to answer from them, to cite
+them, and to say when the archive does not cover something. The answer
+streams back with the teachings it was drawn from underneath it.
+
+Set `ANTHROPIC_API_KEY` to switch it on. Unset, the endpoint answers
+`NOT_CONFIGURED` and the panel offers the search and the question box, as
+it did before — nothing pretends to work.
+
+What a question costs is bounded by construction: 300 characters in, six
+passages of 1400 characters as context, 700 tokens out, eight questions per
+address per ten minutes.
+
 ## The public content API
 
 Everything published here is also readable as JSON, for search engines, AI
