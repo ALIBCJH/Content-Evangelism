@@ -138,7 +138,7 @@ export function ArchiveList({
     <>
       {/* ── The band: the search, and what is put aside ───────────── */}
       <section className="border-b border-rule bg-raised">
-        <div className="shell flex flex-wrap items-center gap-x-4 gap-y-4 py-5 sm:gap-x-8">
+        <div className="shell flex flex-wrap items-center gap-x-4 gap-y-2.5 py-2.5 sm:gap-x-8">
           <label className="relative w-full min-w-0 sm:ml-auto sm:w-auto sm:min-w-[20rem] sm:max-w-[26rem] sm:flex-1">
             <span className="sr-only">Search articles and verses</span>
             <SearchIcon />
@@ -150,7 +150,7 @@ export function ArchiveList({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search articles and verses"
-              className="focus-ring w-full rounded-chip border border-rule bg-card py-2.5 pl-10 pr-4 text-[0.9375rem] text-ink-900 placeholder:text-ink-subtle"
+              className="focus-ring w-full rounded-chip border border-rule bg-card py-2 pl-10 pr-4 text-[0.9375rem] text-ink-900 placeholder:text-ink-subtle"
             />
           </label>
 
@@ -163,7 +163,7 @@ export function ArchiveList({
               onClick={() => setOnlySaved((current) => !current)}
               aria-pressed={onlySaved}
               data-track="filter-saved"
-              className={`focus-ring shrink-0 rounded-chip px-4 py-2.5 text-[0.875rem] font-semibold transition-colors ${
+              className={`focus-ring shrink-0 rounded-chip px-4 py-2 text-[0.875rem] font-semibold transition-colors ${
                 onlySaved
                   ? 'bg-gold text-plate-deep'
                   : 'bg-plate text-plate-pale hover:bg-plate-deep'
@@ -176,7 +176,7 @@ export function ArchiveList({
       </section>
 
       {/* ── The archive: the rail, the lead, and the rest ──────────── */}
-      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-8 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
+      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-5 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
         <aside className="lg:row-span-2 xl:row-span-1">
           <TopicsRail
             counts={counts}
