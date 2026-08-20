@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { CATEGORIES, type Category } from '@/lib/content'
@@ -90,6 +91,23 @@ export interface ArticleInput {
   imageAlt?: string
   tags?: string[]
 }
+
+/**
+ * The ceilings.
+ *
+ * Every field had a floor and no roof, which is only safe as long as
+ * nobody with the key ever makes a mistake: the whole archive is one JSON
+ * document, read on every render and rewritten on every publish, so a
+ * single ten-megabyte body is not one bad article but a slow site and a
+ * store that may no longer fit its write. Two hundred thousand characters
+ * is around thirty thousand words — several times the longest teaching
+ * here, and still a bound.
+ */
+export const TITLE_MAX = 200
+export const DEK_MAX = 500
+export const BODY_MAX = 200_000
+export const NAME_MAX = 120
+export const URL_MAX = 500
 
 /** No more than this many, and none longer than `TAG_MAX_LENGTH`. */
 export const TAGS_MAX = 8
@@ -190,21 +208,49 @@ async function readStore(): Promise<PostedArticle[]> {
   }
 }
 
+/**
+ * One write at a time, and all of it or none of it.
+ *
+ * The whole archive is one document: a write reads it, changes it and puts
+ * it back. Two of those interleaved lose one of the changes, and on the
+ * file driver a write interrupted halfway leaves a truncated document
+ * where the archive used to be — which is not a lost update but a lost
+ * archive. So writes queue behind each other, and the file lands by
+ * rename, which a POSIX filesystem does atomically: a reader sees the
+ * document before or the document after, never half of each.
+ *
+ * The queue is per process. One instance is the common case here and the
+ * only case on the file driver; a deployment running several against
+ * Redis still has the window between its read and its write, which would
+ * take a lock or a per-record key to close and is noted rather than
+ * pretended away.
+ */
+let writing: Promise<boolean> = Promise.resolve(true)
+
 async function writeStore(articles: PostedArticle[]): Promise<boolean> {
-  const serialized = `${JSON.stringify(articles, null, 2)}\n`
-  try {
-    if (usingKv) {
-      await kvCommand(['SET', KV_KEY, serialized])
+  const run = writing.then(async () => {
+    const serialized = `${JSON.stringify(articles, null, 2)}\n`
+    try {
+      if (usingKv) {
+        await kvCommand(['SET', KV_KEY, serialized])
+        return true
+      }
+      await fs.mkdir(path.dirname(STORE), { recursive: true })
+      const temporary = `${STORE}.${process.pid}.tmp`
+      await fs.writeFile(temporary, serialized, 'utf8')
+      await fs.rename(temporary, STORE)
       return true
+    } catch {
+      // A read-only filesystem (any serverless host, with no store
+      // attached) or an Upstash call that did not land. Reads keep
+      // working either way.
+      return false
     }
-    await fs.mkdir(path.dirname(STORE), { recursive: true })
-    await fs.writeFile(STORE, serialized, 'utf8')
-    return true
-  } catch {
-    // A read-only filesystem (any serverless host, with no store attached)
-    // or an Upstash call that did not land. Reads keep working either way.
-    return false
-  }
+  })
+  /* The chain must not break on a failure, or every later write is
+     rejected by a promise nobody is catching. */
+  writing = run.catch(() => false)
+  return run
 }
 
 /** Newest first, matching the ordering the API used to guarantee. */
@@ -347,10 +393,29 @@ function reviewKey(): string {
   return process.env.REVIEW_TOKEN || writeKey()
 }
 
+/**
+ * A comparison that takes the same time whichever way it goes.
+ *
+ * `===` on a secret returns as soon as two bytes differ, and the time it
+ * took is a measurement of how much of the key was right. That is a real
+ * attack on a key posted over the network, and the fix is two lines.
+ */
+function sameKey(given: string, expected: string): boolean {
+  if (expected.length === 0) return false
+  const a = Buffer.from(given)
+  const b = Buffer.from(expected)
+  /* timingSafeEqual throws on a length mismatch, which would leak the
+     length; comparing a against itself keeps the work constant. */
+  if (a.length !== b.length) {
+    timingSafeEqual(a, a)
+    return false
+  }
+  return timingSafeEqual(a, b)
+}
+
 /** May write and submit. The review key can do anything this key can. */
 function authorized(token: string): boolean {
-  const write = writeKey()
-  if (write.length > 0 && token === write) return true
+  if (sameKey(token, writeKey())) return true
   return canReview(token)
 }
 
@@ -361,8 +426,7 @@ export function authorizedForDesk(token: string): boolean {
 
 /** May decide what is on the site. */
 export function canReview(token: string): boolean {
-  const expected = reviewKey()
-  return expected.length > 0 && token === expected
+  return sameKey(token, reviewKey())
 }
 
 /** Whether a piece is on the site. Absent status means it always was. */
@@ -511,8 +575,18 @@ export function validateInput(
   const tags = normaliseTags(payload.tags)
 
   if (title.length < 3) return { error: 'A title is required.' }
+  if (title.length > TITLE_MAX) return { error: `A title may not exceed ${TITLE_MAX} characters.` }
   if (dek.length < 10) return { error: 'A summary (dek) of at least 10 characters is required.' }
+  if (dek.length > DEK_MAX) return { error: `A summary may not exceed ${DEK_MAX} characters.` }
   if (body.length < 50) return { error: 'The article body is too short.' }
+  if (body.length > BODY_MAX) {
+    return { error: `A teaching may not exceed ${Math.round(BODY_MAX / 1000)},000 characters.` }
+  }
+  if (authorName.length > NAME_MAX) {
+    return { error: `A byline may not exceed ${NAME_MAX} characters.` }
+  }
+  if (imageUrl.length > URL_MAX) return { error: 'That image URL is too long.' }
+  if (imageAlt.length > DEK_MAX) return { error: 'That image description is too long.' }
   if (!CATEGORIES.includes(category)) {
     return { error: `Category must be one of: ${CATEGORIES.join(', ')}.` }
   }

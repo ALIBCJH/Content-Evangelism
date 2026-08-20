@@ -54,12 +54,38 @@ export interface EventBatch {
 /* ── Validation ───────────────────────────────────────────────────── */
 
 /** A site path, and nothing else — no query, no host, no traversal. */
+/**
+ * The shapes this site actually serves.
+ *
+ * The counter is open — a browser posts to it and there is no reader to
+ * authenticate — and it was accepting any path-shaped string. Every new
+ * string is a new field in the store, so anyone with a loop could have
+ * grown it without limit: not a way in, but a way to fill the shelf the
+ * ministry's own numbers live on. A page that is not one of these is not
+ * a page of this site, and is not counted.
+ */
+const KNOWN_PATHS: RegExp[] = [
+  /^\/$/,
+  /^\/articles\/[a-z0-9-]{1,90}$/,
+  /^\/prophecies$/,
+  /^\/prophecies\/[a-z0-9-]{1,60}$/,
+  /^\/teachings$/,
+  /^\/teachings\/[a-z0-9-]{1,60}$/,
+  /^\/topics\/[a-z0-9-]{1,40}$/,
+  /^\/authors\/[a-z0-9-]{1,40}$/,
+  /^\/search$/,
+  /^\/about$/,
+  /^\/docs\/api$/,
+]
+
 export function cleanPath(raw: unknown): string | null {
   if (typeof raw !== 'string') return null
   const value = raw.split('?')[0].split('#')[0].trim()
   if (!value.startsWith('/') || value.length > 120) return null
   if (value.includes('..') || value.includes('::')) return null
-  return /^[a-z0-9/_-]*$/i.test(value) ? (value === '/' ? '/' : value.replace(/\/$/, '')) : null
+  if (!/^[a-z0-9/_-]*$/i.test(value)) return null
+  const tidied = value === '/' ? '/' : value.replace(/\/$/, '')
+  return KNOWN_PATHS.some((shape) => shape.test(tidied)) ? tidied : null
 }
 
 /**
