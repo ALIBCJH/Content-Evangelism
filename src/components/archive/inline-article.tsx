@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { ArticleProse } from '@/components/article-prose'
 import { ReadingProgress } from '@/components/progress-bar'
+import { useReadInsight } from '@/lib/read-insight'
 
 /**
  * The lead teaching, read where it stands.
@@ -39,6 +40,10 @@ export function InlineArticle({
   const [state, setState] = React.useState<State>({ status: 'waiting' })
   const region = React.useRef<HTMLDivElement>(null)
   const trigger = React.useRef<HTMLDivElement>(null)
+
+  /* A teaching read here is read against its own name, not against the
+     front page it happens to be sitting on. */
+  useReadInsight(region, piece, state.status === 'ready')
 
   /* Each lead gets its own fetch; changing the order or the topic changes
      the piece under the card, and the old body must not stay under a new
