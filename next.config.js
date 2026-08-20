@@ -58,6 +58,49 @@ const nextConfig = {
   async headers() {
     return [
       {
+        /* Sent on everything. None of these is a substitute for a content
+           security policy, which this site does not yet have and which is
+           the one remaining hole worth naming: it needs a pass over the
+           YouTube embeds and Next's inline runtime before it can be
+           written honestly rather than written permissively. */
+        source: '/:path*',
+        headers: [
+          // A .txt served as HTML because a browser guessed is a way in.
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // Nobody needs to frame a ministry's teachings but the ministry.
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          // The path a reader was on is theirs, not the next site's.
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // Nothing here asks for a camera, a microphone or a location.
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+          },
+          /* Two years, subdomains included, and deliberately not
+             preloaded: preloading is a list that is slow to leave, and
+             that is a decision for the ministry rather than a default. */
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains',
+          },
+        ],
+      },
+      {
+        /* The public API is meant to be read by other people's software,
+           including software running in a browser. Without this a page on
+           another origin is refused by the browser before the request is
+           even made — which for an API built to be found is a door with a
+           sign on it and a lock nobody mentioned. Read-only, so there is
+           nothing here for a cross-origin caller to abuse. */
+        source: '/api/:path(v1|v1/.*|openapi.json)',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
+        ],
+      },
+      {
         // The feed and the sitemap are fetched far more often than they
         // change, and by clients that respect cache headers.
         source: '/:path(feed.xml|sitemap.xml|robots.txt)',

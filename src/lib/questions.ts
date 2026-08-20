@@ -103,19 +103,36 @@ async function readStore(): Promise<Question[]> {
   }
 }
 
+/**
+ * One write at a time, and all of it or none of it.
+ *
+ * The same reasoning as the article store: the queue is a list held in a
+ * single document, so two writes interleaved lose a reader's question,
+ * and a file write interrupted halfway loses the queue. Writes chain, and
+ * the file lands by rename. Per process, as there — a deployment on Redis
+ * with several instances still has the window between read and write.
+ */
+let writing: Promise<boolean> = Promise.resolve(true)
+
 async function writeStore(questions: Question[]): Promise<boolean> {
-  const serialized = `${JSON.stringify(questions, null, 2)}\n`
-  try {
-    if (usingKv) {
-      await kvCommand(['SET', KV_KEY, serialized])
+  const run = writing.then(async () => {
+    const serialized = `${JSON.stringify(questions, null, 2)}\n`
+    try {
+      if (usingKv) {
+        await kvCommand(['SET', KV_KEY, serialized])
+        return true
+      }
+      await fs.mkdir(path.dirname(STORE), { recursive: true })
+      const temporary = `${STORE}.${process.pid}.tmp`
+      await fs.writeFile(temporary, serialized, 'utf8')
+      await fs.rename(temporary, STORE)
       return true
+    } catch {
+      return false
     }
-    await fs.mkdir(path.dirname(STORE), { recursive: true })
-    await fs.writeFile(STORE, serialized, 'utf8')
-    return true
-  } catch {
-    return false
-  }
+  })
+  writing = run.catch(() => false)
+  return run
 }
 
 /* ── What a question has to be ────────────────────────────────────── */
