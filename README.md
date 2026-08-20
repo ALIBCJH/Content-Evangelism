@@ -98,6 +98,23 @@ live immediately.
 
 ## The light CMS backend
 
+Two desks, and two keys.
+
+**`/admin` — the posting desk.** Writing, editing and submitting. Nothing
+written here reaches a reader: a new teaching is created `pending` and
+waits. Needs `ADMIN_TOKEN`.
+
+**`/admin/review` — the review desk.** A senior reviewer reads a pending
+teaching in full and approves it, sends it back with a reason, or removes
+it. Approving puts it on the site and marks it verified. A live piece can
+also be unpublished from here. Needs `REVIEW_TOKEN`, which falls back to
+`ADMIN_TOKEN` when unset — so a ministry running the desk single-handed
+is not left with a queue nobody can clear.
+
+A teaching with no status is live. That is load-bearing rather than lazy:
+everything written before there was a review step keeps its place on the
+site and its indexed address.
+
 Articles can be posted from the browser at **`/admin`** ("The Posting Desk") —
 title, category, summary, body, an optional image (with a description of
 what it shows, which is required once an image is set), and the posting

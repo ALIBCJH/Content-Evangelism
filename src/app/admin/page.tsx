@@ -29,6 +29,8 @@ interface ManagedArticle {
   imageUrl?: string
   imageAlt?: string
   tags?: string[]
+  status?: 'pending' | 'published'
+  review?: { note: string; at: string }
   publishedAt: string
   readMinutes: number
 }
@@ -90,6 +92,20 @@ export default function AdminPage() {
     if (draft && worthKeeping(draft)) setHeld(draft)
   }, [])
 
+  /* "Edit first" on the review desk sends the reviewer here with the
+     piece named in the address. It opens once the list has arrived, and
+     only once — a writer who then navigates away is not dragged back. */
+  const opened = React.useRef(false)
+  React.useEffect(() => {
+    if (opened.current || articles.length === 0) return
+    const wanted = new URLSearchParams(window.location.search).get('edit')
+    if (!wanted) return
+    const article = articles.find((candidate) => candidate.slug === wanted)
+    if (!article) return
+    opened.current = true
+    startEdit(article)
+  })
+
   const savedAt = useDraftAutosave({
     editingSlug,
     title,
@@ -101,6 +117,12 @@ export default function AdminPage() {
     imageAlt,
     tags,
   })
+
+  /* The reviewer's reason, on the piece currently open in the form. */
+  const sentBack = React.useMemo(
+    () => (editingSlug ? articles.find((a) => a.slug === editingSlug)?.review ?? null : null),
+    [articles, editingSlug]
+  )
 
   const restore = (draft: Draft) => {
     setEditingSlug(draft.editingSlug)
@@ -416,10 +438,18 @@ export default function AdminPage() {
                 <Check className="h-6 w-6 text-status-success" />
               </span>
               <p className="mt-4 font-display text-2xl font-semibold text-ink-strong">
-                {editingSlug ? 'Updated.' : 'Published.'}
+                {editingSlug ? 'Saved.' : 'Sent for review.'}
+              </p>
+              {/* A new piece is not on the site and must not be described
+                  as though it were. An edit to something already live is,
+                  which is why the address is only offered for that. */}
+              <p className="mx-auto mt-3 max-w-sm font-sans text-sm leading-relaxed text-ink-muted">
+                {editingSlug
+                  ? 'The change is in.'
+                  : 'It is in the queue. A senior reviewer reads it, and it goes on the site when they approve it.'}
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                {publishedUrl && (
+                {editingSlug && publishedUrl && (
                   <Link href={publishedUrl} className="inline-flex">
                     <span className="focus-ring inline-flex h-10 items-center gap-2 rounded-full bg-gold px-6 font-sans text-sm font-semibold text-navy-900 transition-all hover:bg-gold-light">
                       Read it now
@@ -428,10 +458,25 @@ export default function AdminPage() {
                   </Link>
                 )}
                 <Button variant="outline" onClick={clearForm}>Write another</Button>
+                <Link
+                  href="/admin/review"
+                  className="focus-ring font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
+                >
+                  The review desk →
+                </Link>
               </div>
             </div>
           ) : (
             <form onSubmit={onSubmit} className="card mt-10 space-y-6 !rounded-2xl p-6 sm:p-8">
+              {sentBack && (
+                <div className="rounded-xl border border-gold/40 bg-chip-gold/40 px-4 py-3">
+                  <p className="font-sans text-xs font-bold uppercase tracking-kicker text-gold-ink">
+                    Sent back by the review desk
+                  </p>
+                  <p className="mt-1.5 font-sans text-sm text-ink-strong">{sentBack.note}</p>
+                </div>
+              )}
+
               {editingSlug && (
                 <div className="flex items-center justify-between rounded-xl border border-gold/30 bg-gold/10 px-4 py-3">
                   <p className="font-sans text-xs font-bold uppercase tracking-kicker text-gold">
@@ -594,9 +639,9 @@ export default function AdminPage() {
                   {status === 'saving' ? (
                     <>
                       <LoaderCircle className="animate-spin" />
-                      {editingSlug ? 'Saving…' : 'Publishing…'}
+                      {editingSlug ? 'Saving…' : 'Sending…'}
                     </>
-                  ) : editingSlug ? 'Save changes' : 'Publish the article'}
+                  ) : editingSlug ? 'Save changes' : 'Send for review'}
                 </Button>
               </div>
             </form>
@@ -656,19 +701,39 @@ export default function AdminPage() {
                         </p>
                         <p className="mt-1.5 flex flex-wrap items-center gap-2 font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
                           <Badge variant="outline" size="sm">{article.category}</Badge>
+                          {/* Whether a reader can see it, said plainly:
+                              the writer's list was identical for a piece
+                              on the site and a piece nobody has approved. */}
+                          {article.status === 'pending' ? (
+                            <span className="rounded-chip bg-chip-gold px-2 py-0.5 text-gold-ink">
+                              {article.review ? 'Sent back' : 'Waiting for review'}
+                            </span>
+                          ) : (
+                            <span className="text-status-success">On the site</span>
+                          )}
                           {ago(article.publishedAt)}
                           <span>· {article.readMinutes} min</span>
                           <span>· {article.authorName}</span>
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
-                        <Link
-                          href={`/articles/${article.slug}`}
-                          className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
-                        >
-                          <BookOpen className="h-3.5 w-3.5" />
-                          View
-                        </Link>
+                        {article.status === 'pending' ? (
+                          <Link
+                            href="/admin/review"
+                            className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
+                          >
+                            <BookOpen className="h-3.5 w-3.5" />
+                            In the queue
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/articles/${article.slug}`}
+                            className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
+                          >
+                            <BookOpen className="h-3.5 w-3.5" />
+                            View
+                          </Link>
+                        )}
                         <button
                           type="button"
                           onClick={() => startEdit(article)}
