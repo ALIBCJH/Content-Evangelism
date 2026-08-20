@@ -39,6 +39,8 @@ import { cn } from '@/lib/utils'
  */
 
 export interface ArticleLayoutProps {
+  /** The piece's own identifier, and the last part of its URL. */
+  slug: string
   category: Category
   title: string
   /** The standfirst: what this teaching is about, in one or two sentences. */
@@ -131,6 +133,7 @@ const TRACKS =
   'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14'
 
 export function ArticleLayout({
+  slug,
   category,
   title,
   dek,
@@ -166,7 +169,9 @@ export function ArticleLayout({
           ],
         }}
       />
-      <ReadingProgress />
+      <ReadingProgress
+        piece={{ slug, title, href: `/articles/${slug}`, readMinutes }}
+      />
 
       <main>
         {/* ── The band ───────────────────────────────────────────── */}

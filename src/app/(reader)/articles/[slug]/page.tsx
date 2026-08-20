@@ -151,6 +151,7 @@ export default async function PostedArticlePage({ params }: Params) {
       <JsonLd data={articleLd} />
       {faqLd && <JsonLd data={faqLd} />}
       <ArticleLayout
+        slug={article.slug}
         category={article.category}
         title={article.title}
         dek={article.dek}
