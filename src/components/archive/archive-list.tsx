@@ -128,11 +128,21 @@ export function ArchiveList({
       ),
     [marks, items, lead?.slug]
   )
-  /* The lead card leads the current view: newest untouched, most read
-     when that is the order, the best match when a query is running. It is
-     never dressed as "latest" — the card carries its own date, which is
-     what makes it honest under every one of those. */
+  /* The lead card leads the current view, and says which view that is.
+     Calling a search result "the latest teaching" would be the one thing
+     this card must not do. */
   const featured = shown.length > 0
+  const kicker = query.trim()
+    ? 'Best match'
+    : onlySaved
+      ? 'Saved for later'
+      : order === 'read'
+        ? 'Most read'
+        : order === 'shortest'
+          ? 'Shortest read'
+          : topic
+            ? `Latest in ${topic}`
+            : 'Latest teaching'
 
   return (
     <>
@@ -166,7 +176,7 @@ export function ArchiveList({
               className={`focus-ring shrink-0 rounded-chip px-4 py-2 text-[0.875rem] font-semibold transition-colors ${
                 onlySaved
                   ? 'bg-gold text-plate-deep'
-                  : 'bg-plate text-plate-pale hover:bg-plate-deep'
+                  : 'bg-cta text-cta-ink hover:bg-cta-hover'
               }`}
             >
               Saved · <span className="tabular">{saved.length}</span>
@@ -253,6 +263,7 @@ export function ArchiveList({
               <>
                 <LeadCard
                   item={lead}
+                  kicker={kicker}
                   saved={ready && isSaved(lead.slug)}
                   ready={ready}
                   onToggle={() => toggle(lead.slug)}

@@ -489,6 +489,34 @@ option {
   background: var(--chip);
 }
 
+/* The opening letter of a teaching, set as a drop cap.
+   Only where a page asks for it: a teaching read on its own page opens
+   under its own headline and standfirst, where a drop cap would be the
+   third opening in a row. On the front page the body arrives under a
+   card, and the cap is what says the reading has begun.
+
+   Three lines deep, aligned to the cap height rather than the baseline —
+   which is what `float` plus a line-height under 1 gets, since no browser
+   yet ships `initial-letter` in the form this needs. */
+.opens-large > :first-child::first-letter {
+  float: left;
+  margin: 0.02em 0.08em 0 0;
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-size: 3.35em;
+  line-height: 0.82;
+  font-weight: 400;
+  color: var(--navy);
+}
+
+/* A dropped capital beside a hanging quotation mark reads as debris, so
+   a body that opens on Scripture keeps its figure and loses the cap. */
+.opens-large > figure:first-child::first-letter,
+.opens-large > blockquote:first-child::first-letter {
+  float: none;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 /* Pulled Scripture: a cream figure ruled 3px gold on its opening edge. */
 .scripture {
   position: relative;

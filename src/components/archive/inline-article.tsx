@@ -84,7 +84,7 @@ export function InlineArticle({
 
       <div ref={trigger} aria-hidden />
 
-      <div ref={region}>
+      <div ref={region} id="continue" className="scroll-mt-stick">
         {state.status === 'loading' && (
           <div className="mt-10 space-y-4" aria-live="polite">
             <span className="sr-only">Fetching the rest of this teaching…</span>
@@ -111,7 +111,10 @@ export function InlineArticle({
 
         {state.status === 'ready' && (
           <>
-            <div className="mt-10 border-t border-rule pt-10">
+            {/* `opens-large` sets the first letter of the first
+                paragraph as a drop cap — the front page reading as a
+                page rather than as a card with text under it. */}
+            <div className="opens-large mt-10 border-t border-rule pt-10">
               <ArticleProse body={state.body} />
             </div>
 
