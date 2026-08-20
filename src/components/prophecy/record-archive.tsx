@@ -63,17 +63,6 @@ export function RecordArchive({
       </section>
 
       <section className="shell pb-24 pt-9">
-        {/* How many there are and how they are ordered — until a search
-            is running, when the line below says both better. */}
-        {!query.trim() && (
-          <div className="flex items-center justify-between pb-6 pt-2">
-            <span className="kicker-lg text-ink-subtle">
-              {records.length} {records.length === 1 ? 'record' : 'records'}
-            </span>
-            <span className="kicker-lg text-ink-subtle">Newest first</span>
-          </div>
-        )}
-
         <SearchSummary
           query={query}
           count={shown.length}
