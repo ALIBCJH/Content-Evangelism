@@ -16,6 +16,7 @@ import { FulfilledNow } from '@/components/fulfilled-now'
 import { ReadingProgress } from '@/components/progress-bar'
 import { ShareRow } from '@/components/share-row'
 import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 /**
  * One article page, for every article.
@@ -74,6 +75,9 @@ export interface ArticleLayoutProps {
 /**
  * The way back, and whether the desk has been through the teaching.
  *
+ * The way back is gold and larger than a plain pill: it is the one
+ * control on the page and has to be findable from the end of a long read.
+ *
  * Green is the site's fulfilled colour and carries the same meaning here:
  * this was looked at and it holds. The unchecked state is grey and
  * deliberately quiet — it reports that nobody has been through the piece
@@ -84,7 +88,10 @@ function Controls({ verified, className = '' }: { verified?: boolean; className?
     <div className={`flex flex-col items-start gap-3 ${className}`}>
       <Link
         href="/"
-        className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 px-5' })}
+        className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'gap-2 border-gold bg-gold/10 px-7 text-gold-ink hover:border-gold hover:bg-gold/20 hover:text-gold-ink [&_svg]:size-[1.125rem]'
+        )}
       >
         <ArrowLeft aria-hidden />
         All articles
