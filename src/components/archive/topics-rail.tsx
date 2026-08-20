@@ -24,7 +24,7 @@ export function TopicsRail({
   total,
   active,
   onPick,
-  continueWith,
+  unfinished,
   speech,
   onPause,
   onResume,
@@ -34,7 +34,7 @@ export function TopicsRail({
   total: number
   active: Category | null
   onPick: (category: Category | null) => void
-  continueWith: ReadingMark | null
+  unfinished: ReadingMark[]
   speech: SpeechState
   onPause: () => void
   onResume: () => void
@@ -78,28 +78,40 @@ export function TopicsRail({
         ))}
       </div>
 
-      {continueWith && (
+      {unfinished.length > 0 && (
         <>
           <Divider />
-          <p className="kicker text-ink-subtle">Continue reading</p>
-          <Link href={continueWith.href} className="focus-ring group mt-3 block">
-            <span className="block text-[0.9375rem] font-semibold leading-[1.35] text-navy transition-colors group-hover:text-gold-ink">
-              {continueWith.title}
-            </span>
-            <span
-              aria-hidden
-              className="mt-3 block h-[3px] w-full overflow-hidden rounded-full bg-rule"
-            >
-              <span
-                className="block h-full rounded-full bg-gold"
-                style={{ width: `${Math.round(continueWith.progress * 100)}%` }}
-              />
-            </span>
-            <span className="kicker mt-2.5 block text-ink-subtle">
-              <span className="tabular">{Math.round(continueWith.progress * 100)}%</span> ·{' '}
-              <span className="tabular">{minutesLeft(continueWith)}</span> min left
-            </span>
-          </Link>
+          {/* Everything begun and not finished, most recent first. A
+              reader who put a teaching down halfway through should not
+              have to remember which one it was, or hunt the archive for
+              it — the shelf they left it on is here. */}
+          <p className="kicker text-ink-subtle">
+            {unfinished.length === 1 ? 'Continue reading' : 'Still reading'}
+          </p>
+          <ul className="mt-3 flex flex-col gap-4">
+            {unfinished.map((held) => (
+              <li key={held.slug}>
+                <Link href={held.href} className="focus-ring group block">
+                  <span className="block text-[0.9375rem] font-semibold leading-[1.35] text-navy transition-colors group-hover:text-gold-ink">
+                    {held.title}
+                  </span>
+                  <span
+                    aria-hidden
+                    className="mt-2.5 block h-[3px] w-full overflow-hidden rounded-full bg-rule"
+                  >
+                    <span
+                      className="block h-full rounded-full bg-gold"
+                      style={{ width: `${Math.round(held.progress * 100)}%` }}
+                    />
+                  </span>
+                  <span className="kicker mt-2 block text-ink-subtle">
+                    <span className="tabular">{Math.round(held.progress * 100)}%</span> ·{' '}
+                    <span className="tabular">{minutesLeft(held)}</span> min left
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </>
       )}
 

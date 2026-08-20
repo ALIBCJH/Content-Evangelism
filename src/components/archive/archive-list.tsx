@@ -8,6 +8,7 @@ import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
 import { useReadingProgress } from '@/lib/reading-progress'
 import { useSpeech } from '@/lib/speech'
+import { InlineArticle } from '@/components/archive/inline-article'
 import { LeadCard } from '@/components/archive/lead-card'
 import { PieceCard } from '@/components/archive/piece-card'
 import { TopicsRail } from '@/components/archive/topics-rail'
@@ -93,13 +94,6 @@ export function ArchiveList({
     )
   }, [items])
 
-  /* The most recent piece still in hand, and still in the archive: a
-     teaching withdrawn since it was read should not be offered back. */
-  const continueWith = React.useMemo(
-    () => marks.find((held) => items.some((item) => item.slug === held.slug)) ?? null,
-    [marks, items]
-  )
-
   const shown = React.useMemo(() => {
     const pool = items
       .filter((item) => (onlySaved ? saved.includes(item.slug) : true))
@@ -122,6 +116,18 @@ export function ArchiveList({
   }, [items, query, onlySaved, saved, topic, order])
 
   const [lead, ...rest] = shown
+
+  /* Everything begun and not finished, most recent first — and still in
+     the archive: a teaching withdrawn since it was read should not be
+     offered back. The piece open under the card is left out, since the
+     reader is in it rather than away from it. */
+  const unfinished = React.useMemo(
+    () =>
+      marks.filter(
+        (held) => held.slug !== lead?.slug && items.some((item) => item.slug === held.slug)
+      ),
+    [marks, items, lead?.slug]
+  )
   /* The lead card leads the current view: newest untouched, most read
      when that is the order, the best match when a query is running. It is
      never dressed as "latest" — the card carries its own date, which is
@@ -177,7 +183,7 @@ export function ArchiveList({
             total={items.length}
             active={topic}
             onPick={setTopic}
-            continueWith={continueWith}
+            unfinished={unfinished}
             speech={speech}
             onPause={speech.pause}
             onResume={speech.resume}
@@ -244,18 +250,30 @@ export function ArchiveList({
           ) : (
             featured &&
             lead && (
-              <LeadCard
-                item={lead}
-                saved={ready && isSaved(lead.slug)}
-                ready={ready}
-                onToggle={() => toggle(lead.slug)}
-                listening={speech.piece?.slug === lead.slug}
-                onListen={() =>
-                  speech.piece?.slug === lead.slug && speech.status === 'playing'
-                    ? speech.pause()
-                    : speech.play({ slug: lead.slug, title: lead.title, href: lead.href })
-                }
-              />
+              <>
+                <LeadCard
+                  item={lead}
+                  saved={ready && isSaved(lead.slug)}
+                  ready={ready}
+                  onToggle={() => toggle(lead.slug)}
+                  listening={speech.piece?.slug === lead.slug}
+                  onListen={() =>
+                    speech.piece?.slug === lead.slug && speech.status === 'playing'
+                      ? speech.pause()
+                      : speech.play({ slug: lead.slug, title: lead.title, href: lead.href })
+                  }
+                />
+                {/* The teaching itself, carrying on under the card once
+                    the reader scrolls that far. */}
+                <InlineArticle
+                  piece={{
+                    slug: lead.slug,
+                    title: lead.title,
+                    href: lead.href,
+                    readMinutes: lead.readMinutes,
+                  }}
+                />
+              </>
             )
           )}
         </div>
