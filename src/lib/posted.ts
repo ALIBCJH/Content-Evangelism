@@ -60,9 +60,23 @@ export interface PostedArticle {
   /**
    * Whether the desk has checked the piece against the ministry's own
    * published teaching. Absent means not checked — a badge that appears
-   * only when it is true cannot be forgotten into saying yes.
+   * only when it is true cannot be forgotten into saying yes. A senior
+   * reviewer's approval sets it.
    */
   verified?: boolean
+  /**
+   * Where the piece stands with the desk.
+   *
+   * Absent means published, and that is load-bearing rather than lazy:
+   * every teaching written before there was a review step is live, some
+   * of it indexed and linked, and a missing field must not take it off
+   * the site. Only a piece explicitly marked pending is held back.
+   */
+  status?: 'pending' | 'published'
+  /** When it was sent for review. */
+  submittedAt?: string
+  /** A reviewer's reason for sending it back, shown to the writer. */
+  review?: { note: string; at: string }
   readMinutes: number
 }
 
@@ -281,13 +295,29 @@ async function readAll(): Promise<PostedArticle[]> {
 
 /* ── Reads ────────────────────────────────────────────────────────── */
 
-export async function listPostedArticles(): Promise<PostedArticle[]> {
-  return (await readAll()).sort(byNewest)
+/**
+ * The teachings on the site.
+ *
+ * Live only, unless a caller says otherwise — and the only callers that
+ * may say otherwise are the two desks, which pass a key that has been
+ * checked before they get here. Every other reader of this module — the
+ * archive, the article page, the feed, the sitemap, the public API — gets
+ * what a reader gets.
+ */
+export async function listPostedArticles(
+  options: { includePending?: boolean } = {}
+): Promise<PostedArticle[]> {
+  const all = (await readAll()).sort(byNewest)
+  return options.includePending ? all : all.filter(isLive)
 }
 
-export async function getPostedArticle(slug: string): Promise<PostedArticle | null> {
-  const articles = await readAll()
-  return articles.find((a) => a.slug === slug) ?? null
+export async function getPostedArticle(
+  slug: string,
+  options: { includePending?: boolean } = {}
+): Promise<PostedArticle | null> {
+  const article = (await readAll()).find((a) => a.slug === slug) ?? null
+  if (!article) return null
+  return options.includePending || isLive(article) ? article : null
 }
 
 /* ── Writes ───────────────────────────────────────────────────────── */
@@ -297,9 +327,47 @@ export async function getPostedArticle(slug: string): Promise<PostedArticle | nu
  * key is checked here against ADMIN_TOKEN in the environment. Unset means
  * writes are closed — a missing secret must never mean "allow everyone".
  */
+/**
+ * Two keys, and what each may do.
+ *
+ * The posting key writes: it can create a teaching, edit one, and delete
+ * one. What it cannot do is put anything on the site — a piece it creates
+ * is pending, and stays pending.
+ *
+ * The review key does all of that and decides what goes live. A
+ * deployment that sets no review key falls back to the posting key, so a
+ * ministry running the desk single-handed is not left with a queue nobody
+ * can clear; a deployment that sets both has the separation.
+ */
+function writeKey(): string {
+  return process.env.ADMIN_TOKEN ?? ''
+}
+
+function reviewKey(): string {
+  return process.env.REVIEW_TOKEN || writeKey()
+}
+
+/** May write and submit. The review key can do anything this key can. */
 function authorized(token: string): boolean {
-  const expected = process.env.ADMIN_TOKEN ?? ''
+  const write = writeKey()
+  if (write.length > 0 && token === write) return true
+  return canReview(token)
+}
+
+/** Whether a key belongs to either desk, for a route that must ask. */
+export function authorizedForDesk(token: string): boolean {
+  return authorized(token)
+}
+
+/** May decide what is on the site. */
+export function canReview(token: string): boolean {
+  const expected = reviewKey()
   return expected.length > 0 && token === expected
+}
+
+/** Whether a piece is on the site. Absent status means it always was. */
+export function isLive(article: Pick<PostedArticle, 'status'>): boolean {
+  return article.status !== 'pending'
 }
 
 export async function createPostedArticle(
@@ -326,6 +394,10 @@ export async function createPostedArticle(
     publishedAt: now,
     updatedAt: now,
     readMinutes: readMinutes(input.body),
+    /* Written is not published. A new teaching waits for a reader senior
+       enough to put it on the site. */
+    status: 'pending',
+    submittedAt: now,
   }
 
   if (!(await writeStore([article, ...articles]))) {
@@ -352,6 +424,53 @@ export async function updatePostedArticle(
   }
   // The body drives the reading time, so recompute it whenever it changes.
   if (input.body !== undefined) article.readMinutes = readMinutes(input.body)
+
+  articles[index] = article
+  if (!(await writeStore(articles))) {
+    return { status: 500, error: 'The article store is not writable.' }
+  }
+  return { status: 200, article }
+}
+
+/**
+ * A senior reviewer's verdict.
+ *
+ * Approving does both things the ministry means by it: the teaching goes
+ * on the site, and it carries the mark that says somebody read it against
+ * the ministry's own teaching. Sending it back takes it out of the queue
+ * and hands the writer a reason. Unpublishing is the same door in
+ * reverse, for a piece already live that turns out to need work.
+ */
+export async function reviewArticle(
+  slug: string,
+  verdict: { action: 'approve' | 'send-back' | 'unpublish'; note?: string },
+  token: string
+): Promise<WriteResult> {
+  if (!canReview(token)) return { status: 401, error: 'Invalid review key.' }
+
+  const articles = await readStore()
+  const index = articles.findIndex((a) => a.slug === slug)
+  if (index === -1) return { status: 404, error: 'No article with that slug.' }
+
+  const now = new Date().toISOString()
+  const held = articles[index]
+  let article: PostedArticle
+
+  if (verdict.action === 'approve') {
+    const { review: _sentBack, ...rest } = held
+    article = { ...rest, status: 'published', verified: true, updatedAt: now }
+  } else if (verdict.action === 'send-back') {
+    const note = (verdict.note ?? '').trim()
+    if (note.length < 3) return { status: 400, error: 'Say what needs changing.' }
+    article = {
+      ...held,
+      status: 'pending',
+      review: { note: note.slice(0, 1000), at: now },
+      updatedAt: now,
+    }
+  } else {
+    article = { ...held, status: 'pending', updatedAt: now }
+  }
 
   articles[index] = article
   if (!(await writeStore(articles))) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
+  authorizedForDesk,
   bearerToken,
   createPostedArticle,
   listPostedArticles,
@@ -9,9 +10,17 @@ import { revalidatePublished } from '@/lib/revalidate'
 
 export const dynamic = 'force-dynamic'
 
-/** GET /api/articles — public list of posted articles. */
-export async function GET() {
-  const articles = await listPostedArticles()
+/**
+ * GET /api/articles — the archive.
+ *
+ * Published only, unless the caller holds a key: the desk's Manage tab
+ * and the review queue both read this, and both need to see what is
+ * waiting. A caller with no key, or a wrong one, gets the site.
+ */
+export async function GET(request: Request) {
+  const key = bearerToken(request)
+  const includePending = key.length > 0 && authorizedForDesk(key)
+  const articles = await listPostedArticles({ includePending })
   return NextResponse.json({ articles })
 }
 
