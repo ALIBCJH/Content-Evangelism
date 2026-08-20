@@ -277,7 +277,7 @@ export default function AdminPage() {
       type="button"
       onClick={() => setTab(value)}
       className={cn(
-        'focus-ring inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-xs font-bold uppercase tracking-kicker transition-colors',
+        'focus-ring inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker transition-colors sm:gap-2 sm:px-5',
         tab === value ? 'bg-gold text-navy-900' : 'text-ink-muted hover:bg-surface-2 hover:text-ink-strong'
       )}
     >
@@ -313,7 +313,9 @@ export default function AdminPage() {
             />
           </div>
 
-          <div className="mt-6 inline-flex gap-1 rounded-full border border-hairline p-1">
+          {/* max-w-full and a scroll rather than three fixed tabs: at
+              390px the third one was off the edge of the screen. */}
+          <div className="mt-6 inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-hairline p-1">
             {tabButton('dashboard', 'Dashboard', LayoutDashboard)}
             {tabButton('write', editingSlug ? 'Editing' : 'Write', PenLine)}
             {tabButton('manage', 'Manage', Layers)}

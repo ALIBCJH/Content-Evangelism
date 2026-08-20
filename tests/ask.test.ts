@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { allPassages, retrieve, sectionsOf } from '@/lib/ask/passages'
 import { contextBlock, SYSTEM } from '@/lib/ask/prompt'
 import { listRealRows } from '@/lib/rows'
@@ -9,8 +9,15 @@ import { listRealRows } from '@/lib/rows'
  * what gets in and what cannot.
  */
 
-const rows = await listRealRows()
-const passages = allPassages(rows)
+/* Read once, before the suite: a top-level await here type-checks only
+   under a module setting this project does not use. */
+let rows: Awaited<ReturnType<typeof listRealRows>> = []
+let passages: ReturnType<typeof allPassages> = []
+
+beforeAll(async () => {
+  rows = await listRealRows()
+  passages = allPassages(rows)
+})
 
 describe('cutting a teaching into chapters', () => {
   it('makes a passage of each chapter, anchored to it', () => {
@@ -59,7 +66,7 @@ describe('what the archive offers a question', () => {
     const found = retrieve(passages, 'holiness', 6)
     const counts = new Map<string, number>()
     for (const passage of found) counts.set(passage.title, (counts.get(passage.title) ?? 0) + 1)
-    for (const count of counts.values()) expect(count).toBeLessThanOrEqual(2)
+    for (const count of Array.from(counts.values())) expect(count).toBeLessThanOrEqual(2)
   })
 
   it('returns nothing when the archive holds nothing on it', () => {

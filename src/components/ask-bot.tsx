@@ -75,6 +75,36 @@ export function AskBot() {
     if (open) inputRef.current?.focus()
   }, [open])
 
+  /* On a phone the launcher sits on top of the teaching, because a fixed
+     mark on a 390px screen has nowhere else to be. So it gets out of the
+     way while the reader is going down the page, and comes back when they
+     stop or turn back — the reading is the thing, and the button can
+     wait. It never hides while the panel is open, and never on a wide
+     screen, where there is margin for it to sit in. */
+  const [hidden, setHidden] = React.useState(false)
+  React.useEffect(() => {
+    if (open) {
+      setHidden(false)
+      return
+    }
+    let last = window.scrollY
+    let idle = 0
+    const onScroll = () => {
+      const now = window.scrollY
+      const wide = window.matchMedia('(min-width: 640px)').matches
+      if (!wide && now > last + 8 && now > 240) setHidden(true)
+      else if (now < last - 8) setHidden(false)
+      last = now
+      window.clearTimeout(idle)
+      idle = window.setTimeout(() => setHidden(false), 900)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.clearTimeout(idle)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [open])
+
   const ask = async (event: React.FormEvent) => {
     event.preventDefault()
     const asked = question.trim()
@@ -317,7 +347,9 @@ export function AskBot() {
         onClick={() => setOpen((was) => !was)}
         aria-expanded={open}
         aria-controls="ask-bot-panel"
-        className="focus-ring fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-plate text-plate-pale shadow-glow-soft transition-all duration-200 hover:bg-plate-deep active:translate-y-px sm:right-6"
+        className={`focus-ring fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-plate text-plate-pale shadow-glow-soft transition-all duration-300 hover:bg-plate-deep active:translate-y-px sm:right-6 sm:h-14 sm:w-14 ${
+          hidden ? 'pointer-events-none translate-y-24 opacity-0' : 'translate-y-0 opacity-100'
+        }`}
       >
         {open ? (
           <X aria-hidden className="h-6 w-6" />

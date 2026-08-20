@@ -186,8 +186,13 @@ export function ArchiveList({
       </section>
 
       {/* ── The archive: the rail, the lead, and the rest ──────────── */}
+      {/* On a wide screen the rail is orientation, and it belongs beside
+          the writing. Stacked on a phone it is a screen of furniture
+          standing between a reader and the teaching, so the order is
+          reversed there and restored at lg: the piece first, the rest of
+          the archive second, and what the archive holds last. */}
       <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-5 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
-        <aside className="lg:row-span-2 xl:row-span-1">
+        <aside className="order-3 lg:order-none lg:row-span-2 xl:row-span-1">
           <TopicsRail
             counts={counts}
             total={items.length}
@@ -201,7 +206,7 @@ export function ArchiveList({
           />
         </aside>
 
-        <div className="min-w-0">
+        <div className="order-1 min-w-0 lg:order-none">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
             {header}
             {/* Ordering, as three chips rather than a menu: there are only
@@ -290,7 +295,7 @@ export function ArchiveList({
         </div>
 
         {rest.length > 0 && (
-          <div className="min-w-0">
+          <div className="order-2 min-w-0 lg:order-none">
             <h2 className="sr-only">The rest of the archive</h2>
             {/* Two across between sm and xl, where this column runs the
                 width of the page; one in the narrow column beside the
