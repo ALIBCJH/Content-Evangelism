@@ -12,9 +12,9 @@ import type { Category } from '@/lib/content'
  * means the rows cross to the client, and a row carries the entire body
  * of a teaching — sixty kilobytes of Scripture the listing never prints.
  *
- * So the body is read here, on the server, and what crosses is the three
- * things drawn from it: the opening line, the references, and a lowercase
- * haystack for the filter.
+ * So the body is read here, on the server, and what crosses is the four
+ * things drawn from it: the opening line, the references, the passage the
+ * piece leads with, and a lowercase haystack for the filter.
  */
 export interface ArchiveItem {
   slug: string
@@ -33,6 +33,12 @@ export interface ArchiveItem {
   moreRefs: number
   /** The piece's own picture, where it has one — the thumbnail on a phone. */
   image?: { src: string; alt: string }
+  /**
+   * The passage the teaching leads with, set on the plate at the head of
+   * the lead card. Absent on a piece that opens on prose rather than on
+   * Scripture, and the plate is absent with it.
+   */
+  quote?: { text: string; cite?: string }
   /** Lowercased title, standfirst, opening line and references. */
   haystack: string
   /**
@@ -61,6 +67,30 @@ export function openingLine(body: string | undefined, dek: string): string {
     .join('')
     .trim()
   return text || dek
+}
+
+/**
+ * The first Scripture the teaching sets as a figure.
+ *
+ * A long passage is cut at a word, because the plate is the head of a
+ * card and not a lectern: the verse is there to say what ground the piece
+ * stands on, and a reader who wants the whole of it is one scroll from
+ * it — the teaching itself is directly underneath.
+ */
+const QUOTE_MAX = 150
+
+export function leadQuote(body: string | undefined): { text: string; cite?: string } | undefined {
+  if (!body) return undefined
+  const quote = parseBody(body).find((block) => block.kind === 'quote')
+  if (!quote || quote.kind !== 'quote') return undefined
+
+  const full = quote.inlines.map((inline) => inline.text).join('').trim()
+  if (!full) return undefined
+  if (full.length <= QUOTE_MAX) return { text: full, ...(quote.cite ? { cite: quote.cite } : {}) }
+
+  const cut = full.slice(0, QUOTE_MAX)
+  const text = `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:.\s]+$/, '')} …`
+  return { text, ...(quote.cite ? { cite: quote.cite } : {}) }
 }
 
 const CHIPPED = 3
@@ -92,6 +122,7 @@ export function toArchiveItems(
       ...(row.imageUrl
         ? { image: { src: row.imageUrl, alt: row.imageAlt ?? '' } }
         : {}),
+      quote: leadQuote(row.body),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
       views: views[row.href] ?? 0,
     }

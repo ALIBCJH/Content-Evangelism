@@ -85,6 +85,15 @@
   --cta-hover-rgb: var(--plate-deep-rgb);
   --cta-ink-rgb: var(--plate-pale-rgb);
 
+  /* The scripture plate at the head of the lead card — the one place on
+     the archive where a colour is a field rather than a rule. Navy on
+     paper. In the dark theme a navy panel on a navy card is a rectangle
+     you have to look for, so it becomes the gold, which is the same
+     reasoning the call to action follows. */
+  --plate-quote-rgb: var(--plate-rgb);
+  --plate-quote-ink-rgb: var(--plate-pale-rgb);
+  --plate-quote-rule-rgb: var(--gold-rgb);
+
   /* Shadow ground: what a card's shadow is cast in. */
   --shadow-rgb: var(--navy-rgb);
 
@@ -97,6 +106,9 @@
   --chip: rgb(var(--chip-rgb));
   --chip-blue: rgb(var(--chip-blue-rgb));
   --chip-gold: rgb(var(--chip-gold-rgb));
+  --plate-quote: rgb(var(--plate-quote-rgb));
+  --plate-quote-ink: rgb(var(--plate-quote-ink-rgb));
+  --plate-quote-rule: rgb(var(--plate-quote-rule-rgb));
   --navy: rgb(var(--navy-rgb));
   --plate: rgb(var(--plate-rgb));
   --plate-deep: rgb(var(--plate-deep-rgb));
@@ -207,6 +219,10 @@
    choice of light still wins over it.
    ────────────────────────────────────────────────────────────────────── */
 [data-theme='dark'] {
+  --plate-quote-rgb: var(--gold-rgb);
+  --plate-quote-ink-rgb: var(--plate-deep-rgb);
+  --plate-quote-rule-rgb: var(--plate-deep-rgb);
+
   color-scheme: dark;
 
   --ground-rgb: 10 26 47;
@@ -282,6 +298,10 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+  --plate-quote-rgb: var(--gold-rgb);
+  --plate-quote-ink-rgb: var(--plate-deep-rgb);
+  --plate-quote-rule-rgb: var(--plate-deep-rgb);
+
     color-scheme: dark;
 
     --ground-rgb: 10 26 47;
@@ -497,6 +517,28 @@ option {
   body[data-audio] .ask-launcher {
     bottom: 6.25rem;
   }
+}
+
+/* The scripture plate: the verse a teaching leads with, set as a field.
+   Its colours flip with the theme — see --plate-quote above. */
+.scripture-plate {
+  position: relative;
+  background: var(--plate-quote);
+  color: var(--plate-quote-ink);
+}
+
+.scripture-plate .plate-rule {
+  background: var(--plate-quote-rule);
+}
+
+.scripture-plate .plate-cite {
+  color: var(--plate-quote-ink);
+  opacity: 0.78;
+}
+
+.scripture-plate .plate-mark {
+  color: var(--plate-quote-ink);
+  opacity: 0.22;
 }
 
 /* The opening letter of a teaching, set as a drop cap.

@@ -14,6 +14,21 @@ import type { ArchiveItem } from '@/lib/archive-items'
  * the passages, as chips, which are the fastest way to know whether a
  * teaching is about the thing you came for.
  *
+ * The card opens on the ministry's navy, carrying the verse the teaching
+ * itself leads with.
+ *
+ * The page had no saturated area anywhere: white cards on pale grey,
+ * navy set as text, gold spent on chips and hairlines. Nothing caught the
+ * eye because nothing was permitted to. A colour field is the one thing
+ * that fixes that, and the only field this publication can honestly use
+ * is Scripture — it is what the teaching stands on, it is already in the
+ * body, and it is the one element on this page no other ministry site
+ * has. It is a band across the head of the card rather than a column
+ * beside it, which is what it used to be: the layout stays as drawn.
+ *
+ * A teaching that opens on prose rather than on Scripture has no plate,
+ * and the card begins at its kicker as before.
+ *
  * There is no "read article" button, because there is nothing to go to:
  * the teaching itself carries on below this card as the reader scrolls.
  * What is left are the two things scrolling does not do — being read to,
@@ -38,7 +53,30 @@ export function LeadCard({
   listening: boolean
 }) {
   return (
-    <article className="card card-glow card-glow-lead relative p-6 sm:p-8">
+    <article className="card card-glow card-glow-lead relative overflow-hidden">
+      {item.quote && (
+        <div className="scripture-plate px-6 py-7 sm:px-8 sm:py-9">
+          {/* Ruled on its opening edge, as the scripture figures inside
+              the teachings themselves are ruled. */}
+          <span aria-hidden className="plate-rule absolute inset-y-6 left-0 w-[3px] rounded-full sm:inset-y-8" />
+          <span
+            aria-hidden
+            className="plate-mark absolute right-6 top-5 font-display text-[2.5rem] leading-none sm:right-8"
+          >
+            &ldquo;
+          </span>
+          <blockquote className="relative max-w-[34rem] font-reading text-[1.125rem] font-normal italic leading-[1.5] sm:text-[1.3125rem]">
+            {item.quote.text}
+          </blockquote>
+          {item.quote.cite && (
+            <p className="plate-cite relative mt-3.5 font-mono text-[0.6875rem] uppercase tracking-[0.14em]">
+              {item.quote.cite}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="p-6 sm:p-8">
       {/* Three words saying what this card is. A reader arriving on the
           front page cannot otherwise tell whether the piece at the top is
           the newest, the most read, or the best match for what they just
@@ -130,6 +168,7 @@ export function LeadCard({
             className="h-3.5 w-3.5 transition-transform group-hover:translate-y-0.5"
           />
         </a>
+      </div>
       </div>
     </article>
   )
