@@ -6,6 +6,7 @@ import { listRealRows, type RealRow } from '@/lib/rows'
 import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { toArchiveItems } from '@/lib/archive-items'
+import { readInsight } from '@/lib/insight'
 import { ArchiveList } from '@/components/archive/archive-list'
 
 /**
@@ -56,6 +57,18 @@ export async function ArchiveView({
 }: ArchiveViewProps) {
   /* listRealRows already returns real, published pieces newest first. */
   const source = await listRealRows()
+
+  /* What the site's own counters know about which teachings are read.
+     They are per page and anonymous — see insight.ts — which is exactly
+     enough to order a listing by and not enough to identify anybody. A
+     deployment with no store attached returns nothing and the listing
+     simply has no "most read" to offer. */
+  const views: Record<string, number> = {}
+  try {
+    for (const page of await readInsight()) views[page.path] = page.views
+  } catch {
+    /* Counters are a nicety here; the archive is not held up for them. */
+  }
   const rows = filter ? source.filter(filter) : source
 
   const collectionLd = collection && {
@@ -139,7 +152,7 @@ export async function ArchiveView({
           </div>
         </>
       ) : (
-        <ArchiveList items={toArchiveItems(rows)} header={header} />
+        <ArchiveList items={toArchiveItems(rows, views)} header={header} />
       )}
 
       {/* The other archive. It used to be a panel in a sidebar, which on a

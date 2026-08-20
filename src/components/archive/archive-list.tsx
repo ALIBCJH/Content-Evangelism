@@ -3,10 +3,14 @@
 import * as React from 'react'
 import Link from 'next/link'
 import type { ArchiveItem } from '@/lib/archive-items'
+import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
-import { FeaturedPiece } from '@/components/archive/featured-piece'
-import { PieceRow } from '@/components/archive/piece-row'
+import { useReadingProgress } from '@/lib/reading-progress'
+import { useSpeech } from '@/lib/speech'
+import { LeadCard } from '@/components/archive/lead-card'
+import { PieceCard } from '@/components/archive/piece-card'
+import { TopicsRail } from '@/components/archive/topics-rail'
 
 /**
  * The archive as a reader handles it: filtered, ordered, and marked up
@@ -17,12 +21,16 @@ import { PieceRow } from '@/components/archive/piece-row'
  * canonical archive is the whole set, newest first, which is what renders
  * before a single control is touched.
  *
- * Newest first is the only order. The archive had a sort menu offering
- * oldest, longest and shortest as well, and it was answering a question
- * nobody asks of a ministry's teaching: the thing a reader wants is what
- * was published most recently, and that is what the page already does
- * before it is touched. A control whose default is the only useful
- * setting is furniture.
+ * Three orders, and each answers a question somebody actually has.
+ * Newest is the default and what the page renders untouched. Most read is
+ * new information rather than a rearrangement — it comes from the site's
+ * own anonymous counters, and it is the only way a reader can be told
+ * what the congregation is reading. Shortest is for the reader with ten
+ * minutes before a service.
+ *
+ * An earlier version of this listing dropped its sort menu on the grounds
+ * that newest was the only useful order. That was right about oldest and
+ * longest, which are gone and are not coming back.
  *
  * What the box searches is what the page shows — titles, standfirsts,
  * opening lines, references and sections. It deliberately does not search
@@ -35,10 +43,28 @@ import { PieceRow } from '@/components/archive/piece-row'
  * piece that holds both, which a substring test never did.
  */
 
-/* Newest first, always. The rows arrive in this order already; sorting
-   here is what keeps that true of a filtered set as well. */
-const newestFirst = (a: ArchiveItem, b: ArchiveItem) =>
-  b.publishedAt.localeCompare(a.publishedAt)
+/* The rows arrive newest first; sorting here is what keeps that true of
+   a filtered set as well. */
+const ORDERS = {
+  newest: {
+    label: 'Newest',
+    sort: (a: ArchiveItem, b: ArchiveItem) => b.publishedAt.localeCompare(a.publishedAt),
+  },
+  read: {
+    label: 'Most read',
+    /* Ties fall back to newest rather than to nothing, so an archive
+       whose counters are empty still reads as an archive. */
+    sort: (a: ArchiveItem, b: ArchiveItem) =>
+      b.views - a.views || b.publishedAt.localeCompare(a.publishedAt),
+  },
+  shortest: {
+    label: 'Shortest',
+    sort: (a: ArchiveItem, b: ArchiveItem) =>
+      a.readMinutes - b.readMinutes || b.publishedAt.localeCompare(a.publishedAt),
+  },
+} as const
+
+type Order = keyof typeof ORDERS
 
 export function ArchiveList({
   items,
@@ -50,12 +76,35 @@ export function ArchiveList({
 }) {
   const [query, setQuery] = React.useState('')
   const [onlySaved, setOnlySaved] = React.useState(false)
+  const [order, setOrder] = React.useState<Order>('newest')
+  const [topic, setTopic] = React.useState<Category | null>(null)
   const { ready, toggle, isSaved, saved } = useSaved()
+  const { marks } = useReadingProgress()
+  const speech = useSpeech()
+
+  /* Every section that holds something, counted before the reader's own
+     filters narrow it — the rail is the shape of the archive, not of the
+     current view of it. */
+  const counts = React.useMemo(() => {
+    const tally = new Map<Category, number>()
+    for (const item of items) tally.set(item.category, (tally.get(item.category) ?? 0) + 1)
+    return Array.from(tally, ([category, count]) => ({ category, count })).sort(
+      (a, b) => b.count - a.count || a.category.localeCompare(b.category)
+    )
+  }, [items])
+
+  /* The most recent piece still in hand, and still in the archive: a
+     teaching withdrawn since it was read should not be offered back. */
+  const continueWith = React.useMemo(
+    () => marks.find((held) => items.some((item) => item.slug === held.slug)) ?? null,
+    [marks, items]
+  )
 
   const shown = React.useMemo(() => {
     const pool = items
       .filter((item) => (onlySaved ? saved.includes(item.slug) : true))
-      .sort(newestFirst)
+      .filter((item) => (topic ? item.category === topic : true))
+      .sort(ORDERS[order].sort)
     if (!query.trim()) return pool
     /* Ranked, not filtered: a word in a headline should bring the piece
        to the top, where the same word buried in a body should not. */
@@ -70,156 +119,168 @@ export function ArchiveList({
         { text: item.haystack, weight: 1 },
       ])
     )
-  }, [items, query, onlySaved, saved])
+  }, [items, query, onlySaved, saved, topic, order])
 
   const [lead, ...rest] = shown
-  /* The lead card is the newest piece. Once a reader has filtered the
-     set, the first row is the first match rather than the latest
-     teaching, and dressing it as the latter would be a lie. */
-  const featured = !query && !onlySaved
+  /* The lead card leads the current view: newest untouched, most read
+     when that is the order, the best match when a query is running. It is
+     never dressed as "latest" — the card carries its own date, which is
+     what makes it honest under every one of those. */
+  const featured = shown.length > 0
 
   return (
     <>
-      {/* ── The band: the title, and the controls beside it ───────── */}
+      {/* ── The band: the search, and what is put aside ───────────── */}
       <section className="border-b border-rule bg-raised">
         <div className="shell flex flex-wrap items-center gap-x-4 gap-y-4 py-5 sm:gap-x-8">
-          {header}
-          {/* On a phone the box sits on the title's line rather than under
-              it, which costs the band a whole row. It is short there
-              because it only has to be recognisable: the icon says what it
-              is, and a reader typing into it sees their own words. */}
-          <label className="relative ml-auto w-[9.5rem] shrink-0 sm:w-auto sm:min-w-[18rem] sm:max-w-[22rem]">
-            <span className="sr-only">Search the archive</span>
+          <label className="relative w-full min-w-0 sm:ml-auto sm:w-auto sm:min-w-[20rem] sm:max-w-[26rem] sm:flex-1">
+            <span className="sr-only">Search articles and verses</span>
             <SearchIcon />
+            {/* Verses, and it means it: the scorer weights each piece's
+                Scripture references above its standfirst, so typing
+                "Romans 6" finds the teachings that stand on it. */}
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search"
-              className="focus-ring w-full rounded-chip border border-rule bg-card py-2 pl-9 pr-3 text-[0.875rem] text-ink-900 placeholder:text-ink-subtle sm:py-2.5 sm:pl-10 sm:pr-4 sm:text-[0.9375rem]"
+              placeholder="Search articles and verses"
+              className="focus-ring w-full rounded-chip border border-rule bg-card py-2.5 pl-10 pr-4 text-[0.9375rem] text-ink-900 placeholder:text-ink-subtle"
             />
           </label>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Saved is a filter, not a page: the archive is where a
-                reader left the piece, so it is where they come back to
-                it. It appears only once there is something in it. */}
-            {ready && saved.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setOnlySaved((current) => !current)}
-                aria-pressed={onlySaved}
-                data-track="filter-saved"
-                className={`focus-ring kicker-lg rounded-chip border px-3.5 py-2 transition-colors ${
-                  onlySaved
-                    ? 'border-gold bg-chip-gold text-gold-ink'
-                    : 'border-rule bg-card text-ink-muted hover:border-gold-pale hover:text-gold-ink'
-                }`}
-              >
-                Saved <span className="tabular">({saved.length})</span>
-              </button>
-            )}
-          </div>
+          {/* Saved is a filter, not a page: the archive is where a reader
+              left the piece, so it is where they come back to it. It
+              appears only once there is something in it. */}
+          {ready && saved.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setOnlySaved((current) => !current)}
+              aria-pressed={onlySaved}
+              data-track="filter-saved"
+              className={`focus-ring shrink-0 rounded-chip px-4 py-2.5 text-[0.875rem] font-semibold transition-colors ${
+                onlySaved
+                  ? 'bg-gold text-plate-deep'
+                  : 'bg-plate text-plate-pale hover:bg-plate-deep'
+              }`}
+            >
+              Saved · <span className="tabular">{saved.length}</span>
+            </button>
+          )}
         </div>
       </section>
 
-      <section className="shell pb-24 pt-9">
-        {shown.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="font-display text-xl text-ink-muted">
-              {onlySaved && saved.length === 0
-                ? 'Nothing saved yet. Use “Save for later” on a piece and it waits here.'
-                : `Nothing in the archive matches “${query.trim()}”.`}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('')
-                  setOnlySaved(false)
-                }}
-                className="focus-ring kicker-lg rounded-chip border border-rule bg-card px-4 py-2.5 text-navy transition-colors hover:border-gold hover:text-gold"
-              >
-                Clear
-              </button>
-              {query.trim() && (
-                <Link
-                  href={`/search?q=${encodeURIComponent(query.trim())}`}
-                  className="kicker-lg text-navy transition-colors hover:text-gold"
+      {/* ── The archive: the rail, the lead, and the rest ──────────── */}
+      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-8 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
+        <aside className="lg:row-span-2 xl:row-span-1">
+          <TopicsRail
+            counts={counts}
+            total={items.length}
+            active={topic}
+            onPick={setTopic}
+            continueWith={continueWith}
+            speech={speech}
+            onPause={speech.pause}
+            onResume={speech.resume}
+            onStop={speech.stop}
+          />
+        </aside>
+
+        <div className="min-w-0">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+            {header}
+            {/* Ordering, as three chips rather than a menu: there are only
+                three, and a reader should be able to see which one is on
+                without opening anything. */}
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {(Object.keys(ORDERS) as Order[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setOrder(key)}
+                  aria-pressed={order === key}
+                  className={`focus-ring kicker rounded-chip border px-3.5 py-2 transition-colors ${
+                    order === key
+                      ? 'border-navy bg-card text-navy'
+                      : 'border-rule bg-card text-ink-muted hover:border-gold-pale hover:text-gold-ink'
+                  }`}
                 >
-                  Search every word →
-                </Link>
-              )}
+                  {ORDERS[key].label}
+                </button>
+              ))}
             </div>
           </div>
-        ) : (
-          <>
-            {/* The newest piece, twice over and one at a time. The lead
-                card is a front page and needs a page to be one on; at
-                phone width it filled the screen and the archive looked
-                like a single article. So a phone gets the piece as a row
-                marked Latest, and the wide page keeps the card. Only one
-                of the two is ever rendered to a reader or to assistive
-                technology, the other being display:none at that width. */}
-            {featured && lead && (
-              <>
-                <div className="sm:hidden">
-                  <PieceRow
-                    item={lead}
-                    latest
-                    saved={ready && isSaved(lead.slug)}
-                    ready={ready}
-                    onToggle={() => toggle(lead.slug)}
-                  />
-                </div>
-                <div className="hidden sm:block">
-                  <FeaturedPiece
-                    item={lead}
-                    saved={ready && isSaved(lead.slug)}
-                    ready={ready}
-                    onToggle={() => toggle(lead.slug)}
-                  />
-                </div>
-              </>
-            )}
 
-            {(featured ? rest : shown).length > 0 && (
-              <>
-                <h2 className="mb-5 mt-12 flex items-center gap-4">
-                  <span className="shrink-0 font-display text-[1.25rem] font-medium text-navy">
-                    {featured ? 'More articles' : 'Articles'}
-                  </span>
-                  <span
-                    aria-hidden
-                    className="h-px flex-1 bg-gradient-to-r from-gold-pale to-rule"
-                  />
-                  <span className="kicker shrink-0 text-ink-subtle">
-                    <span className="tabular">{(featured ? rest : shown).length}</span>{' '}
-                    {(featured ? rest : shown).length === 1 ? 'piece' : 'pieces'}
-                  </span>
-                </h2>
+          {shown.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="font-display text-xl text-ink-muted">
+                {onlySaved && saved.length === 0
+                  ? 'Nothing saved yet. Use \u201cSave\u201d on a piece and it waits here.'
+                  : query.trim()
+                    ? `Nothing in the archive matches \u201c${query.trim()}\u201d.`
+                    : 'Nothing is filed under that yet.'}
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery('')
+                    setOnlySaved(false)
+                    setTopic(null)
+                  }}
+                  className="focus-ring kicker-lg rounded-chip border border-rule bg-card px-4 py-2.5 text-navy transition-colors hover:border-gold hover:text-gold"
+                >
+                  Clear
+                </button>
+                {query.trim() && (
+                  <Link
+                    href={`/search?q=${encodeURIComponent(query.trim())}`}
+                    className="kicker-lg text-navy transition-colors hover:text-gold"
+                  >
+                    Search every word →
+                  </Link>
+                )}
+              </div>
+            </div>
+          ) : (
+            featured &&
+            lead && (
+              <LeadCard
+                item={lead}
+                saved={ready && isSaved(lead.slug)}
+                ready={ready}
+                onToggle={() => toggle(lead.slug)}
+                listening={speech.piece?.slug === lead.slug}
+                onListen={() =>
+                  speech.piece?.slug === lead.slug && speech.status === 'playing'
+                    ? speech.pause()
+                    : speech.play({ slug: lead.slug, title: lead.title, href: lead.href })
+                }
+              />
+            )
+          )}
+        </div>
 
-                {/* Two across from `2xl`. One column on a 1460px page is a
-                    card with half a metre of nothing beside it; below that
-                    width two would each be too narrow to set a headline
-                    and a pulled verse side by side. */}
-                <ol className="grid gap-5 2xl:grid-cols-2">
-                  {(featured ? rest : shown).map((item) => (
-                    <li key={item.slug}>
-                      <PieceRow
-                        item={item}
-                        saved={ready && isSaved(item.slug)}
-                        ready={ready}
-                        onToggle={() => toggle(item.slug)}
-                      />
-                    </li>
-                  ))}
-                </ol>
-              </>
-            )}
-          </>
+        {rest.length > 0 && (
+          <div className="min-w-0">
+            <h2 className="sr-only">The rest of the archive</h2>
+            {/* Two across between sm and xl, where this column runs the
+                width of the page; one in the narrow column beside the
+                lead, and one on a phone. */}
+            <ol className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-1">
+              {rest.map((item) => (
+                <li key={item.slug}>
+                  <PieceCard
+                    item={item}
+                    saved={ready && isSaved(item.slug)}
+                    ready={ready}
+                    onToggle={() => toggle(item.slug)}
+                  />
+                </li>
+              ))}
+            </ol>
+          </div>
         )}
-      </section>
+      </div>
     </>
   )
 }
