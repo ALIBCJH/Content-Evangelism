@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { usePathname } from 'next/navigation'
 import type { ClickLabel } from '@/lib/insight-shape'
+import { optedOut, report } from '@/lib/insight-report'
 
 /**
  * The reader-side half of the counters.
@@ -29,20 +30,8 @@ import type { ClickLabel } from '@/lib/insight-shape'
  * all. A reader who has asked not to be counted is not counted.
  */
 
-const ENDPOINT = '/api/insight'
 const IDLE_AFTER_MS = 2 * 60 * 1000
 const FLUSH_EVERY_MS = 30 * 1000
-
-function optedOut(): boolean {
-  if (typeof navigator === 'undefined') return true
-  const nav = navigator as Navigator & { globalPrivacyControl?: boolean; msDoNotTrack?: string }
-  return (
-    nav.doNotTrack === '1' ||
-    nav.msDoNotTrack === '1' ||
-    (window as Window & { doNotTrack?: string }).doNotTrack === '1' ||
-    nav.globalPrivacyControl === true
-  )
-}
 
 export function Tracker() {
   const pathname = usePathname()
@@ -59,27 +48,12 @@ export function Tracker() {
 
     const send = (useBeacon: boolean) => {
       if (!seconds && !clicks.length && !finished && !views) return
-      const body = JSON.stringify({
-        batches: [{ path: pathname, views, seconds, finished, clicks }],
-      })
+      const batch = { path: pathname, views, seconds, finished, clicks }
       views = 0
       seconds = 0
       finished = 0
       clicks = []
-      try {
-        if (useBeacon && navigator.sendBeacon) {
-          navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }))
-        } else {
-          void fetch(ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body,
-            keepalive: true,
-          })
-        }
-      } catch {
-        /* A counter is never worth an error in a reader's console. */
-      }
+      report([batch], useBeacon)
     }
 
     /* One second of engaged time, only if the page is visible and the

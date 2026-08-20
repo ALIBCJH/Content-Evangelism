@@ -57,6 +57,25 @@ export default function InsightPage() {
     }),
     { views: 0, seconds: 0, finished: 0 }
   )
+
+  /* The question the desk actually asks is not how many pages were
+     opened but how many teachings were read — and since the archive
+     reads a teaching in place, a reading is counted against the teaching
+     wherever it happened rather than against the page it sat on. These
+     are those readings, and the share of them that reached the end. */
+  const teachings = (pages ?? [])
+    .filter((p) => p.path.startsWith('/articles/'))
+    .reduce(
+      (sum, p) => ({
+        reads: sum.reads + p.views,
+        seconds: sum.seconds + p.seconds,
+        finished: sum.finished + p.finished,
+      }),
+      { reads: 0, seconds: 0, finished: 0 }
+    )
+  const throughToTheEnd = teachings.reads
+    ? Math.round((teachings.finished / teachings.reads) * 100)
+    : 0
   const usedLabels = CLICK_LABELS.filter((label) =>
     (pages ?? []).some((p) => (p.clicks[label] ?? 0) > 0)
   )
@@ -112,15 +131,17 @@ export default function InsightPage() {
 
       {pages && pages.length > 0 && (
         <>
-          <dl className="mb-9 grid gap-4 sm:grid-cols-3">
+          <dl className="mb-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              ['Visits', totals.views.toLocaleString()],
-              ['Time read', minutes(totals.seconds)],
-              ['Reached the end', `${totals.finished.toLocaleString()}`],
-            ].map(([k, v]) => (
+              ['Teachings read', teachings.reads.toLocaleString(), 'A teaching opened, wherever it was read'],
+              ['Read to the end', `${throughToTheEnd}%`, `${teachings.finished.toLocaleString()} of ${teachings.reads.toLocaleString()}`],
+              ['Time spent reading', minutes(teachings.seconds), 'Engaged time in the teachings themselves'],
+              ['Pages opened', totals.views.toLocaleString(), 'Every page on the site, the archive included'],
+            ].map(([k, v, note]) => (
               <div key={k} className="rounded-panel border border-rule bg-card px-6 py-5">
                 <dt className="kicker mb-2 text-ink-subtle">{k}</dt>
                 <dd className="font-display text-[1.75rem] text-navy">{v}</dd>
+                <dd className="mt-1.5 text-[0.75rem] leading-[1.5] text-ink-subtle">{note}</dd>
               </div>
             ))}
           </dl>

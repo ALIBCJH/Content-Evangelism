@@ -96,6 +96,7 @@ export function LeadCard({
           type="button"
           onClick={onListen}
           aria-pressed={listening}
+          data-track="listen-article"
           className="focus-ring inline-flex items-center gap-2 rounded-chip bg-cta px-5 py-2.5 text-[0.9375rem] font-semibold text-cta-ink transition-colors hover:bg-cta-hover"
         >
           <Volume2 aria-hidden className="h-4 w-4" />
