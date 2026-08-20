@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { inView, progressThrough } from '@/lib/read-insight'
+import { minutesLeft } from '@/lib/reading-progress'
 import { activeSection } from '@/lib/section-time'
 import { cleanBatch, cleanPath, CLICK_LABELS } from '@/lib/insight-shape'
 
@@ -167,5 +168,24 @@ describe('section seconds at the endpoint', () => {
 
   it('drops a batch whose only content is an unusable section', () => {
     expect(cleanBatch({ path: '/articles/x', sections: { 'NOT AN ID': 60 } })).toBeNull()
+  })
+})
+
+describe('the shelf a reader comes back to', () => {
+  it('offers a piece back only while it is genuinely unfinished', () => {
+    /* mark() keeps what is begun and not finished; the thresholds are what
+       decide whether a reader is offered a teaching again. */
+    const begun = { progress: 0.4, readMinutes: 10 }
+    expect(minutesLeft(begun)).toBe(6)
+  })
+
+  it('never says nought minutes left', () => {
+    expect(minutesLeft({ progress: 0.999, readMinutes: 10 })).toBe(1)
+    expect(minutesLeft({ progress: 1, readMinutes: 1 })).toBe(1)
+  })
+
+  it('rounds what is left rather than flooring it away', () => {
+    expect(minutesLeft({ progress: 0.5, readMinutes: 9 })).toBe(5)
+    expect(minutesLeft({ progress: 0.1, readMinutes: 20 })).toBe(18)
   })
 })
