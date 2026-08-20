@@ -12,7 +12,7 @@ import { AskQuestion } from '@/components/ask-question'
 import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
 import { JsonLd } from '@/components/json-ld'
 import { ContinueReading } from '@/components/continue-reading'
-import { FulfilledNow } from '@/components/fulfilled-now'
+import { MoreArticles } from '@/components/more-articles'
 import { ReadingProgress } from '@/components/progress-bar'
 import { ShareRow } from '@/components/share-row'
 import { buttonVariants } from '@/components/ui/button'
@@ -70,6 +70,12 @@ export interface ArticleLayoutProps {
   scriptures?: string[]
   /** Set at the close, above the ornament: a scripture list, a note. */
   colophon?: React.ReactNode
+  /**
+   * What the rail beside the teaching offers. Deliberately not the pieces
+   * at the foot of it: the same rows twice is one recommendation wearing
+   * two hats.
+   */
+  more: RealRow[]
   /** The body of the teaching. */
   children: React.ReactNode
 }
@@ -144,6 +150,7 @@ export function ArticleLayout({
   hero,
   headings,
   related,
+  more,
   body,
   scriptures,
   colophon,
@@ -341,7 +348,7 @@ export function ArticleLayout({
               the reading track and squeeze the teaching into the rail. */}
           <div className="hidden lg:block xl:hidden">
             <ArticleRail headings={headings}>
-              <FulfilledNow />
+              <MoreArticles rows={more} />
             </ArticleRail>
           </div>
 
@@ -351,14 +358,15 @@ export function ArticleLayout({
               <ChapterNav headings={headings} />
             </aside>
           )}
-          {/* The right-hand rail used to list the Scriptures the teaching
-              cites, which is apparatus: a reader consults it after the
-              reading, not during it. What belongs beside a teaching about
-              repentance is the ministry's own record of what it said would
-              happen — so the scriptures moved to the close, where they are
-              consulted, and the archive took the rail. */}
+          {/* This rail has carried two things that were not it. First the
+              Scriptures the teaching cites, which is apparatus — consulted
+              after a reading rather than during one, and now at the close.
+              Then the prophetic record, which is a different archive
+              making a different claim, and reads beside a teaching as a
+              change of subject. What a reader halfway through a teaching
+              wants in their eyeline is the next teaching. */}
           <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-3 xl:row-start-1 xl:block">
-            <FulfilledNow />
+            <MoreArticles rows={more} />
           </aside>
         </div>
 

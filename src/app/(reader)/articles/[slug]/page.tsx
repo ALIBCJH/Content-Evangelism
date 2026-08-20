@@ -75,6 +75,15 @@ export default async function PostedArticlePage({ params }: Params) {
      body, which resolve against the same list. */
   const rows = await listRealRows()
   const related = relatedRows(rows, article.slug, article.category)
+
+  /* What the rail offers: the archive minus this piece and minus what the
+     close of it already carries, newest first. Five, because a rail is
+     read down in one pass or not at all. */
+  const more = rows
+    .filter(
+      (row) => row.slug !== article.slug && !related.some((near) => near.slug === row.slug)
+    )
+    .slice(0, 5)
   const links = Object.fromEntries(
     rows.map((row) => [row.slug, { href: row.href, title: row.title, dek: row.dek }])
   )
@@ -167,6 +176,7 @@ export default async function PostedArticlePage({ params }: Params) {
           : {})}
         headings={headings}
         related={related}
+        more={more}
         body={article.body}
       >
         <ArticleProse body={article.body} links={links} />
