@@ -4,7 +4,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { X } from 'lucide-react'
+import { BookOpen, GraduationCap, Info, RadioTower, Search, X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { navSections, siteInfo } from '@/lib/content'
@@ -47,6 +47,20 @@ import { ThemeToggle } from '@/components/theme-toggle'
  * a second to finish. The sheet slides up and its contents are already
  * there. Pressing "/" still opens search on a keyboard.
  */
+/**
+ * A mark for each destination in the drawer.
+ *
+ * Keyed by the path rather than the label, so renaming a section in the
+ * navigation does not silently drop its icon; a path with no mark falls
+ * back to the book, which is what most of this site is.
+ */
+const SECTION_ICON: Record<string, typeof BookOpen> = {
+  '/': BookOpen,
+  '/prophecies': RadioTower,
+  '/teachings': GraduationCap,
+  '/about': Info,
+}
+
 export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
   const [open, setOpen] = React.useState(false)
   const [searching, setSearching] = React.useState(false)
@@ -295,63 +309,74 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               className="absolute inset-0 h-full w-full cursor-default bg-plate-deep/70"
             />
 
-            {/* It comes out of the button that opened it: anchored under
-                the masthead in the same corner, scaled up from that
-                corner, and gone the same way. It used to rise from the
-                foot of the screen, which is a long way from the hand that
-                pressed the menu and a long way from the menu itself. */}
+            {/* A drawer off the edge the button is on, full height, over a
+                scrim: the shape every phone already knows from its mail
+                and its settings. One line per destination, a mark beside
+                it, and the page you are on held in a pill — which is how
+                a reader is told where they are without reading anything.
+
+                It comes from the right because the button is on the
+                right. Sliding in from the far side is the complaint that
+                got the bottom sheet replaced. */}
             <motion.div
               ref={panelRef}
-              initial={{ opacity: 0, scale: 0.92, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -8 }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
               transition={spring}
-              style={{ transformOrigin: 'top right' }}
-              className="absolute right-3 top-[4.75rem] flex max-h-[calc(100vh-6rem)] w-[min(21rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[20px] border border-rule bg-raised shadow-drawer"
+              className="absolute inset-y-0 right-0 flex w-[min(19.5rem,86vw)] flex-col overflow-hidden border-l border-rule bg-raised shadow-drawer"
             >
-              <div className="flex items-center justify-between px-5 pb-3 pt-4">
-                <span className="kicker text-ink-subtle">Menu</span>
+              <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-3 pt-4">
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <Image
+                    src="/logo.png"
+                    alt=""
+                    width={28}
+                    height={28}
+                    unoptimized
+                    className="h-7 w-7 shrink-0 rounded-full"
+                  />
+                  {/* Two lines rather than an ellipsis: the name of the
+                      publication is not a thing to abbreviate. */}
+                  <span className="font-display text-[0.875rem] font-semibold leading-[1.2] text-navy">
+                    {siteInfo.name}
+                  </span>
+                </span>
                 <button
                   type="button"
                   aria-label="Close menu"
                   onClick={() => setOpen(false)}
-                  className="focus-ring icon-only grid h-11 w-11 place-items-center rounded-tile border border-rule bg-card text-navy"
+                  className="focus-ring icon-only grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-navy"
                 >
                   <X aria-hidden className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto overscroll-contain px-3 pb-3">
+              <div className="flex-1 overflow-y-auto overscroll-contain px-2 pb-4">
                 <nav aria-label="Sections">
-                  <ul>
+                  <ul className="flex flex-col gap-0.5">
                     {navSections.map((section) => {
                       const current = isCurrent(section.href)
+                      const Icon = SECTION_ICON[section.href] ?? BookOpen
                       return (
                         <li key={section.href}>
                           <Link
                             href={section.href}
                             aria-current={current ? 'page' : undefined}
                             className={cn(
-                              'relative flex min-h-[56px] items-center justify-between gap-3 rounded-tile py-3 pl-3.5 pr-2.5 transition-colors',
-                              current ? 'bg-chip' : 'active:bg-chip/60'
+                              'flex min-h-[48px] items-center gap-4 rounded-full pl-4 pr-5 transition-colors',
+                              current
+                                ? 'bg-chip-gold font-semibold text-gold-ink'
+                                : 'text-ink-700 active:bg-surface-2'
                             )}
                           >
-                            {current && (
-                              <span
-                                aria-hidden
-                                className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-gold"
-                              />
-                            )}
-                            <span className="min-w-0">
-                              <span className="block font-display text-[1.125rem] leading-tight text-navy">
-                                {section.label}
-                              </span>
-                              <span className="mt-0.5 block truncate text-xs text-ink-subtle">
-                                {section.items.slice(0, 3).join(' · ')}
-                              </span>
-                            </span>
-                            <span aria-hidden className="font-mono text-base text-gold">
-                              →
+                            <Icon
+                              aria-hidden
+                              className={cn('h-[1.125rem] w-[1.125rem] shrink-0', current ? 'text-gold-ink' : 'text-ink-subtle')}
+                              strokeWidth={current ? 2.2 : 1.8}
+                            />
+                            <span className="truncate font-sans text-[0.9375rem]">
+                              {section.label}
                             </span>
                           </Link>
                         </li>
@@ -359,6 +384,19 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                     })}
                   </ul>
                 </nav>
+
+                {/* What the sections are not: a way to search everything,
+                    which on a wide screen is a control in the masthead. */}
+                <div className="my-2 border-t border-rule" />
+
+                <button
+                  type="button"
+                  onClick={openSearch}
+                  className="flex min-h-[48px] w-full items-center gap-4 rounded-full pl-4 pr-5 text-ink-700 transition-colors active:bg-surface-2"
+                >
+                  <Search aria-hidden className="h-[1.125rem] w-[1.125rem] shrink-0 text-ink-subtle" strokeWidth={1.8} />
+                  <span className="font-sans text-[0.9375rem]">Search the archive</span>
+                </button>
               </div>
             </motion.div>
           </div>
