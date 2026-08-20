@@ -15,6 +15,8 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { BodyEditor } from '@/components/admin/body-editor'
+import { clearDraft, readDraft, useDraftAutosave, worthKeeping, type Draft } from '@/lib/draft'
 import { Input } from '@/components/ui/input'
 
 interface ManagedArticle {
@@ -51,6 +53,11 @@ function StatTile({ label, value, hint }: { label: string; value: string; hint?:
   )
 }
 
+/** Words in a held draft, for the offer to say how much is at stake. */
+function wordsIn(body: string): number {
+  return body.trim() ? body.trim().split(/\s+/).filter(Boolean).length : 0
+}
+
 export default function AdminPage() {
   const [tab, setTab] = React.useState<Tab>('dashboard')
   const [postingKey, setPostingKey] = React.useState('')
@@ -73,7 +80,41 @@ export default function AdminPage() {
   const [imageUrl, setImageUrl] = React.useState('')
   const [imageAlt, setImageAlt] = React.useState('')
   const [tags, setTags] = React.useState('')
-  const [showPreview, setShowPreview] = React.useState(false)
+  /* A draft found in this browser from a previous sitting. Offered rather
+     than restored: the desk may have published since, and having the form
+     fill itself with an old piece would be worse than losing it. */
+  const [held, setHeld] = React.useState<Draft | null>(null)
+
+  React.useEffect(() => {
+    const draft = readDraft()
+    if (draft && worthKeeping(draft)) setHeld(draft)
+  }, [])
+
+  const savedAt = useDraftAutosave({
+    editingSlug,
+    title,
+    category,
+    dek,
+    body,
+    authorName,
+    imageUrl,
+    imageAlt,
+    tags,
+  })
+
+  const restore = (draft: Draft) => {
+    setEditingSlug(draft.editingSlug)
+    setTitle(draft.title)
+    setCategory(draft.category)
+    setDek(draft.dek)
+    setBody(draft.body)
+    setAuthorName(draft.authorName)
+    setImageUrl(draft.imageUrl)
+    setImageAlt(draft.imageAlt)
+    setTags(draft.tags)
+    setHeld(null)
+    setTab('write')
+  }
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'done'>('idle')
   const [error, setError] = React.useState<string | null>(null)
   const [publishedUrl, setPublishedUrl] = React.useState<string | null>(null)
@@ -120,9 +161,11 @@ export default function AdminPage() {
   }, [articles, filter, categoryFilter])
 
   const clearForm = () => {
+    clearDraft()
+    setHeld(null)
     setEditingSlug(null)
     setTitle(''); setDek(''); setBody(''); setImageUrl(''); setImageAlt(''); setAuthorName(''); setTags('')
-    setPublishedUrl(null); setStatus('idle'); setError(null); setShowPreview(false)
+    setPublishedUrl(null); setStatus('idle'); setError(null)
   }
 
   const startEdit = (article: ManagedArticle) => {
@@ -170,6 +213,10 @@ export default function AdminPage() {
       }
       setPublishedUrl(json.url)
       setStatus('done')
+      /* Let go of the held draft only now: a piece that failed to publish
+         is a piece the desk still needs. */
+      clearDraft()
+      setHeld(null)
       loadArticles()
     } catch {
       setError('Could not reach the server.')
@@ -443,55 +490,45 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div>
-                <div className="flex items-center justify-between">
-                  <label htmlFor="a-body" className={fieldLabel}>Article body</label>
-                  <button
-                    type="button"
-                    onClick={() => setShowPreview((v) => !v)}
-                    className="focus-ring inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
-                  >
-                    {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    {showPreview ? 'Hide preview' : 'Preview'}
-                  </button>
-                </div>
-                <textarea
-                  id="a-body" required minLength={50} rows={14} value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder={'The opening paragraph…\n\n## A Subheading\n\nThe next paragraph…'}
-                  className={textareaClass}
-                />
-                {/* Linking out of a teaching — to another teaching, to a
-                    section — is most of what internal linking is on a site
-                    this size, so the syntax for it is spelled out here. */}
-                <div className="mt-2 space-y-1 font-sans text-xs leading-relaxed text-ink-subtle">
-                  <p>
-                    Blank line = new paragraph · <code className="text-gold">## </code> subheading ·
-                    <code className="text-gold"> &gt; </code> quoted Scripture (close with
-                    <code className="text-gold"> — Isaiah 40:3</code>) ·
-                    <code className="text-gold"> - </code> or <code className="text-gold">1. </code> for a list
+              {/* Something typed here and never published. Offered rather
+                  than restored, because the desk may have published it
+                  since from another machine — filling the form with an old
+                  copy would be worse than losing it. */}
+              {held && (
+                <div className="rounded-2xl border border-gold/40 bg-chip-gold/40 px-5 py-4">
+                  <p className="font-sans text-sm text-ink-strong">
+                    An unpublished draft is held in this browser
+                    {held.title.trim() ? (
+                      <>
+                        {' '}
+                        — <span className="font-semibold">{held.title.trim()}</span>
+                      </>
+                    ) : null}
+                    , {wordsIn(held.body)} words.
                   </p>
-                  <p>
-                    Link a phrase with <code className="text-gold">[the rapture](/articles/rapture-or-second-coming)</code> ·
-                    emphasise with <code className="text-gold">*italic*</code> or <code className="text-gold">**bold**</code>
-                  </p>
-                </div>
-              </div>
-
-              {showPreview && (title || dek || body) && (
-                <div className="rounded-2xl border border-hairline bg-surface p-6">
-                  <p className="kicker text-gold">Preview</p>
-                  {title && (
-                    <h2 className="mt-4 font-display text-2xl font-semibold leading-tight text-ink-strong">
-                      {title}
-                    </h2>
-                  )}
-                  {dek && (
-                    <p className="mt-3 font-serif text-base italic leading-relaxed text-ink-muted">{dek}</p>
-                  )}
-                  {body && <ArticleProse body={body} />}
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => restore(held)}
+                      className="focus-ring rounded-chip bg-plate px-4 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-plate-pale transition-colors hover:bg-plate-deep"
+                    >
+                      Bring it back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearDraft()
+                        setHeld(null)
+                      }}
+                      className="focus-ring font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
+                    >
+                      Discard it
+                    </button>
+                  </div>
                 </div>
               )}
+
+              <BodyEditor value={body} onChange={setBody} />
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
@@ -541,6 +578,17 @@ export default function AdminPage() {
               <div className="border-t border-hairline pt-6">
                 {error && (
                   <p role="alert" className="mb-4 font-sans text-sm text-status-danger">{error}</p>
+                )}
+                {/* Said out loud, because a writer who cannot see that it
+                    saved does not believe that it saved. */}
+                {savedAt && (
+                  <p className="mb-3 font-sans text-xs text-ink-subtle">
+                    Draft kept in this browser · saved{' '}
+                    {new Date(savedAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
                 )}
                 <Button type="submit" size="lg" disabled={status === 'saving'} className="w-full sm:w-auto">
                   {status === 'saving' ? (
