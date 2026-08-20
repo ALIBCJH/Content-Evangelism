@@ -116,7 +116,9 @@ export function TopicsRail({
       )}
 
       {speech.piece && (
-        <>
+        /* Below lg this is at the bottom of the page and the fixed bar
+           carries it instead — see audio-bar.tsx. */
+        <div className="hidden lg:block">
           <Divider />
           <p className="kicker text-ink-subtle">Audio queue</p>
           <div className="mt-3 rounded-panel bg-plate p-4 text-plate-pale">
@@ -170,7 +172,7 @@ export function TopicsRail({
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   )

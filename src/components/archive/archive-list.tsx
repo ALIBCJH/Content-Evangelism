@@ -8,6 +8,7 @@ import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
 import { useReadingProgress } from '@/lib/reading-progress'
 import { useSpeech } from '@/lib/speech'
+import { AudioBar } from '@/components/archive/audio-bar'
 import { InlineArticle } from '@/components/archive/inline-article'
 import { LeadCard } from '@/components/archive/lead-card'
 import { PieceCard } from '@/components/archive/piece-card'
@@ -184,6 +185,15 @@ export function ArchiveList({
           )}
         </div>
       </section>
+
+      {/* On a phone the rail is at the foot of the page, so what is being
+          read aloud is shown at the foot of the window instead. */}
+      <AudioBar
+        speech={speech}
+        onPause={speech.pause}
+        onResume={speech.resume}
+        onStop={speech.stop}
+      />
 
       {/* ── The archive: the rail, the lead, and the rest ──────────── */}
       {/* On a wide screen the rail is orientation, and it belongs beside

@@ -489,6 +489,16 @@ option {
   background: var(--chip);
 }
 
+/* While a teaching is being read aloud on a phone, the player is a bar
+   across the foot of the window and the ask button is fixed to the same
+   corner. The button steps over it rather than sitting on top of it. The
+   bar is only there below lg, so neither is this. */
+@media (max-width: 1023px) {
+  body[data-audio] .ask-launcher {
+    bottom: 6.25rem;
+  }
+}
+
 /* The opening letter of a teaching, set as a drop cap.
    Only where a page asks for it: a teaching read on its own page opens
    under its own headline and standfirst, where a drop cap would be the

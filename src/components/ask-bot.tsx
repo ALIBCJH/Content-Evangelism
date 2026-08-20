@@ -347,7 +347,7 @@ export function AskBot() {
         onClick={() => setOpen((was) => !was)}
         aria-expanded={open}
         aria-controls="ask-bot-panel"
-        className={`focus-ring fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-plate text-plate-pale shadow-glow-soft transition-all duration-300 hover:bg-plate-deep active:translate-y-px sm:right-6 sm:h-14 sm:w-14 ${
+        className={`ask-launcher focus-ring fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-plate text-plate-pale shadow-glow-soft transition-all duration-300 hover:bg-plate-deep active:translate-y-px sm:right-6 sm:h-14 sm:w-14 ${
           hidden ? 'pointer-events-none translate-y-24 opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >

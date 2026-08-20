@@ -27,8 +27,16 @@ import * as React from 'react'
  *     engine says it has started, and a start that never comes is
  *     reported as what it is.
  *   - Safari and iOS speak only what begins inside a gesture, and the
- *     gesture is gone by the time a fetch returns. So the engine is
- *     opened synchronously in the click and fed afterwards.
+ *     gesture is gone by the time a fetch returns. An empty utterance
+ *     spoken in the click is not enough on a phone — it is a no-op, and
+ *     the queue stays locked. So the teaching's own title is spoken
+ *     there instead: real audio, inside the tap, which unlocks the queue
+ *     and tells the reader at once that something is happening. The body
+ *     follows it when the text arrives.
+ *   - `pause()` is a no-op on Android Chrome, and a pause button that
+ *     does nothing is worse than none. Pausing cancels and remembers the
+ *     sentence; resuming speaks it again from its start. A sentence is
+ *     short enough for that to read as a pause rather than as a repeat.
  *
  * The text comes from the public API rather than from the listing, so no
  * article body crosses to the browser until somebody asks to be read to.
@@ -128,7 +136,18 @@ export function useSpeech() {
     startedAt: number
     utterance: SpeechSynthesisUtterance | null
     token: number
-  }>({ parts: [], at: 0, spoken: 0, length: 0, startedAt: 0, utterance: null, token: 0 })
+    /** The title finished before the body arrived; the body starts itself. */
+    awaiting: boolean
+  }>({
+    parts: [],
+    at: 0,
+    spoken: 0,
+    length: 0,
+    startedAt: 0,
+    utterance: null,
+    token: 0,
+    awaiting: false,
+  })
 
   const stop = React.useCallback(() => {
     queue.current.token += 1
@@ -178,6 +197,9 @@ export function useSpeech() {
         return
       }
 
+      /* Recorded before it is spoken, so a pause knows where to come
+         back to — Android cancels rather than pauses. */
+      held.at = index
       const utterance = new SpeechSynthesisUtterance(part)
       const chosen = pickVoice(window.speechSynthesis.getVoices())
       if (chosen) {
@@ -211,23 +233,65 @@ export function useSpeech() {
       }
 
       window.speechSynthesis.cancel()
-
-      /* Spoken inside the click that asked for it, before anything is
-         awaited. Safari and iOS only permit speech that begins in a
-         gesture, and a gesture does not survive a fetch — so the engine
-         is opened here with an empty utterance nobody hears, and the
-         teaching follows once its text has arrived. */
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(''))
-
       const token = queue.current.token + 1
-      queue.current.token = token
+      queue.current = {
+        parts: [],
+        at: 0,
+        spoken: 0,
+        length: 0,
+        startedAt: Date.now(),
+        utterance: null,
+        token,
+        awaiting: false,
+      }
       setState({ piece, status: 'loading', elapsed: 0, total: 0 })
 
-      /* A machine with no voice installed accepts speak() and stays
-         silent. Better to say so than to run a clock over nothing. */
+      /* Spoken inside the tap that asked for it, before anything is
+         awaited: a phone only permits speech that begins in a gesture,
+         and the gesture does not survive a fetch. The title is real audio
+         — an empty utterance is a no-op on iOS and leaves the queue shut. */
+      const opener = new SpeechSynthesisUtterance(piece.title)
+      const ready = window.speechSynthesis.getVoices()
+      const early = pickVoice(ready)
+      if (early) {
+        opener.voice = early
+        opener.lang = early.lang
+      }
+      opener.onstart = () => {
+        if (token !== queue.current.token) return
+        window.clearTimeout(watchdog)
+        queue.current.startedAt = Date.now()
+        setState((current) => ({ ...current, status: 'playing' }))
+      }
+      opener.onend = () => {
+        if (token !== queue.current.token) return
+        /* The body may not have arrived yet; if not, it starts itself. */
+        if (queue.current.parts.length > 0) speakFrom(0, token)
+        else queue.current.awaiting = true
+      }
+      opener.onerror = () => {
+        if (token !== queue.current.token) return
+        window.clearTimeout(watchdog)
+        setState({ piece, status: 'failed', elapsed: 0, total: 0 })
+      }
+      queue.current.utterance = opener
+
+      /* A machine with no voice accepts speak() and stays silent, so the
+         claim that it is playing waits for the engine to say it started. */
+      const watchdog = window.setTimeout(() => {
+        if (token !== queue.current.token) return
+        if (!window.speechSynthesis.speaking) {
+          setState((current) => ({ ...current, status: 'unsupported' }))
+        }
+      }, START_TIMEOUT)
+
+      window.speechSynthesis.speak(opener)
+
       const found = await voices()
       if (token !== queue.current.token) return
       if (found.length === 0) {
+        window.clearTimeout(watchdog)
+        window.speechSynthesis.cancel()
         setState({ piece, status: 'unsupported', elapsed: 0, total: 0 })
         return
       }
@@ -243,83 +307,48 @@ export function useSpeech() {
       }
       if (token !== queue.current.token) return
       if (!text) {
+        window.speechSynthesis.cancel()
         setState({ piece, status: 'failed', elapsed: 0, total: 0 })
         return
       }
 
       const parts = chunk(text)
       const words = text.split(/\s+/).filter(Boolean).length
-      queue.current = {
-        parts,
-        at: 0,
-        spoken: 0,
-        length: text.length,
-        startedAt: Date.now(),
-        utterance: null,
-        token,
-      }
+      queue.current.parts = parts
+      queue.current.length = text.length
+      setState((current) => ({
+        ...current,
+        total: Math.round((words / WPM) * 60),
+      }))
 
-      /* Reported as playing when the engine says it has started, not when
-         it was asked to. A start that never arrives is a silent failure,
-         and is shown as one rather than as a running clock. */
-      const watchdog = window.setTimeout(() => {
-        if (token !== queue.current.token) return
-        if (!window.speechSynthesis.speaking) {
-          setState((current) => ({ ...current, status: 'unsupported' }))
-        }
-      }, START_TIMEOUT)
-
-      const first = () => {
-        if (token !== queue.current.token) return
-        window.clearTimeout(watchdog)
-        queue.current.startedAt = Date.now()
-        setState({
-          piece,
-          status: 'playing',
-          elapsed: 0,
-          total: Math.round((words / WPM) * 60),
-        })
+      /* The title finished while the text was in the air. */
+      if (queue.current.awaiting) {
+        queue.current.awaiting = false
+        speakFrom(0, token)
       }
-
-      /* The first utterance carries the start signal for the whole piece;
-         the rest simply follow it. */
-      const opener = new SpeechSynthesisUtterance(parts[0])
-      const chosen = pickVoice(found)
-      if (chosen) {
-        opener.voice = chosen
-        opener.lang = chosen.lang
-      }
-      opener.rate = 1
-      opener.onstart = first
-      opener.onend = () => {
-        if (token !== queue.current.token) return
-        queue.current.spoken += parts[0].length
-        queue.current.at = 1
-        speakFrom(1, token)
-      }
-      opener.onerror = () => {
-        if (token !== queue.current.token) return
-        window.clearTimeout(watchdog)
-        setState({ piece, status: 'failed', elapsed: 0, total: 0 })
-      }
-      queue.current.utterance = opener
-      window.speechSynthesis.speak(opener)
     },
     [speakFrom]
   )
 
+  /* `pause()` is a no-op on Android Chrome, so pausing stops the engine
+     and remembers the sentence. Resuming speaks that sentence again from
+     its beginning, which at this length reads as a pause rather than as a
+     repetition — and it behaves the same on every engine, which a button
+     that works on one of them does not. */
   const pause = React.useCallback(() => {
     if (!available()) return
-    window.speechSynthesis.pause()
+    window.speechSynthesis.cancel()
     setState((current) => ({ ...current, status: 'paused' }))
   }, [])
 
   const resume = React.useCallback(() => {
     if (!available()) return
-    window.speechSynthesis.resume()
-    queue.current.startedAt = Date.now() - state.elapsed * 1000
+    const held = queue.current
+    if (held.parts.length === 0) return
+    held.startedAt = Date.now() - state.elapsed * 1000
     setState((current) => ({ ...current, status: 'playing' }))
-  }, [state.elapsed])
+    speakFrom(held.at, held.token)
+  }, [speakFrom, state.elapsed])
 
   return { ...state, play, pause, resume, stop, supported: available() }
 }
