@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { Bookmark, Volume2 } from 'lucide-react'
+import { Bookmark, ChevronDown, Volume2 } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
 
 /**
@@ -26,8 +26,11 @@ export function LeadCard({
   onToggle,
   onListen,
   listening,
+  kicker,
 }: {
   item: ArchiveItem
+  /** What this piece is doing at the head of the archive, in two words. */
+  kicker: string
   saved: boolean
   ready: boolean
   onToggle: () => void
@@ -36,22 +39,32 @@ export function LeadCard({
 }) {
   return (
     <article className="card card-glow card-glow-lead relative p-6 sm:p-8">
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="kicker rounded-chip bg-chip-gold px-2.5 py-1 text-gold-ink">
-          {item.category}
+      {/* Three words saying what this card is. A reader arriving on the
+          front page cannot otherwise tell whether the piece at the top is
+          the newest, the most read, or the best match for what they just
+          typed — and the sort chips are a control, not a label. */}
+      <p className="kicker-lg text-gold">{kicker}</p>
+
+      <p className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
+        <span className="kicker text-ink-subtle">{item.category}</span>
+        <span aria-hidden className="text-ink-subtle">
+          ·
         </span>
         <span className="kicker text-ink-subtle">
           {item.dated} · <span className="tabular">{item.readMinutes}</span> min
         </span>
       </p>
 
-      <h2 className="mt-4 text-balance font-article text-[1.75rem] font-normal leading-[1.12] text-navy sm:text-[2.125rem]">
+      {/* The front page has one headline and it is allowed to be a
+          headline. Balanced, so a three-line title breaks evenly rather
+          than leaving one word alone on the last line. */}
+      <h2 className="mt-3.5 text-balance font-article text-[2rem] font-normal leading-[1.08] text-navy sm:text-[2.5rem] xl:text-[2.75rem]">
         <Link href={item.href} data-track="read-article" className="focus-ring">
           <span className="headline-link">{item.title}</span>
         </Link>
       </h2>
 
-      <p className="mt-4 max-w-[36rem] text-pretty text-[1.0625rem] leading-[1.65] text-ink-700">
+      <p className="mt-4 max-w-[38rem] text-pretty text-[1.125rem] leading-[1.6] text-ink-700">
         {item.dek}
       </p>
 
@@ -64,14 +77,14 @@ export function LeadCard({
                   everything else standing on the same ground. */}
               <Link
                 href={`/search?q=${encodeURIComponent(ref)}`}
-                className="focus-ring block rounded-chip bg-surface-2 px-3 py-1.5 font-mono text-[0.75rem] tracking-[0.02em] text-ink-700 transition-colors hover:bg-chip-gold hover:text-gold-ink"
+                className="focus-ring block rounded-chip bg-chip-gold px-3.5 py-1.5 font-mono text-[0.8125rem] tracking-[0.02em] text-gold-ink transition-colors hover:bg-gold-pale/50"
               >
                 {ref}
               </Link>
             </li>
           ))}
           {item.moreRefs > 0 && (
-            <li className="self-center font-mono text-[0.75rem] text-ink-subtle">
+            <li className="self-center font-mono text-[0.8125rem] text-ink-subtle">
               +{item.moreRefs}
             </li>
           )}
@@ -83,7 +96,7 @@ export function LeadCard({
           type="button"
           onClick={onListen}
           aria-pressed={listening}
-          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-plate px-5 py-2.5 text-[0.9375rem] font-semibold text-plate-pale transition-colors hover:bg-plate-deep"
+          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-cta px-5 py-2.5 text-[0.9375rem] font-semibold text-cta-ink transition-colors hover:bg-cta-hover"
         >
           <Volume2 aria-hidden className="h-4 w-4" />
           {listening ? 'Listening' : 'Listen'}
@@ -101,6 +114,21 @@ export function LeadCard({
           />
           {ready && saved ? 'Saved' : 'Save'}
         </button>
+
+        {/* The teaching runs on below this card, and nothing said so.
+            "Read article" used to stand here and at least implied a way
+            in; scrolling is the way in now, and a reader arriving for the
+            first time has to be told that once. */}
+        <a
+          href="#continue"
+          className="focus-ring group ml-auto hidden items-center gap-1.5 font-apparatus text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-gold-ink sm:inline-flex"
+        >
+          Read on
+          <ChevronDown
+            aria-hidden
+            className="h-3.5 w-3.5 transition-transform group-hover:translate-y-0.5"
+          />
+        </a>
       </div>
     </article>
   )
