@@ -295,28 +295,21 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               className="absolute inset-0 h-full w-full cursor-default bg-plate-deep/70"
             />
 
+            {/* It comes out of the button that opened it: anchored under
+                the masthead in the same corner, scaled up from that
+                corner, and gone the same way. It used to rise from the
+                foot of the screen, which is a long way from the hand that
+                pressed the menu and a long way from the menu itself. */}
             <motion.div
               ref={panelRef}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ opacity: 0, scale: 0.92, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -8 }}
               transition={spring}
-              /* Flung down, it goes: past a fifth of its height or a
-                 decisive flick, whichever comes first. Dragging up does
-                 nothing, so the sheet cannot be pulled off the screen. */
-              drag={still ? false : 'y'}
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={{ top: 0, bottom: 0.45 }}
-              onDragEnd={(_event, info) => {
-                if (info.offset.y > 120 || info.velocity.y > 550) setOpen(false)
-              }}
-              className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col overflow-hidden rounded-t-[24px] border-t border-rule bg-raised shadow-drawer"
+              style={{ transformOrigin: 'top right' }}
+              className="absolute right-3 top-[4.75rem] flex max-h-[calc(100vh-6rem)] w-[min(21rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[20px] border border-rule bg-raised shadow-drawer"
             >
-              <div className="flex shrink-0 cursor-grab flex-col items-center pb-1 pt-3 active:cursor-grabbing">
-                <span aria-hidden className="h-1.5 w-11 rounded-full bg-rule-strong" />
-              </div>
-
-              <div className="flex items-center justify-between px-5 pb-3 pt-1">
+              <div className="flex items-center justify-between px-5 pb-3 pt-4">
                 <span className="kicker text-ink-subtle">Menu</span>
                 <button
                   type="button"
@@ -328,7 +321,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <div className="flex-1 overflow-y-auto overscroll-contain px-3 pb-3">
                 <nav aria-label="Sections">
                   <ul>
                     {navSections.map((section) => {
@@ -339,7 +332,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                             href={section.href}
                             aria-current={current ? 'page' : undefined}
                             className={cn(
-                              'relative flex min-h-[64px] items-center justify-between gap-4 rounded-tile py-3.5 pl-4 pr-3 transition-colors',
+                              'relative flex min-h-[56px] items-center justify-between gap-3 rounded-tile py-3 pl-3.5 pr-2.5 transition-colors',
                               current ? 'bg-chip' : 'active:bg-chip/60'
                             )}
                           >
@@ -350,7 +343,7 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                               />
                             )}
                             <span className="min-w-0">
-                              <span className="block font-display text-[1.375rem] leading-tight text-navy">
+                              <span className="block font-display text-[1.125rem] leading-tight text-navy">
                                 {section.label}
                               </span>
                               <span className="mt-0.5 block truncate text-xs text-ink-subtle">
