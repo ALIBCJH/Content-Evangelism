@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import { X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { navSections } from '@/lib/content'
+import { navSections, siteInfo } from '@/lib/content'
 import type { SearchDoc } from '@/lib/search-docs'
 import { SearchOverlay } from '@/components/search-overlay'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -182,8 +182,13 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               unoptimized
               className="h-[34px] w-[34px] rounded-full"
             />
+            {/* The publication's own name, which is what a masthead
+                carries. The ministry it belongs to is named in full on
+                every page of the footer, in the About page, and in the
+                structured data a search engine reads — none of which
+                changes here. */}
             <span className="block max-w-[150px] font-display text-[0.9375rem] font-semibold leading-[1.15] tracking-[0.01em] text-navy">
-              Ministry of Repentance &amp; Holiness
+              {siteInfo.name}
             </span>
           </Link>
 
