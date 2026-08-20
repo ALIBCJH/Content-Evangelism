@@ -216,6 +216,23 @@ const siteGraph = {
         },
         'query-input': 'required name=search_term_string',
       },
+      /* The machine-readable half of the same archive. An agent that has
+         parsed this page's structured data has now been told the API
+         exists and where its specification is, without having to guess a
+         path or find the robots file first. */
+      subjectOf: { '@id': `${siteUrl}/#api` },
+    },
+    {
+      '@type': 'WebAPI',
+      '@id': `${siteUrl}/#api`,
+      name: `${siteInfo.name} — public content API`,
+      description:
+        'Read-only JSON access to the published archive: written teachings, the prophetic record, and recorded sermons.',
+      url: `${siteUrl}/api/v1`,
+      documentation: `${siteUrl}/api/openapi.json`,
+      provider: { '@id': `${siteUrl}/#ministry` },
+      inLanguage: 'en',
+      isAccessibleForFree: true,
     },
   ],
 }

@@ -26,6 +26,7 @@ interface ManagedArticle {
   body: string
   imageUrl?: string
   imageAlt?: string
+  tags?: string[]
   publishedAt: string
   readMinutes: number
 }
@@ -71,6 +72,7 @@ export default function AdminPage() {
   const [authorName, setAuthorName] = React.useState('')
   const [imageUrl, setImageUrl] = React.useState('')
   const [imageAlt, setImageAlt] = React.useState('')
+  const [tags, setTags] = React.useState('')
   const [showPreview, setShowPreview] = React.useState(false)
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'done'>('idle')
   const [error, setError] = React.useState<string | null>(null)
@@ -119,7 +121,7 @@ export default function AdminPage() {
 
   const clearForm = () => {
     setEditingSlug(null)
-    setTitle(''); setDek(''); setBody(''); setImageUrl(''); setImageAlt(''); setAuthorName('')
+    setTitle(''); setDek(''); setBody(''); setImageUrl(''); setImageAlt(''); setAuthorName(''); setTags('')
     setPublishedUrl(null); setStatus('idle'); setError(null); setShowPreview(false)
   }
 
@@ -132,6 +134,7 @@ export default function AdminPage() {
     setAuthorName(article.authorName)
     setImageUrl(article.imageUrl ?? '')
     setImageAlt(article.imageAlt ?? '')
+    setTags((article.tags ?? []).join(', '))
     setStatus('idle'); setError(null); setPublishedUrl(null)
     setTab('write')
   }
@@ -157,7 +160,7 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${postingKey}`,
         },
-        body: JSON.stringify({ title, category, dek, body, authorName, imageUrl, imageAlt }),
+        body: JSON.stringify({ title, category, dek, body, authorName, imageUrl, imageAlt, tags }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -515,6 +518,24 @@ export default function AdminPage() {
                     Describe the picture itself — not the headline again.
                   </p>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="a-tags" className={fieldLabel}>Tags (optional)</label>
+                <Input
+                  id="a-tags" value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder="repentance, holiness, rapture"
+                  className="mt-2"
+                />
+                {/* The category says which section a piece belongs to;
+                    these say what it is about, and are what the public
+                    API filters on. Tidied on the way in — case, spacing
+                    and punctuation all come out the same. */}
+                <p className="mt-2 font-sans text-xs text-ink-subtle">
+                  Separate with commas. Up to eight; a reader filtering the archive, and any
+                  agent reading the API, finds the piece by these.
+                </p>
               </div>
 
               <div className="border-t border-hairline pt-6">

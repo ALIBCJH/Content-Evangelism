@@ -137,6 +137,33 @@ named by slug and set as an aside where the tangent comes up — the way out
 of a piece for a reader who will not reach the foot of it. A slug the site
 no longer holds is dropped; if none of them resolve, nothing renders.
 
+## The public content API
+
+Everything published here is also readable as JSON, for search engines, AI
+agents and anyone writing against the archive. It is read-only, versioned,
+and needs no key.
+
+```
+GET /api/v1                      what this is, and how to use it
+GET /api/openapi.json            the OpenAPI 3.1 contract
+GET /api/v1/articles             the writing; q, category, tag, author, from, to
+GET /api/v1/articles/{slug}      one teaching in full
+GET /api/v1/prophecies           the prophetic record
+GET /api/v1/teachings            the recorded sermons
+GET /api/v1/categories|tags|authors
+GET /api/v1/search?q=…           one query across all three collections
+```
+
+Documentation for people is at `/docs/api`; the contract for machines is the
+OpenAPI document, which every response links in a `service-desc` header.
+The layer is thin on purpose — `src/lib/api/service.ts` reads through the
+same modules the pages read through, so nothing here is a second copy of a
+rule the website already applies.
+
+Publishing stays where it was: behind `ADMIN_TOKEN`, on the unversioned
+routes below, which `robots.txt` disallows and the specification does not
+describe.
+
 API (same deployment, Next.js route handlers):
 
 - `GET  /api/articles` — list posted articles (public)

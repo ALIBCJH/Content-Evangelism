@@ -68,6 +68,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/prophecies`, priority: 0.8, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/teachings`, priority: 0.7, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/about`, priority: 0.6, changeFrequency: 'monthly' as const },
+    /* The API's own documentation is a public page like any other, and a
+       crawler that indexes it is one more way an agent finds the API. */
+    { url: `${siteUrl}/docs/api`, priority: 0.4, changeFrequency: 'monthly' as const },
   ]
 
   return [
