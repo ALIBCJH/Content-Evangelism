@@ -27,7 +27,9 @@ export * from '@/lib/insight-shape'
  * which of them are finished.
  *
  * Counters are incremented rather than read-and-written, so two requests
- * landing together cannot lose each other's numbers.
+ * landing together cannot lose each other's numbers. Redis does that
+ * itself; the file driver gets the same guarantee from a write queue and
+ * an atomic rename — see `writeFile`.
  */
 
 const KV_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? ''
@@ -60,6 +62,9 @@ function increments(batch: EventBatch): [string, number][] {
   if (batch.seconds) out.push([field(batch.path, 'seconds'), batch.seconds])
   if (batch.finished) out.push([field(batch.path, 'finished'), batch.finished])
   for (const label of batch.clicks ?? []) out.push([field(batch.path, `click:${label}`), 1])
+  for (const [id, seconds] of Object.entries(batch.sections ?? {})) {
+    if (seconds > 0) out.push([field(batch.path, `section:${id}`), seconds])
+  }
   return out
 }
 
@@ -78,17 +83,43 @@ export async function record(batches: EventBatch[]): Promise<boolean> {
       )
       return true
     }
-    const current = await readRaw()
-    Array.from(totals).forEach(([name, n]) => {
-      current[name] = (current[name] ?? 0) + n
-    })
-    await fs.mkdir(path.dirname(STORE), { recursive: true })
-    await fs.writeFile(STORE, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
+    await writeFile(totals)
     return true
   } catch {
     /* A reader's page must never fail because a counter did. */
     return false
   }
+}
+
+/**
+ * The file driver's writes, one at a time and all-or-nothing.
+ *
+ * Redis increments in place, so two requests landing together cannot lose
+ * each other's numbers. The file driver reads the whole document, adds to
+ * it and writes it back — and two of those interleaved lose an update at
+ * best, and leave a half-written document on disk at worst, which is
+ * exactly what happened once a second reporter started sending alongside
+ * the first.
+ *
+ * So: a promise chain, which is enough because a Node process is one
+ * writer, and a write through a temporary file and a rename, which is
+ * atomic on any POSIX filesystem — a reader either sees the document
+ * before or the document after, never half of each.
+ */
+let writing: Promise<void> = Promise.resolve()
+
+function writeFile(totals: Map<string, number>): Promise<void> {
+  writing = writing.then(async () => {
+    const current = await readRaw()
+    Array.from(totals).forEach(([name, n]) => {
+      current[name] = (current[name] ?? 0) + n
+    })
+    await fs.mkdir(path.dirname(STORE), { recursive: true })
+    const temporary = `${STORE}.${process.pid}.tmp`
+    await fs.writeFile(temporary, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
+    await fs.rename(temporary, STORE)
+  })
+  return writing
 }
 
 async function readRaw(): Promise<Record<string, number>> {
@@ -120,12 +151,14 @@ export async function readInsight(): Promise<PageInsight[]> {
     const p = name.slice(0, at)
     const key = name.slice(at + 2)
     const page =
-      pages.get(p) ?? { path: p, views: 0, seconds: 0, finished: 0, clicks: {} }
+      pages.get(p) ?? { path: p, views: 0, seconds: 0, finished: 0, clicks: {}, sections: {} }
     if (key === 'views') page.views = value
     else if (key === 'seconds') page.seconds = value
     else if (key === 'finished') page.finished = value
     else if (key.startsWith('click:')) {
       page.clicks[key.slice(6) as ClickLabel] = value
+    } else if (key.startsWith('section:')) {
+      page.sections[key.slice(8)] = value
     }
     pages.set(p, page)
   }

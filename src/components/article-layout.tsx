@@ -14,6 +14,7 @@ import { JsonLd } from '@/components/json-ld'
 import { ContinueReading } from '@/components/continue-reading'
 import { MoreArticles } from '@/components/more-articles'
 import { ReadingProgress } from '@/components/progress-bar'
+import { SectionTimer } from '@/lib/section-time'
 import { ShareRow } from '@/components/share-row'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -179,6 +180,10 @@ export function ArticleLayout({
       <ReadingProgress
         piece={{ slug, title, href: `/articles/${slug}`, readMinutes }}
       />
+      {/* Which chapter of this teaching holds a reader, and for how long.
+          The page tracker already counts the visit; this counts where the
+          time inside it went. */}
+      <SectionTimer path={`/articles/${slug}`} ids={headings.map((heading) => heading.id)} />
 
       <main>
         {/* ── The band ───────────────────────────────────────────── */}

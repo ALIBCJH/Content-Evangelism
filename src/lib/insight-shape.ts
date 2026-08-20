@@ -33,10 +33,18 @@ export interface PageInsight {
   /** Times a reader reached the foot of the piece. */
   finished: number
   clicks: Partial<Record<ClickLabel, number>>
+  /**
+   * Engaged seconds inside each chapter of the piece, by the heading's
+   * own anchor. A teaching that holds readers in one section and loses
+   * them in the next says something the page total cannot.
+   */
+  sections: Record<string, number>
 }
 
 export interface EventBatch {
   path: string
+  /** Engaged seconds by heading anchor. */
+  sections?: Record<string, number>
   views?: number
   seconds?: number
   finished?: number
@@ -61,6 +69,12 @@ export function cleanPath(raw: unknown): string | null {
  */
 const MAX_SECONDS_PER_BATCH = 30 * 60
 
+/** A teaching has chapters, not hundreds of them. */
+const MAX_SECTIONS_PER_BATCH = 40
+
+/** The shape `headingId` produces, and nothing else. */
+const SECTION_ID = /^[a-z0-9][a-z0-9-]{0,79}$/
+
 export function cleanBatch(raw: unknown): EventBatch | null {
   if (!raw || typeof raw !== 'object') return null
   const input = raw as Record<string, unknown>
@@ -78,13 +92,35 @@ export function cleanBatch(raw: unknown): EventBatch | null {
       ).slice(0, 50))
     : []
 
+  /* Anchors, not free text: a heading id is what the page already put in
+     the markup, and anything else would let a caller name its own fields
+     in the store. Bounded in count as well as in shape, so one batch
+     cannot enumerate a store of its own. */
+  const sections: Record<string, number> = {}
+  if (input.sections && typeof input.sections === 'object' && !Array.isArray(input.sections)) {
+    for (const [id, value] of Object.entries(input.sections as Record<string, unknown>).slice(
+      0,
+      MAX_SECTIONS_PER_BATCH
+    )) {
+      if (!SECTION_ID.test(id)) continue
+      const seconds = count(value, MAX_SECONDS_PER_BATCH)
+      if (seconds) sections[id] = seconds
+    }
+  }
+
   const batch: EventBatch = {
     path: p,
     views: count(input.views, 1),
     seconds: count(input.seconds, MAX_SECONDS_PER_BATCH),
     finished: count(input.finished, 1),
     clicks,
+    sections,
   }
-  const empty = !batch.views && !batch.seconds && !batch.finished && clicks.length === 0
+  const empty =
+    !batch.views &&
+    !batch.seconds &&
+    !batch.finished &&
+    clicks.length === 0 &&
+    Object.keys(sections).length === 0
   return empty ? null : batch
 }
