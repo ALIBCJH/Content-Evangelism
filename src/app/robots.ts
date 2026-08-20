@@ -20,16 +20,25 @@ const AI_CRAWLERS = [
   'meta-externalagent',
 ]
 
+/* The public content API is meant to be found. Everything else under
+   /api is the desk's — the posting routes, the question queue, the page
+   counter — and stays disallowed, so an agent that reads this file knows
+   exactly which door is for it. Allow rules are listed before the
+   disallow they carve out of, which is how the more specific rule wins. */
+const ALLOW = ['/', '/api/v1/', '/api/openapi.json']
+const DISALLOW = ['/admin', '/api/']
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: '*', allow: '/', disallow: ['/admin', '/api/'] },
+      { userAgent: '*', allow: ALLOW, disallow: DISALLOW },
       ...AI_CRAWLERS.map((userAgent) => ({
         userAgent,
-        allow: '/',
-        disallow: ['/admin', '/api/'],
+        allow: ALLOW,
+        disallow: DISALLOW,
       })),
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   }
 }

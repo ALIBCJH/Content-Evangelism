@@ -15,9 +15,13 @@ export interface RealRow {
   category: Category
   authorName: string
   publishedAt: string
+  /** Set on every edit at the desk; absent on pieces never edited. */
+  updatedAt?: string
   readMinutes: number
   imageUrl?: string
   imageAlt?: string
+  /** Normalised at the store; always an array here, empty if none. */
+  tags: string[]
   art: ArticleArtSpec
   /** Search haystack: the title, the standfirst and the body. */
   text: string
@@ -44,9 +48,11 @@ export async function listRealRows(): Promise<RealRow[]> {
     category: a.category,
     authorName: a.authorName,
     publishedAt: a.publishedAt,
+    ...(a.updatedAt ? { updatedAt: a.updatedAt } : {}),
     readMinutes: a.readMinutes,
     imageUrl: a.imageUrl,
     imageAlt: a.imageAlt,
+    tags: a.tags ?? [],
     art: categoryArt[a.category],
     /* The body as a reader sees it, not as it is written: search should
        match the caption under a photograph, never the path to its file. */

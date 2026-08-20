@@ -47,6 +47,13 @@ export interface PostedArticle {
   imageUrl?: string
   /** What the image shows, for screen readers and image search. */
   imageAlt?: string
+  /**
+   * What the piece is about, under the category. Normalised to lowercase
+   * hyphenated words by `normaliseTags`, so "Second Coming", "second
+   * coming" and "second-coming" are one tag rather than three, and an
+   * agent filtering on one of them is not shown a third of the answer.
+   */
+  tags?: string[]
   publishedAt: string
   /** Set on every edit; absent from articles written before the field shipped. */
   updatedAt?: string
@@ -67,6 +74,37 @@ export interface ArticleInput {
   body: string
   imageUrl?: string
   imageAlt?: string
+  tags?: string[]
+}
+
+/** No more than this many, and none longer than `TAG_MAX_LENGTH`. */
+export const TAGS_MAX = 8
+export const TAG_MAX_LENGTH = 32
+
+/**
+ * Tags as the store holds them: lowercase, hyphenated, deduplicated, in
+ * the order they were given.
+ *
+ * Accepts either an array or one comma-separated string, because the
+ * posting form sends the second and the API sends the first. Anything
+ * that survives normalisation to nothing is dropped rather than stored as
+ * an empty tag nobody can filter on.
+ */
+export function normaliseTags(value: unknown): string[] {
+  const raw = Array.isArray(value)
+    ? value.map((item) => String(item))
+    : String(value ?? '').split(',')
+  const seen = new Set<string>()
+  for (const item of raw) {
+    const tag = item
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, TAG_MAX_LENGTH)
+    if (tag) seen.add(tag)
+  }
+  return Array.from(seen).slice(0, TAGS_MAX)
 }
 
 export interface WriteResult {
@@ -284,6 +322,7 @@ export async function createPostedArticle(
     body: input.body,
     imageUrl: input.imageUrl,
     imageAlt: input.imageAlt,
+    ...(input.tags?.length ? { tags: input.tags } : {}),
     publishedAt: now,
     updatedAt: now,
     readMinutes: readMinutes(input.body),
@@ -350,6 +389,7 @@ export function validateInput(
   const category = String(payload.category ?? '') as Category
   const imageUrl = String(payload.imageUrl ?? '').trim()
   const imageAlt = String(payload.imageAlt ?? '').trim()
+  const tags = normaliseTags(payload.tags)
 
   if (title.length < 3) return { error: 'A title is required.' }
   if (dek.length < 10) return { error: 'A summary (dek) of at least 10 characters is required.' }
@@ -376,6 +416,7 @@ export function validateInput(
       title, dek, category, authorName, body,
       imageUrl: imageUrl || undefined,
       imageAlt: imageAlt || undefined,
+      ...(tags.length > 0 ? { tags } : {}),
     },
   }
 }

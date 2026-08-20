@@ -60,6 +60,15 @@ export interface Field {
   text: string
   /** What a hit here is worth. Title 10, body 1. */
   weight: number
+  /** Named when the caller wants to be told where the query landed. */
+  name?: string
+}
+
+/** A score, and which fields carried it. */
+export interface Match {
+  score: number
+  /** Field names that a query term landed in, best-scoring first. */
+  matched: string[]
 }
 
 /**
@@ -86,14 +95,35 @@ export function terms(query: string): string[] {
  * match at all and should not be shown.
  */
 export function score(query: string, fields: Field[]): number {
-  const wanted = terms(query)
-  if (wanted.length === 0) return 1
+  return explain(query, fields).score
+}
 
-  const hay = fields.map((field) => ({ text: fold(field.text), weight: field.weight }))
+/**
+ * The same match, with its reasoning kept.
+ *
+ * A reader looking at a results page can see for themselves why a piece
+ * is there — the words are on the row. An agent calling the search API
+ * cannot, so the API tells it: these are the fields the query landed in.
+ * The scoring below is the single implementation; `score` is this with
+ * the explanation dropped.
+ */
+export function explain(query: string, fields: Field[]): Match {
+  const wanted = terms(query)
+  if (wanted.length === 0) return { score: 1, matched: [] }
+
+  const hay = fields.map((field) => ({
+    text: fold(field.text),
+    weight: field.weight,
+    name: field.name,
+  }))
   let total = 0
+  /* Where terms landed, and how much each place was worth, so the best
+     field can be named first rather than in declaration order. */
+  const landed = new Map<string, number>()
 
   for (const term of wanted) {
     let best = 0
+    let bestName: string | undefined
     for (const field of hay) {
       const at = field.text.indexOf(term)
       if (at === -1) continue
@@ -102,10 +132,15 @@ export function score(query: string, fields: Field[]): number {
       const opensWord = at === 0 || !/[a-z0-9]/.test(field.text[at - 1] ?? '')
       const closesWord = !/[a-z0-9]/.test(field.text[at + term.length] ?? '')
       const shape = opensWord && closesWord ? 2 : opensWord ? 1.5 : 1
-      best = Math.max(best, field.weight * shape)
+      const worth = field.weight * shape
+      if (worth > best) {
+        best = worth
+        bestName = field.name
+      }
     }
     /* Every term has to land somewhere. */
-    if (best === 0) return 0
+    if (best === 0) return { score: 0, matched: [] }
+    if (bestName) landed.set(bestName, (landed.get(bestName) ?? 0) + best)
     total += best
   }
 
@@ -115,12 +150,17 @@ export function score(query: string, fields: Field[]): number {
     for (const field of hay) {
       if (field.text.includes(phrase)) {
         total += field.weight * 3
+        if (field.name) landed.set(field.name, (landed.get(field.name) ?? 0) + field.weight * 3)
         break
       }
     }
   }
 
-  return total
+  const matched = Array.from(landed.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name)
+
+  return { score: total, matched }
 }
 
 /** Sort by score, keeping the incoming order — newest first — for ties. */
