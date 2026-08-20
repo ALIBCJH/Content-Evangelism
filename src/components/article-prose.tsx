@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { ArticleDiagram } from '@/components/article-diagram'
+import { SharePassage } from '@/components/share-passage'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
 import { embedSrc, watchHref } from '@/lib/youtube'
 
@@ -125,14 +126,20 @@ export function ArticleProse({
         switch (block.kind) {
           case 'heading':
             /* scroll-mt clears the masthead and the progress rule when a
-               chapter link jumps here. */
+               chapter link jumps here.
+
+               A chapter carries its own way of being sent. What a reader
+               forwards is rarely a whole teaching — it is the part that
+               answered the thing they were asked — and until now the only
+               thing they could send was the top of the page. */
             return (
               <h2
                 key={index}
                 id={block.id}
-                className="mb-5 mt-14 scroll-mt-stick text-balance font-article text-[1.5rem] font-normal leading-[1.24] tracking-[-0.008em] text-navy md:text-[1.9rem]"
+                className="group mb-5 mt-14 flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.5rem] font-normal leading-[1.24] tracking-[-0.008em] text-navy md:text-[1.9rem]"
               >
-                {block.text}
+                <span className="min-w-0">{block.text}</span>
+                <SharePassage id={block.id} heading={block.text} />
               </h2>
             )
 

@@ -177,6 +177,22 @@ export const navSections: NavSection[] = [
 
 export const siteUrl = 'https://repentandpreparetheway.org'
 
+/**
+ * Where a reader is told that something new has been published.
+ *
+ * The site had no such place at all: a ministry publishing weekly, and
+ * nothing but an RSS feed almost nobody uses. WhatsApp is the channel
+ * this congregation already reads on — the share row has put it first
+ * since the day it shipped — and a channel link asks nothing of the
+ * reader and stores nothing about them: no address, no consent to keep,
+ * nothing to unsubscribe from at this end.
+ *
+ * Set NEXT_PUBLIC_WHATSAPP_CHANNEL to the ministry's own channel invite.
+ * Unset, nothing is offered — an invitation to a channel that does not
+ * exist is worse than no invitation.
+ */
+export const newTeachingsChannel = process.env.NEXT_PUBLIC_WHATSAPP_CHANNEL ?? ''
+
 /* ── Official channels ───────────────────────────────────────────── */
 
 export interface Channel {
@@ -209,16 +225,19 @@ export const youtubeChannel: Channel = {
 }
 
 /* WhatsApp is the distribution channel: this link opens a ready-to-send
-   invitation. Swap the href for the ministry's WhatsApp Channel invite
-   link once one exists — nothing else needs to change. */
+   invitation. Once the ministry has a WhatsApp Channel, put its invite
+   in NEXT_PUBLIC_WHATSAPP_CHANNEL: this entry follows it, and the
+   "new teachings" invitation appears wherever FollowChannel is set. */
 export const whatsappChannel: Channel = {
   key: 'whatsapp',
   name: 'WhatsApp',
   tagline: 'Send the reading room to a friend — evangelism one chat at a time.',
   cta: 'Share',
-  href: `https://wa.me/?text=${encodeURIComponent(
-    `Repent and Prepare the Way — teachings, prophecies, and oracles from the Ministry of Repentance and Holiness. ${siteUrl}`
-  )}`,
+  href:
+    newTeachingsChannel ||
+    `https://wa.me/?text=${encodeURIComponent(
+      `Repent and Prepare the Way — teachings, prophecies, and oracles from the Ministry of Repentance and Holiness. ${siteUrl}`
+    )}`,
 }
 
 /** Every channel icon on the site reads from this list. */

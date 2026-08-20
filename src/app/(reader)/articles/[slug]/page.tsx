@@ -11,6 +11,8 @@ import {
 import { getPostedArticle, listPostedArticles } from '@/lib/posted'
 import { listRealRows, relatedRows } from '@/lib/rows'
 import { bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
+import { buildScriptureIndex, versesFor } from '@/lib/scripture-index'
+import { scriptureRefs } from '@/lib/scripture'
 import { schemaImage } from '@/lib/images'
 import { rssAlternate } from '@/lib/seo'
 import { extractHeadings } from '@/lib/toc'
@@ -139,6 +141,11 @@ export default async function PostedArticlePage({ params }: Params) {
 
   const headings = extractHeadings(article.body)
 
+  /* The archive as its own concordance: every verse these teachings set
+     out, so the references beside this one can be read rather than only
+     cited. Built from the rows already in hand. */
+  const verses = versesFor(buildScriptureIndex(rows), scriptureRefs(article.body, 12))
+
   /* A teaching that answers questions at its foot says so in structured
      data too, as its own node rather than folded into the Article — which
      is what makes the answers eligible to be quoted on their own. */
@@ -175,6 +182,7 @@ export default async function PostedArticlePage({ params }: Params) {
           ? { hero: { src: article.imageUrl, alt: article.imageAlt ?? '' } }
           : {})}
         headings={headings}
+        verses={verses}
         related={related}
         more={more}
         body={article.body}

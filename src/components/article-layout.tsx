@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns'
 import { ArrowLeft, BadgeCheck, CircleDashed } from 'lucide-react'
 import { siteUrl, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
+import type { Verse } from '@/lib/scripture-index'
 import { scriptureRefs } from '@/lib/scripture'
 import type { Heading } from '@/lib/toc'
 import { ArticleContents } from '@/components/article-contents'
@@ -12,6 +13,7 @@ import { AskQuestion } from '@/components/ask-question'
 import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
 import { JsonLd } from '@/components/json-ld'
 import { ContinueReading } from '@/components/continue-reading'
+import { FollowChannel } from '@/components/follow-channel'
 import { MoreArticles } from '@/components/more-articles'
 import { ReadingProgress } from '@/components/progress-bar'
 import { SectionTimer } from '@/lib/section-time'
@@ -69,6 +71,12 @@ export interface ArticleLayoutProps {
   body?: string
   /** Overrides the derived list, for a teaching set in JSX rather than text. */
   scriptures?: string[]
+  /**
+   * The passage behind each reference, where the archive has set one out.
+   * Built on the server from the teachings themselves — see
+   * scripture-index.ts.
+   */
+  verses?: Record<string, Verse>
   /** Set at the close, above the ornament: a scripture list, a note. */
   colophon?: React.ReactNode
   /**
@@ -154,6 +162,7 @@ export function ArticleLayout({
   more,
   body,
   scriptures,
+  verses,
   colophon,
   children,
 }: ArticleLayoutProps) {
@@ -306,7 +315,7 @@ export function ArticleLayout({
             <div className="mt-16 border-t border-rule pt-8">
               {refs.length > 0 && (
                 <div className="mb-10">
-                  <ScriptureList scriptures={refs} />
+                  <ScriptureList scriptures={refs} verses={verses} />
                 </div>
               )}
               {/* Who wrote it and when, at the foot rather than the head.
@@ -334,6 +343,11 @@ export function ArticleLayout({
                 <span aria-hidden className="text-base leading-none">✦</span>
               </div>
               <ShareRow title={title} className="mt-8" />
+              {/* Asked at the end of a teaching, which is the moment
+                  somebody is most likely to want the next one. */}
+              <p className="mt-6 text-center">
+                <FollowChannel />
+              </p>
               <p className="mt-10 text-center">
                 <Link
                   href="/"

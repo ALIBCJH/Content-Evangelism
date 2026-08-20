@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { FollowChannel } from '@/components/follow-channel'
 import { RadioTower } from 'lucide-react'
 import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
 import { channels, footerColumns, siteInfo } from '@/lib/content'
@@ -51,6 +52,10 @@ export function SiteFooter() {
             The ministry&rsquo;s digital record of what it believes, teaches, has preached,
             and has documented.
           </p>
+
+          {/* On every page, since a reader may decide to follow at any of
+              them. Absent until a channel is configured. */}
+          <FollowChannel className="mt-5" />
 
           {/* The three official channels. */}
           <ul className="mt-6 flex flex-wrap gap-2">

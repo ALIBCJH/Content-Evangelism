@@ -16,6 +16,8 @@
 export const CLICK_LABELS = [
   'read-article',
   'listen-article',
+  'follow-channel',
+  'share-passage',
   'play-teaching',
   'open-record',
   'watch-youtube',
