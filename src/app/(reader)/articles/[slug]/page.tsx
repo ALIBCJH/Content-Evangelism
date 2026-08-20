@@ -70,7 +70,14 @@ export default async function PostedArticlePage({ params }: Params) {
   const article = await getPostedArticle(params.slug)
   if (!article) notFound()
 
-  const related = relatedRows(await listRealRows(), article.slug, article.category)
+  /* One read of the archive serves both ways out of a teaching: the
+     rows at the foot, and the slugs a writer named with `@related` in the
+     body, which resolve against the same list. */
+  const rows = await listRealRows()
+  const related = relatedRows(rows, article.slug, article.category)
+  const links = Object.fromEntries(
+    rows.map((row) => [row.slug, { href: row.href, title: row.title, dek: row.dek }])
+  )
 
   const url = `${siteUrl}/articles/${article.slug}`
   const author = authorByName(article.authorName)
@@ -161,7 +168,7 @@ export default async function PostedArticlePage({ params }: Params) {
         related={related}
         body={article.body}
       >
-        <ArticleProse body={article.body} />
+        <ArticleProse body={article.body} links={links} />
       </ArticleLayout>
     </>
   )

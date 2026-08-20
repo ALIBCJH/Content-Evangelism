@@ -128,7 +128,14 @@ and emphasise with *italic* or **bold**.
 :: — Ministry of Repentance and Holiness
 
 @video 29PZpK0CKts | The title | Prophet Dr. David Edward Owuor | Watch · 20 seconds
+
+@related what-is-the-rapture-of-the-church | what-is-repentance-and-holiness
 ```
+
+`@related` sets two or three other teachings into the middle of this one,
+named by slug and set as an aside where the tangent comes up — the way out
+of a piece for a reader who will not reach the foot of it. A slug the site
+no longer holds is dropped; if none of them resolve, nothing renders.
 
 API (same deployment, Next.js route handlers):
 
