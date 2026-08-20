@@ -75,6 +75,22 @@ export function mark(entry: Omit<ReadingMark, 'at'>): void {
   write(keep)
 }
 
+/** Drop one piece from the shelf. A reader may be done with it. */
+export function forget(slug: string): void {
+  if (typeof window === 'undefined') return
+  write(read().filter((held) => held.slug !== slug))
+  /* Written from one tab; the others are listening on `storage` but not
+     for their own writes, so this tells the page it is on. */
+  window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
+}
+
+/** Clear the shelf. */
+export function forgetAll(): void {
+  if (typeof window === 'undefined') return
+  write([])
+  window.dispatchEvent(new StorageEvent('storage', { key: KEY }))
+}
+
 /** The pieces in hand, most recent first. */
 export function useReadingProgress(): { ready: boolean; marks: ReadingMark[] } {
   const [marks, setMarks] = React.useState<ReadingMark[]>([])

@@ -9,6 +9,7 @@ import { useSaved } from '@/lib/saved'
 import { useReadingProgress } from '@/lib/reading-progress'
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
+import { ReadingHistory } from '@/components/archive/reading-history'
 import { InlineArticle } from '@/components/archive/inline-article'
 import { LeadCard } from '@/components/archive/lead-card'
 import { PieceCard } from '@/components/archive/piece-card'
@@ -81,7 +82,7 @@ export function ArchiveList({
   const [order, setOrder] = React.useState<Order>('newest')
   const [topic, setTopic] = React.useState<Category | null>(null)
   const { ready, toggle, isSaved, saved } = useSaved()
-  const { marks } = useReadingProgress()
+  const { ready: marksReady, marks } = useReadingProgress()
   const speech = useSpeech()
 
   /* Every section that holds something, counted before the reader's own
@@ -128,6 +129,18 @@ export function ArchiveList({
         (held) => held.slug !== lead?.slug && items.some((item) => item.slug === held.slug)
       ),
     [marks, items, lead?.slug]
+  )
+
+  /* The rail offers the one to come back to; the shelf at the foot of the
+     page carries the whole of it, so a reader meets it either at the top
+     of a wide screen or at the end of a scroll, and never twice at once. */
+  const inTheRail = unfinished.slice(0, 1)
+
+  /* The section each piece belongs to, which the mark itself does not
+     carry — it holds only what is needed to get back into the reading. */
+  const sections = React.useMemo(
+    () => new Map(items.map((item) => [item.slug, item.category as string])),
+    [items]
   )
   /* The lead card leads the current view, and says which view that is.
      Calling a search result "the latest teaching" would be the one thing
@@ -208,7 +221,7 @@ export function ArchiveList({
             total={items.length}
             active={topic}
             onPick={setTopic}
-            unfinished={unfinished}
+            unfinished={inTheRail}
             speech={speech}
             onPause={speech.pause}
             onResume={speech.resume}
@@ -325,6 +338,10 @@ export function ArchiveList({
           </div>
         )}
       </div>
+
+      {/* The whole shelf, where a reader who has scrolled the archive
+          without finding anything new will meet it. */}
+      <ReadingHistory marks={unfinished} ready={marksReady} sections={sections} />
     </>
   )
 }
