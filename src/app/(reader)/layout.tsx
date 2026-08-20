@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { buildSearchIndex } from '@/lib/search-index'
+import { AskBot } from '@/components/ask-bot'
 import { PastoralCare } from '@/components/pastoral-care'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
@@ -24,6 +25,9 @@ export default async function ReaderLayout({ children }: { children: React.React
           be the one that forgot it. */}
       <PastoralCare />
       <SiteFooter />
+      {/* Carried on every reader page: a question does not wait for the
+          foot of the piece to arrive. */}
+      <AskBot />
       <Tracker />
     </div>
   )
