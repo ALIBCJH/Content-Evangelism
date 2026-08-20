@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Bookmark, Volume2 } from 'lucide-react'
+import { Bookmark, Volume2 } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
 
 /**
@@ -14,7 +14,10 @@ import type { ArchiveItem } from '@/lib/archive-items'
  * the passages, as chips, which are the fastest way to know whether a
  * teaching is about the thing you came for.
  *
- * Then three doors rather than one: read it, be read to, or put it aside.
+ * There is no "read article" button, because there is nothing to go to:
+ * the teaching itself carries on below this card as the reader scrolls.
+ * What is left are the two things scrolling does not do — being read to,
+ * and putting the piece aside for later.
  */
 export function LeadCard({
   item,
@@ -76,20 +79,11 @@ export function LeadCard({
       )}
 
       <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-rule pt-6">
-        <Link
-          href={item.href}
-          data-track="read-article"
-          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-plate px-5 py-2.5 text-[0.9375rem] font-semibold text-plate-pale transition-colors hover:bg-plate-deep"
-        >
-          Read article
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </Link>
-
         <button
           type="button"
           onClick={onListen}
           aria-pressed={listening}
-          className="focus-ring inline-flex items-center gap-2 rounded-chip border border-rule px-4 py-2.5 text-[0.9375rem] text-ink transition-colors hover:border-gold/60 hover:text-gold-ink"
+          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-plate px-5 py-2.5 text-[0.9375rem] font-semibold text-plate-pale transition-colors hover:bg-plate-deep"
         >
           <Volume2 aria-hidden className="h-4 w-4" />
           {listening ? 'Listening' : 'Listen'}
