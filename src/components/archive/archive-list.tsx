@@ -256,7 +256,7 @@ export function ArchiveList({
                   saved={ready && isSaved(lead.slug)}
                   ready={ready}
                   onToggle={() => toggle(lead.slug)}
-                  listening={speech.piece?.slug === lead.slug}
+                  listening={speech.piece?.slug === lead.slug && speech.status === 'playing'}
                   onListen={() =>
                     speech.piece?.slug === lead.slug && speech.status === 'playing'
                       ? speech.pause()

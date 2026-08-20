@@ -124,7 +124,11 @@ export function TopicsRail({
               <button
                 type="button"
                 onClick={speech.status === 'playing' ? onPause : onResume}
-                disabled={speech.status === 'loading' || speech.status === 'failed'}
+                disabled={
+                  speech.status === 'loading' ||
+                  speech.status === 'failed' ||
+                  speech.status === 'unsupported'
+                }
                 className="focus-ring mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold-pale/60 text-gold-pale transition-colors hover:bg-gold-pale/10 disabled:opacity-50"
               >
                 {speech.status === 'playing' ? <PauseMark /> : <PlayMark />}
@@ -142,7 +146,10 @@ export function TopicsRail({
                 <p className="kicker mt-1.5 text-gold-pale/70">
                   {speech.status === 'loading' && 'Fetching…'}
                   {speech.status === 'failed' && 'Could not read this one'}
-                  {speech.status === 'unsupported' && 'This browser cannot read aloud'}
+                  {/* Said plainly, because it is not a fault the reader
+                      can fix by pressing play again: the machine has no
+                      voice for the browser to use. */}
+                  {speech.status === 'unsupported' && 'No voice installed on this device'}
                   {(speech.status === 'playing' || speech.status === 'paused') && (
                     <>
                       <span className="tabular">{clock(speech.elapsed)}</span> /{' '}
