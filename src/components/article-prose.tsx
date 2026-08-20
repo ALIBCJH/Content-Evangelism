@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { ArticleDiagram } from '@/components/article-diagram'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
 import { embedSrc, watchHref } from '@/lib/youtube'
@@ -105,7 +106,16 @@ const CALLOUT: Record<CalloutTone, { panel: string; label: string; body: string;
   },
 }
 
-export function ArticleProse({ body }: { body: string }) {
+/** What a `@related` slug resolves to: the row for that teaching. */
+export type ProseLink = { href: string; title: string; dek: string }
+
+export function ArticleProse({
+  body,
+  links = {},
+}: {
+  body: string
+  links?: Record<string, ProseLink>
+}) {
   const blocks = parseBody(body)
   let firstParagraphSeen = false
 
@@ -152,6 +162,52 @@ export function ArticleProse({ body }: { body: string }) {
                   <Inlines inlines={block.inlines} />
                 </p>
                 {block.cite && <span className={tone.cite}>{block.cite}</span>}
+              </aside>
+            )
+          }
+
+          case 'related': {
+            /* Where a teaching leaves the page in the middle of itself.
+               The reader is mid-thought, so this is a headline and the
+               summary under it, ruled like the rest of the publication —
+               not a strip of thumbnails with a button on each, which is
+               the shape an advertisement takes and which a reader has
+               learnt to scroll straight past.
+
+               Slugs the site no longer holds simply fall out; if none of
+               them resolve there is no panel at all, rather than an empty
+               box announcing that something used to be here. */
+            const found = block.slugs.map((slug) => links[slug]).filter(Boolean) as ProseLink[]
+            if (found.length === 0) return null
+            return (
+              <aside
+                key={index}
+                className="my-10 rounded-panel border border-rule border-t-2 border-t-gold bg-card px-6 py-6 sm:px-7"
+              >
+                <span className="kicker text-gold">Read alongside</span>
+                <ul className="mt-4">
+                  {found.map((link) => (
+                    <li
+                      key={link.href}
+                      className="border-b border-rule pb-4 pt-4 first:pt-0 last:border-b-0 last:pb-0"
+                    >
+                      <Link href={link.href} className="focus-ring group block">
+                        <span className="flex items-baseline gap-2">
+                          <span className="font-article text-[1.0625rem] font-normal leading-[1.3] text-navy transition-colors group-hover:text-gold sm:text-[1.1875rem]">
+                            <span className="headline-link">{link.title}</span>
+                          </span>
+                          <ArrowRight
+                            aria-hidden
+                            className="h-3.5 w-3.5 shrink-0 translate-y-px text-ink-subtle transition-all group-hover:translate-x-1 group-hover:text-gold"
+                          />
+                        </span>
+                        <span className="mt-1.5 block text-[0.9375rem] leading-[1.6] text-ink-muted">
+                          {link.dek}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </aside>
             )
           }

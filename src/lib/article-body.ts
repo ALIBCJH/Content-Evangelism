@@ -93,6 +93,7 @@ export type Block =
   | { kind: 'diagram'; name: string; caption?: string }
   | { kind: 'figure'; src: string; alt: string; width?: number; height?: number; caption?: string }
   | { kind: 'faq'; items: FaqItem[] }
+  | { kind: 'related'; slugs: string[] }
 
 export interface FaqItem {
   q: string
@@ -210,6 +211,20 @@ export function parseBody(body: string): Block[] {
     if (lines.length === 1 && lines[0].startsWith('@diagram ')) {
       const [name, caption] = cells(lines[0].slice(9)).map((part) => part.trim())
       if (name) return { kind: 'diagram', name, ...(caption ? { caption } : {}) }
+    }
+
+    /* Other teachings, named by slug and set into the reading where the
+       tangent actually comes up, rather than left to the foot of the page
+       where most readers never arrive. Three is the ceiling: this is an
+       aside inside a teaching, not a second archive. A slug the site does
+       not hold is dropped when it renders, so a withdrawn teaching leaves
+       no broken row behind it. */
+    if (lines.length === 1 && lines[0].startsWith('@related ')) {
+      const slugs = cells(lines[0].slice(9))
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .slice(0, 3)
+      if (slugs.length > 0) return { kind: 'related', slugs }
     }
 
     /* Two columns set side by side. The first row is the header; a leading
@@ -337,6 +352,11 @@ export function bodyToPlainText(body: string): string {
           /* The questions are part of the page a reader searches, so they
              belong in the haystack and in the word count. */
           return block.items.map(({ q, a }) => `${q} ${a}`).join('\n')
+        case 'related':
+          /* Navigation, not the teaching: the titles belong to other
+             pieces, and counting them here would have a search for one
+             teaching match every teaching that points at it. */
+          return ''
         default:
           return inlineText(block.inlines)
       }
@@ -437,6 +457,11 @@ export function bodyToHtml(body: string, origin: string): string {
           return `<dl>${block.items
             .map(({ q, a }) => `<dt>${escapeXml(q)}</dt><dd>${escapeXml(a)}</dd>`)
             .join('')}</dl>`
+        case 'related':
+          /* A feed carries the teaching, not the site's furniture — and
+             the parser holds slugs rather than titles, so the honest
+             rendering here is none at all. */
+          return ''
         default:
           return `<p>${inlineHtml(block.inlines, origin)}</p>`
       }
