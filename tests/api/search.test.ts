@@ -29,13 +29,21 @@ describe('GET /api/v1/search', () => {
     }
   })
 
+  /* Colombia, because the archive holds all three kinds of answer about
+     it: a teaching, the record of the prophecy, and the recording it was
+     delivered in. A word like "repentance" would not prove the same
+     thing — it appears in the writing and nowhere in the indexed fields
+     of the other two, so a single-kind result there is correct. */
   it('searches all three collections and names the kind of each', async () => {
-    const payload = await body(await search(get('/api/v1/search?q=repentance&limit=100')))
+    const payload = await body(await search(get('/api/v1/search?q=colombia&limit=100')))
     const kinds = new Set(payload.data.map((hit: any) => hit.type))
-    expect(kinds.size).toBeGreaterThan(1)
-    for (const kind of kinds) {
-      expect(['article', 'prophecy-record', 'teaching-recording']).toContain(kind)
-    }
+    expect(kinds).toEqual(new Set(['article', 'prophecy-record', 'teaching-recording']))
+  })
+
+  it('reaches the prophetic record, not only the writing', async () => {
+    const payload = await body(await search(get('/api/v1/search?q=colombia&type=prophecy-record')))
+    expect(payload.data.length).toBeGreaterThan(0)
+    expect(payload.data[0].primarySource).toContain('youtube.com')
   })
 
   it('narrows to one kind on request', async () => {

@@ -64,7 +64,7 @@ describe('GET /api/openapi.json', () => {
     }
     walk(spec)
     expect(refs.length).toBeGreaterThan(10)
-    for (const ref of new Set(refs)) {
+    for (const ref of Array.from(new Set(refs))) {
       const name = ref.replace('#/components/schemas/', '')
       expect(spec.components.schemas[name], ref).toBeTruthy()
     }

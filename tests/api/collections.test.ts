@@ -12,7 +12,7 @@ import { body, get } from './helpers'
 
 describe('taxonomies', () => {
   it('lists only categories that hold something', async () => {
-    const payload = await body(await listCategories(get('/api/v1/categories')))
+    const payload = await body(await listCategories())
     expect(payload.data.length).toBeGreaterThan(0)
     for (const category of payload.data) {
       expect(category.articleCount).toBeGreaterThan(0)
@@ -21,7 +21,7 @@ describe('taxonomies', () => {
   })
 
   it('counts tags, most-used first', async () => {
-    const payload = await body(await listTags(get('/api/v1/tags')))
+    const payload = await body(await listTags())
     expect(payload.data.length).toBeGreaterThan(0)
     const counts = payload.data.map((tag: any) => tag.articleCount)
     expect([...counts].sort((a: number, b: number) => b - a)).toEqual(counts)
@@ -29,7 +29,7 @@ describe('taxonomies', () => {
   })
 
   it('lists bylines that have published', async () => {
-    const payload = await body(await listAuthors(get('/api/v1/authors')))
+    const payload = await body(await listAuthors())
     expect(payload.data.length).toBeGreaterThan(0)
     for (const author of payload.data) {
       expect(author.name).toBeTruthy()
