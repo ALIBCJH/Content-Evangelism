@@ -173,6 +173,29 @@ What a question costs is bounded by construction: 300 characters in, six
 passages of 1400 characters as context, 700 tokens out, eight questions per
 address per ten minutes.
 
+## What a reader gets
+
+**Offline.** A service worker (`public/sw.js`, hand-written, no build step)
+keeps three things: the build's own files, the pages a reader has opened,
+and the teachings they saved — those fetched at the moment Save is pressed
+rather than hoped for later. Registered in production only, so a rebuilt
+dev server is never served from yesterday's cache. A reader whose browser
+has no worker gets the site exactly as it was.
+
+**Being told.** Set `NEXT_PUBLIC_WHATSAPP_CHANNEL` to the ministry's channel
+invite and a "New teachings on WhatsApp" link appears at the foot of every
+teaching and in the footer. Unset, nothing is offered. No addresses, no
+consent to record, nothing to unsubscribe from at this end.
+
+**Reading the verse.** The archive is its own concordance: `scripture-index.ts`
+collects every passage these teachings quote in full, so a reference in the
+rail opens the words as this ministry set them out, naming the teaching they
+came from. A reference nothing quotes still prints as a reference.
+
+**Sending a passage.** Every chapter heading carries its own anchor as a
+share — the phone's share sheet where there is one, the clipboard where
+there is not.
+
 ## The public content API
 
 Everything published here is also readable as JSON, for search engines, AI
