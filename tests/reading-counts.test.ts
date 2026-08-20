@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { inView, progressThrough } from '@/lib/read-insight'
+import { activeSection } from '@/lib/section-time'
 import { cleanBatch, cleanPath, CLICK_LABELS } from '@/lib/insight-shape'
 
 /**
@@ -96,5 +97,75 @@ describe('what the endpoint will accept', () => {
   it('drops a batch that says nothing', () => {
     expect(cleanBatch({ path: '/articles/x' })).toBeNull()
     expect(cleanBatch({ path: '/articles/x', views: 0, seconds: 0, clicks: [] })).toBeNull()
+  })
+})
+
+describe('activeSection', () => {
+  /* Marks are viewport-relative tops, in document order; the line is a
+     third of the way down an 800px window. */
+  const LINE = 240
+
+  it('is nothing above the first heading', () => {
+    expect(activeSection([{ id: 'one', top: 900 }], LINE)).toBeNull()
+  })
+
+  it('is the last heading the reading line has passed', () => {
+    const marks = [
+      { id: 'one', top: -1200 },
+      { id: 'two', top: -300 },
+      { id: 'three', top: 600 },
+    ]
+    expect(activeSection(marks, LINE)).toBe('two')
+  })
+
+  it('moves on the moment a heading crosses the line', () => {
+    expect(activeSection([{ id: 'one', top: -10 }, { id: 'two', top: 241 }], LINE)).toBe('one')
+    expect(activeSection([{ id: 'one', top: -10 }, { id: 'two', top: 240 }], LINE)).toBe('two')
+  })
+
+  it('credits the opening to no chapter rather than to the first', () => {
+    expect(activeSection([{ id: 'one', top: 241 }, { id: 'two', top: 900 }], LINE)).toBeNull()
+  })
+
+  it('handles a teaching with no headings at all', () => {
+    expect(activeSection([], LINE)).toBeNull()
+  })
+})
+
+describe('section seconds at the endpoint', () => {
+  it('accepts chapter timings for a teaching', () => {
+    const batch = cleanBatch({
+      path: '/articles/x',
+      sections: { 'what-is-the-prosperity-gospel': 90, 'how-should-we-prepare': 30 },
+    })
+    expect(batch?.sections).toEqual({
+      'what-is-the-prosperity-gospel': 90,
+      'how-should-we-prepare': 30,
+    })
+  })
+
+  it('refuses an anchor that is not one', () => {
+    const batch = cleanBatch({
+      path: '/articles/x',
+      sections: { 'Drop Table': 60, '../../etc': 60, 'good-one': 60 },
+    })
+    expect(Object.keys(batch?.sections ?? {})).toEqual(['good-one'])
+  })
+
+  it('caps a chapter at a plausible sitting', () => {
+    const batch = cleanBatch({ path: '/articles/x', sections: { one: 60 * 60 * 24 } })
+    expect(batch?.sections?.one).toBe(30 * 60)
+  })
+
+  it('will not take a hundred chapters from one batch', () => {
+    const many = Object.fromEntries(
+      Array.from({ length: 200 }, (_, i) => [`chapter-${i}`, 10])
+    )
+    const batch = cleanBatch({ path: '/articles/x', sections: many })
+    expect(Object.keys(batch?.sections ?? {}).length).toBeLessThanOrEqual(40)
+  })
+
+  it('drops a batch whose only content is an unusable section', () => {
+    expect(cleanBatch({ path: '/articles/x', sections: { 'NOT AN ID': 60 } })).toBeNull()
   })
 })

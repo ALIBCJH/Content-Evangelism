@@ -6,6 +6,7 @@ import { ArrowRight } from 'lucide-react'
 import { ArticleProse } from '@/components/article-prose'
 import { ReadingProgress } from '@/components/progress-bar'
 import { useReadInsight } from '@/lib/read-insight'
+import { useSectionTime } from '@/lib/section-time'
 
 /**
  * The lead teaching, read where it stands.
@@ -29,7 +30,7 @@ import { useReadInsight } from '@/lib/read-insight'
 type State =
   | { status: 'waiting' }
   | { status: 'loading' }
-  | { status: 'ready'; body: string }
+  | { status: 'ready'; body: string; headings: string[] }
   | { status: 'failed' }
 
 export function InlineArticle({
@@ -44,6 +45,11 @@ export function InlineArticle({
   /* A teaching read here is read against its own name, not against the
      front page it happens to be sitting on. */
   useReadInsight(region, piece, state.status === 'ready')
+  useSectionTime(
+    `/articles/${piece.slug}`,
+    state.status === 'ready' ? state.headings : [],
+    state.status === 'ready'
+  )
 
   /* Each lead gets its own fetch; changing the order or the topic changes
      the piece under the card, and the old body must not stay under a new
@@ -70,7 +76,12 @@ export function InlineArticle({
           })
           .then((payload) => {
             const body = String(payload?.data?.content?.source ?? '')
-            setState(body ? { status: 'ready', body } : { status: 'failed' })
+            /* The API returns the chapters beside the body, so knowing
+               where the reader is costs no second request. */
+            const headings: string[] = Array.isArray(payload?.data?.headings)
+              ? payload.data.headings.map((heading: { id: string }) => heading.id)
+              : []
+            setState(body ? { status: 'ready', body, headings } : { status: 'failed' })
           })
           .catch(() => setState({ status: 'failed' }))
       },

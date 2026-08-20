@@ -21,6 +21,19 @@ import { CLICK_LABELS, type ClickLabel, type PageInsight } from '@/lib/insight-s
 const minutes = (s: number) =>
   s >= 60 ? `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, '0')}s` : `${s}s`
 
+/**
+ * A heading anchor, read back as something close to the heading.
+ *
+ * `headingId` lowercases and hyphenates, so the punctuation is gone and
+ * cannot be recovered — "what-is-the-prosperity-gospel" was a question
+ * with a mark on the end. Close enough to recognise a chapter by, which
+ * is all this has to do; the link beside it goes to the teaching itself.
+ */
+function readable(id: string): string {
+  const words = id.replace(/-/g, ' ').trim()
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
 export default function InsightPage() {
   const [key, setKey] = React.useState('')
   const [pages, setPages] = React.useState<PageInsight[] | null>(null)
@@ -76,6 +89,11 @@ export default function InsightPage() {
   const throughToTheEnd = teachings.reads
     ? Math.round((teachings.finished / teachings.reads) * 100)
     : 0
+  /* Teachings that have chapter timings, the most-read first. */
+  const withSections = (pages ?? [])
+    .filter((p) => p.path.startsWith('/articles/') && Object.keys(p.sections ?? {}).length > 0)
+    .sort((a, b) => b.views - a.views)
+
   const usedLabels = CLICK_LABELS.filter((label) =>
     (pages ?? []).some((p) => (p.clicks[label] ?? 0) > 0)
   )
@@ -145,6 +163,71 @@ export default function InsightPage() {
               </div>
             ))}
           </dl>
+
+          {/* Where the time inside a teaching actually went. A page total
+              says a piece held somebody eleven minutes; this says which
+              chapters those minutes were in — which is the thing a desk
+              would rewrite a teaching over. */}
+          {withSections.length > 0 && (
+            <section className="mb-9">
+              <h2 className="mb-4 font-display text-[1.25rem] text-navy">
+                Where the time goes, chapter by chapter
+              </h2>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {withSections.map((page) => {
+                  const ranked = Object.entries(page.sections).sort((a, b) => b[1] - a[1])
+                  const longest = ranked[0]?.[1] ?? 1
+                  const counted = ranked.reduce((sum, [, value]) => sum + value, 0)
+                  return (
+                    <article
+                      key={page.path}
+                      className="rounded-panel border border-rule bg-card px-5 py-4"
+                    >
+                      <h3 className="mb-1">
+                        <Link
+                          href={page.path}
+                          className="text-[0.9375rem] font-semibold text-navy hover:text-gold"
+                        >
+                          {page.path.replace('/articles/', '')}
+                        </Link>
+                      </h3>
+                      <p className="kicker mb-4 text-ink-subtle">
+                        {minutes(counted)} across {ranked.length}{' '}
+                        {ranked.length === 1 ? 'chapter' : 'chapters'}
+                      </p>
+                      <ol className="flex flex-col gap-2.5">
+                        {ranked.map(([id, value]) => (
+                          <li key={id}>
+                            <div className="flex items-baseline justify-between gap-4">
+                              {/* The anchor, read back as the heading it
+                                  was made from. The store holds the id
+                                  because the id is what the page put in
+                                  the markup; nobody needs to read one. */}
+                              <span className="min-w-0 text-[0.8125rem] leading-[1.4] text-ink-700">
+                                {readable(id)}
+                              </span>
+                              <span className="tabular shrink-0 font-mono text-[0.75rem] text-ink-subtle">
+                                {minutes(value)}
+                              </span>
+                            </div>
+                            <span
+                              aria-hidden
+                              className="mt-1 block h-[3px] overflow-hidden rounded-full bg-rule"
+                            >
+                              <span
+                                className="block h-full rounded-full bg-gold"
+                                style={{ width: `${Math.max(3, (value / longest) * 100)}%` }}
+                              />
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    </article>
+                  )
+                })}
+              </div>
+            </section>
+          )}
 
           <div className="overflow-x-auto rounded-panel border border-rule bg-card">
             <table className="w-full min-w-[46rem] border-collapse text-left">
