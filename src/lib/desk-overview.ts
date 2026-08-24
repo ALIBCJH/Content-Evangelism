@@ -188,6 +188,36 @@ export function unread(rows: PieceRow[], floor = 5): PieceRow[] {
     .sort((a, b) => a.viewsEver - b.viewsEver)
 }
 
+/** The section filter's "no filter" state, named so it cannot collide
+ *  with a real category. */
+export const EVERY_SECTION = '\u0000all'
+
+/**
+ * The rows a filter leaves standing.
+ *
+ * Title, byline and section are searched together rather than separately:
+ * somebody looking for "the prosperity gospel piece Simon wrote" should
+ * find it by either half, and a desk that makes you pick which field you
+ * are searching is one you search twice.
+ */
+export function narrow(rows: PieceRow[], needle: string, section: string): PieceRow[] {
+  const wanted = needle.trim().toLowerCase()
+  return rows.filter((row) => {
+    if (section !== EVERY_SECTION && row.category !== section) return false
+    if (!wanted) return true
+    return `${row.title}\n${row.authorName}\n${row.category}`.toLowerCase().includes(wanted)
+  })
+}
+
+/** How many pieces sit in each section, largest first. */
+export function sectionCounts(rows: PieceRow[]): { name: string; n: number }[] {
+  const counts = new Map<string, number>()
+  for (const row of rows) counts.set(row.category, (counts.get(row.category) ?? 0) + 1)
+  return Array.from(counts, ([name, n]) => ({ name, n })).sort(
+    (a, b) => b.n - a.n || a.name.localeCompare(b.name)
+  )
+}
+
 /* ── Where attention goes ─────────────────────────────────────────── */
 
 export interface PartRow {

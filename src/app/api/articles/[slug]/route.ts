@@ -58,6 +58,12 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ ok: true })
   }
   const error =
-    status === 401 ? 'Invalid posting key.' : status === 404 ? 'Not found.' : 'Delete failed.'
+    status === 401
+      ? 'Invalid posting key.'
+      : status === 403
+        ? 'That teaching is on the site. Removing it needs the review key.'
+        : status === 404
+          ? 'Not found.'
+          : 'Delete failed.'
   return NextResponse.json({ error }, { status })
 }

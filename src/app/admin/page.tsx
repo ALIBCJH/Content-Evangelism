@@ -3,17 +3,11 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { formatDistanceToNowStrict, parseISO } from 'date-fns'
-import {
-  ArrowRight, BookOpen, Check, Eye, EyeOff, Feather,
-  LayoutDashboard, Layers, LoaderCircle, Pencil, PenLine, Search,
-  Trash2, X,
-} from 'lucide-react'
+import { ArrowRight, Check, Eye, EyeOff, Feather, LoaderCircle, Pencil, X } from 'lucide-react'
 import { CATEGORIES } from '@/lib/content'
-import { cn } from '@/lib/utils'
 import { ArticleProse } from '@/components/article-prose'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BodyEditor } from '@/components/admin/body-editor'
 import { clearDraft, readDraft, useDraftAutosave, worthKeeping, type Draft } from '@/lib/draft'
@@ -35,8 +29,6 @@ interface ManagedArticle {
   readMinutes: number
 }
 
-type Tab = 'dashboard' | 'write' | 'manage'
-
 const fieldLabel = 'kicker block text-ink-subtle'
 const textareaClass =
   'focus-ring mt-2 w-full rounded-2xl border border-hairline-strong bg-surface px-5 py-4 font-serif text-base leading-relaxed text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60'
@@ -45,12 +37,29 @@ function ago(iso: string): string {
   return formatDistanceToNowStrict(parseISO(iso), { addSuffix: true })
 }
 
-function StatTile({ label, value, hint }: { label: string; value: string; hint?: string }) {
+/** One of the three places a writer's piece can be. */
+function StandingTile({
+  label,
+  n,
+  note,
+  urgent,
+}: {
+  label: string
+  n: number
+  note: string
+  urgent: boolean
+}) {
   return (
-    <div className="card !rounded-2xl p-5">
-      <p className="kicker text-ink-subtle">{label}</p>
-      <p className="mt-2 font-display text-3xl font-semibold text-ink-strong">{value}</p>
-      {hint && <p className="mt-1 font-sans text-xs text-ink-subtle">{hint}</p>}
+    <div className="rounded-2xl border border-hairline bg-surface px-5 py-4">
+      <p
+        className={`tabular font-display text-[1.75rem] leading-none ${
+          urgent ? 'text-gold' : 'text-ink-strong'
+        }`}
+      >
+        {n}
+      </p>
+      <p className="mt-2 font-sans text-sm font-semibold text-ink-strong">{label}</p>
+      <p className="mt-1 font-sans text-xs leading-relaxed text-ink-subtle">{note}</p>
     </div>
   )
 }
@@ -61,15 +70,10 @@ function wordsIn(body: string): number {
 }
 
 export default function AdminPage() {
-  const [tab, setTab] = React.useState<Tab>('dashboard')
-
   /* Archive */
   const [articles, setArticles] = React.useState<ManagedArticle[]>([])
   const [loadingList, setLoadingList] = React.useState(true)
-  const [manageError, setManageError] = React.useState<string | null>(null)
-  const [deletingSlug, setDeletingSlug] = React.useState<string | null>(null)
-  const [filter, setFilter] = React.useState('')
-  const [categoryFilter, setCategoryFilter] = React.useState<string>('All')
+  const [listError, setListError] = React.useState<string | null>(null)
 
   /* Editor */
   const [editingSlug, setEditingSlug] = React.useState<string | null>(null)
@@ -85,6 +89,10 @@ export default function AdminPage() {
      than restored: the desk may have published since, and having the form
      fill itself with an old piece would be worse than losing it. */
   const [held, setHeld] = React.useState<Draft | null>(null)
+  /* Off by default. The editor is where the work is done; the preview is
+     for the moment before sending, when the question stops being "what am
+     I writing" and becomes "what will they read". */
+  const [previewing, setPreviewing] = React.useState(false)
 
   React.useEffect(() => {
     const draft = readDraft()
@@ -134,7 +142,6 @@ export default function AdminPage() {
     setImageAlt(draft.imageAlt)
     setTags(draft.tags)
     setHeld(null)
-    setTab('write')
   }
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'done'>('idle')
   const [error, setError] = React.useState<string | null>(null)
@@ -142,13 +149,13 @@ export default function AdminPage() {
 
   const loadArticles = React.useCallback(async () => {
     setLoadingList(true)
-    setManageError(null)
+    setListError(null)
     try {
       const res = await fetch('/api/articles', { cache: 'no-store' })
       const json = await res.json()
       setArticles(json.articles ?? [])
     } catch {
-      setManageError('Could not load the article list.')
+      setListError('Could not load what you have sent.')
     } finally {
       setLoadingList(false)
     }
@@ -158,28 +165,22 @@ export default function AdminPage() {
     loadArticles()
   }, [loadArticles])
 
-  /* ── Dashboard stats ─────────────────────────────────────── */
-  const stats = React.useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const a of articles) counts.set(a.category, (counts.get(a.category) ?? 0) + 1)
-    const latest = articles[0]
-    return {
-      total: articles.length,
-      sections: counts.size,
-      counts,
-      latest,
-      minutes: articles.reduce((sum, a) => sum + a.readMinutes, 0),
-    }
+  /**
+   * The writer's own pieces, sorted into the three states that matter to
+   * somebody who has sent work in.
+   *
+   * The desk used to show one flat list of everything on the site with a
+   * Delete beside each row, which answered a question a writer never asks
+   * and buried the one they always do: what happened to the thing I sent?
+   * Sent back is first because it is the only one of the three that is
+   * waiting on them.
+   */
+  const mine = React.useMemo(() => {
+    const sentBackToMe = articles.filter((a) => a.status === 'pending' && a.review)
+    const inTheQueue = articles.filter((a) => a.status === 'pending' && !a.review)
+    const live = articles.filter((a) => a.status !== 'pending')
+    return { sentBackToMe, inTheQueue, live }
   }, [articles])
-
-  const filtered = React.useMemo(() => {
-    const needle = filter.trim().toLowerCase()
-    return articles.filter((a) => {
-      if (categoryFilter !== 'All' && a.category !== categoryFilter) return false
-      if (!needle) return true
-      return `${a.title}\n${a.dek}\n${a.authorName}`.toLowerCase().includes(needle)
-    })
-  }, [articles, filter, categoryFilter])
 
   const clearForm = () => {
     clearDraft()
@@ -200,13 +201,8 @@ export default function AdminPage() {
     setImageAlt(article.imageAlt ?? '')
     setTags((article.tags ?? []).join(', '))
     setStatus('idle'); setError(null); setPublishedUrl(null)
-    setTab('write')
   }
 
-  const startNew = () => {
-    clearForm()
-    setTab('write')
-  }
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -240,39 +236,6 @@ export default function AdminPage() {
     }
   }
 
-  const onDelete = async (slug: string) => {
-    if (!window.confirm('Remove this article permanently?')) return
-    setDeletingSlug(slug)
-    setManageError(null)
-    try {
-      const res = await fetch(`/api/articles/${slug}`, { method: 'DELETE' })
-      const json = await res.json()
-      if (!res.ok) {
-        setManageError(json.error ?? 'Delete failed.')
-      } else {
-        setArticles((current) => current.filter((a) => a.slug !== slug))
-      }
-    } catch {
-      setManageError('Could not reach the server.')
-    } finally {
-      setDeletingSlug(null)
-    }
-  }
-
-  const tabButton = (value: Tab, label: string, Icon: typeof LayoutDashboard) => (
-    <button
-      type="button"
-      onClick={() => setTab(value)}
-      className={cn(
-        'focus-ring inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker transition-colors sm:gap-2 sm:px-5',
-        tab === value ? 'bg-gold text-navy-900' : 'text-ink-muted hover:bg-surface-2 hover:text-ink-strong'
-      )}
-    >
-      <Icon className="h-3.5 w-3.5" />
-      {label}
-    </button>
-  )
-
   return (
     <>
       <SiteHeader />
@@ -285,129 +248,136 @@ export default function AdminPage() {
           <h1 className="mt-4 font-display text-3xl font-semibold text-ink-strong md:text-4xl">
             The Posting Desk
           </h1>
+          <p className="mt-3 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
+            Where teachings are written. Nothing sent from here reaches a reader until the review
+            desk approves it — so write freely, and send it when it is ready.
+          </p>
 
-          {/* max-w-full and a scroll rather than three fixed tabs: at
-              390px the third one was off the edge of the screen. */}
-          <div className="mt-6 inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-hairline p-1">
-            {tabButton('dashboard', 'Dashboard', LayoutDashboard)}
-            {tabButton('write', editingSlug ? 'Editing' : 'Write', PenLine)}
-            {tabButton('manage', 'Manage', Layers)}
-          </div>
-
-          {/* The other two rooms at the desk. They were reachable only by
-              typing the URL, and a queue of readers' questions that nobody
-              can find is a queue nobody works. */}
-          <p className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-sans text-sm text-ink-muted">
+          <p className="mt-5 font-sans text-sm text-ink-muted">
             <Link href="/admin/questions" className="transition-colors hover:text-gold">
-              Questions from readers →
-            </Link>
-            <Link href="/admin/insight" className="transition-colors hover:text-gold">
-              How the site is read →
+              Answer questions from readers →
             </Link>
           </p>
         </header>
 
-        {/* ── DASHBOARD ───────────────────────────────────────── */}
-        {tab === 'dashboard' && (
-          <div className="mt-10">
-            {loadingList ? (
-              <p className="flex items-center justify-center gap-2 py-16 font-sans text-sm text-ink-muted">
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-                Loading the desk…
-              </p>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <StatTile
-                    label="Published articles"
-                    value={String(stats.total)}
-                    hint={stats.latest ? `Latest ${ago(stats.latest.publishedAt)}` : 'Nothing published yet'}
-                  />
-                  <StatTile
-                    label="Sections in use"
-                    value={`${stats.sections} / ${CATEGORIES.length}`}
-                    hint="Every section filled keeps the desk balanced"
-                  />
-                  <StatTile
-                    label="Reading on offer"
-                    value={`${stats.minutes} min`}
-                    hint="Combined length of the archive"
-                  />
+        {/* ── What you have sent, and where it stands ─────────── */}
+        <section className="mt-10">
+          {listError && (
+            <p role="alert" className="mb-4 font-sans text-sm text-status-danger">
+              {listError}
+            </p>
+          )}
+
+          {loadingList ? (
+            <p className="flex items-center gap-2 font-sans text-sm text-ink-muted">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+              Looking up what you have sent…
+            </p>
+          ) : (
+            <>
+              {/* Sent back is the only one of the three states waiting on
+                  the writer, so it is the only one shown open, with the
+                  reviewer's reason and a way straight back into the piece. */}
+              {mine.sentBackToMe.length > 0 && (
+                <div className="rounded-2xl border border-gold/40 bg-chip-gold/30 p-5 sm:p-6">
+                  <p className="kicker text-gold-ink">
+                    Sent back to you
+                    <span className="tabular ml-2">{mine.sentBackToMe.length}</span>
+                  </p>
+                  <ul className="mt-4 flex flex-col gap-4">
+                    {mine.sentBackToMe.map((article) => (
+                      <li
+                        key={article.slug}
+                        className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-display text-base font-semibold text-ink-strong">
+                            {article.title}
+                          </p>
+                          <p className="mt-1 font-sans text-sm leading-relaxed text-ink-muted">
+                            {article.review?.note}
+                          </p>
+                          <p className="mt-1 font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
+                            {article.review ? ago(article.review.at) : ago(article.publishedAt)}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="shrink-0"
+                          onClick={() => {
+                            startEdit(article)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
+                        >
+                          <Pencil />
+                          Rework it
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+              )}
 
-                <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-                  {/* Sections breakdown */}
-                  <div className="card !rounded-2xl p-6">
-                    <p className="kicker text-gold">The sections</p>
-                    <ul className="mt-4 space-y-3">
-                      {CATEGORIES.map((c) => {
-                        const count = stats.counts.get(c) ?? 0
-                        const share = stats.total ? Math.round((count / stats.total) * 100) : 0
-                        return (
-                          <li key={c}>
-                            <div className="flex items-baseline justify-between gap-4">
-                              <span className="font-sans text-sm text-ink">{c}</span>
-                              <span className="tabular font-sans text-xs text-ink-subtle">{count}</span>
-                            </div>
-                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                              <div
-                                className="h-full rounded-full bg-gold/70"
-                                style={{ width: `${share}%` }}
-                              />
-                            </div>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </div>
+              <div
+                className={`grid gap-3 sm:grid-cols-3 ${
+                  mine.sentBackToMe.length > 0 ? 'mt-4' : ''
+                }`}
+              >
+                <StandingTile
+                  label="Waiting for review"
+                  n={mine.inTheQueue.length}
+                  note="Sent in and not yet read."
+                  urgent={false}
+                />
+                <StandingTile
+                  label="Sent back to you"
+                  n={mine.sentBackToMe.length}
+                  note="Needs reworking before it can go on."
+                  urgent={mine.sentBackToMe.length > 0}
+                />
+                <StandingTile
+                  label="On the site"
+                  n={mine.live.length}
+                  note="Approved and readable."
+                  urgent={false}
+                />
+              </div>
 
-                  {/* Latest pieces */}
-                  <div className="card !rounded-2xl p-6">
-                    <div className="flex items-center justify-between">
-                      <p className="kicker text-gold">Latest from the desk</p>
-                      <Button size="sm" onClick={startNew}>
-                        <PenLine />
-                        New article
-                      </Button>
-                    </div>
-                    {articles.length === 0 ? (
-                      <p className="py-10 text-center font-serif text-base text-ink-muted">
-                        Nothing published yet — write the first piece.
-                      </p>
-                    ) : (
-                      <ul className="mt-3 divide-y divide-hairline">
-                        {articles.slice(0, 5).map((a) => (
-                          <li key={a.slug} className="flex items-center justify-between gap-3 py-3">
-                            <div className="min-w-0">
-                              <p className="truncate font-display text-base font-semibold text-ink">
-                                {a.title}
-                              </p>
-                              <p className="mt-0.5 font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
-                                {a.category} · {ago(a.publishedAt)}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => startEdit(a)}
-                              className="focus-ring grid h-8 w-8 shrink-0 place-items-center rounded-full border border-hairline text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
-                              aria-label={`Edit ${a.title}`}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+              {mine.inTheQueue.length > 0 && (
+                <ul className="mt-4 divide-y divide-hairline rounded-2xl border border-hairline">
+                  {mine.inTheQueue.map((article) => (
+                    <li
+                      key={article.slug}
+                      className="flex flex-wrap items-center gap-3 px-5 py-3"
+                    >
+                      <span className="min-w-0 flex-1 font-sans text-sm text-ink-strong">
+                        {article.title}
+                      </span>
+                      <span className="font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
+                        {ago(article.publishedAt)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          startEdit(article)
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                        className="focus-ring inline-flex items-center gap-1.5 rounded-chip border border-hairline px-3 py-1.5 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Edit
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </section>
 
-        {/* ── WRITE ───────────────────────────────────────────── */}
-        {tab === 'write' && (
-          status === 'done' ? (
+        {/* ── The writing ─────────────────────────────────────── */}
+        {status === 'done' ? (
             <div className="card mt-10 !rounded-2xl p-8 text-center">
               <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-status-success/15">
                 <Check className="h-6 w-6 text-status-success" />
@@ -548,7 +518,51 @@ export default function AdminPage() {
                 </div>
               )}
 
-              <BodyEditor value={body} onChange={setBody} />
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-4">
+                  <span className={fieldLabel}>The teaching</span>
+                  {/* The desk had ArticleProse and the two eye icons
+                      imported and never used — a preview somebody meant to
+                      build. On a page that is now only for writing, seeing
+                      the piece as a reader will get it is the one thing
+                      worth having beside the editor. */}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewing((was) => !was)}
+                    disabled={!body.trim()}
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-chip border border-hairline px-3 py-1.5 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold disabled:opacity-40"
+                  >
+                    {previewing ? (
+                      <>
+                        <EyeOff className="h-3.5 w-3.5" />
+                        Back to writing
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-3.5 w-3.5" />
+                        See it as a reader will
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {previewing ? (
+                  <div className="rounded-2xl border border-hairline-strong bg-surface px-5 py-6 sm:px-8">
+                    <p className="kicker text-gold">{category}</p>
+                    <h2 className="mt-2 font-display text-2xl font-semibold leading-tight text-ink-strong sm:text-3xl">
+                      {title.trim() || 'Untitled'}
+                    </h2>
+                    {dek.trim() && (
+                      <p className="mt-3 font-serif text-lg leading-relaxed text-ink-muted">{dek}</p>
+                    )}
+                    <div className="mt-6 border-t border-hairline pt-6">
+                      <ArticleProse body={body} />
+                    </div>
+                  </div>
+                ) : (
+                  <BodyEditor value={body} onChange={setBody} />
+                )}
+              </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
@@ -620,124 +634,8 @@ export default function AdminPage() {
                 </Button>
               </div>
             </form>
-          )
-        )}
+          )}
 
-        {/* ── MANAGE ──────────────────────────────────────────── */}
-        {tab === 'manage' && (
-          <div className="card mt-10 !rounded-2xl p-6 sm:p-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle" />
-                <Input
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  placeholder="Filter by title, summary, or author…"
-                  className="pl-11"
-                  aria-label="Filter articles"
-                />
-              </div>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="focus-ring h-11 rounded-full border border-hairline-strong bg-surface px-5 font-sans text-sm text-ink transition-colors focus:border-gold/60"
-                aria-label="Filter by section"
-              >
-                <option className="bg-panel text-ink">All</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c} className="bg-panel text-ink">{c}</option>
-                ))}
-              </select>
-            </div>
-
-            {manageError && (
-              <p role="alert" className="mt-4 font-sans text-sm text-status-danger">{manageError}</p>
-            )}
-
-            <div className="mt-6 border-t border-hairline">
-              {loadingList ? (
-                <p className="flex items-center gap-2 py-8 font-sans text-sm text-ink-muted">
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                  Loading the archive…
-                </p>
-              ) : filtered.length === 0 ? (
-                <p className="py-8 text-center font-serif text-base text-ink-muted">
-                  {articles.length === 0
-                    ? 'Nothing published from the desk yet — write the first piece.'
-                    : 'No articles match that filter.'}
-                </p>
-              ) : (
-                <ul className="divide-y divide-hairline">
-                  {filtered.map((article) => (
-                    <li key={article.slug} className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="font-display text-lg font-semibold leading-snug text-ink-strong">
-                          {article.title}
-                        </p>
-                        <p className="mt-1.5 flex flex-wrap items-center gap-2 font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
-                          <Badge variant="outline" size="sm">{article.category}</Badge>
-                          {/* Whether a reader can see it, said plainly:
-                              the writer's list was identical for a piece
-                              on the site and a piece nobody has approved. */}
-                          {article.status === 'pending' ? (
-                            <span className="rounded-chip bg-chip-gold px-2 py-0.5 text-gold-ink">
-                              {article.review ? 'Sent back' : 'Waiting for review'}
-                            </span>
-                          ) : (
-                            <span className="text-status-success">On the site</span>
-                          )}
-                          {ago(article.publishedAt)}
-                          <span>· {article.readMinutes} min</span>
-                          <span>· {article.authorName}</span>
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {article.status === 'pending' ? (
-                          <Link
-                            href="/admin/review"
-                            className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
-                          >
-                            <BookOpen className="h-3.5 w-3.5" />
-                            In the queue
-                          </Link>
-                        ) : (
-                          <Link
-                            href={`/articles/${article.slug}`}
-                            className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
-                          >
-                            <BookOpen className="h-3.5 w-3.5" />
-                            View
-                          </Link>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => startEdit(article)}
-                          className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-gold/50 hover:text-gold"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onDelete(article.slug)}
-                          disabled={deletingSlug === article.slug}
-                          className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline px-4 font-sans text-xs font-semibold text-ink-muted transition-colors hover:border-status-danger/60 hover:text-status-danger disabled:opacity-50"
-                        >
-                          {deletingSlug === article.slug ? (
-                            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3.5 w-3.5" />
-                          )}
-                          Delete
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        )}
       </main>
       <SiteFooter />
     </>

@@ -22,6 +22,7 @@ import {
   type DeskHealth,
 } from '@/lib/desk-overview'
 import { change, duration, headingWords, percent } from '@/components/admin/board/format'
+import { EVERY_SECTION, narrow, sectionCounts } from '@/lib/desk-overview'
 import type { DayTotals, PageInsight } from '@/lib/insight-shape'
 
 /**
@@ -367,5 +368,70 @@ describe('how the board prints things', () => {
   it('calls no change level rather than nothing', () => {
     expect(change(0).text).toBe('level')
     expect(change(0.004).text).toBe('level')
+  })
+})
+
+
+describe('narrowing the table', () => {
+  /* The management list moved here from the posting desk, and it brought
+     its filter with it — a writer's page has no business holding the
+     controls for the whole archive. */
+  const rows = pieceRows(
+    [
+      article('cross', { title: 'Why did Jesus have to die on the cross?', category: 'Doctrine' }),
+      article('gospel', {
+        title: 'Why the ministry rejects the prosperity gospel',
+        category: 'Teachings',
+        authorName: 'Simon Juma',
+      }),
+      article('dress', { title: 'Why no trousers, makeup or jewellery?', category: 'Teachings' }),
+    ],
+    [],
+    []
+  )
+
+  it('leaves everything standing when nothing is asked', () => {
+    expect(narrow(rows, '', EVERY_SECTION)).toHaveLength(3)
+    expect(narrow(rows, '   ', EVERY_SECTION)).toHaveLength(3)
+  })
+
+  it('matches a title however it is typed', () => {
+    expect(narrow(rows, 'PROSPERITY', EVERY_SECTION).map((r) => r.slug)).toEqual(['gospel'])
+    expect(narrow(rows, 'jewellery', EVERY_SECTION).map((r) => r.slug)).toEqual(['dress'])
+  })
+
+  /* One box, not three. Somebody looking for "the prosperity piece Simon
+     wrote" should find it by either half. */
+  it('matches a byline and a section from the same box', () => {
+    expect(narrow(rows, 'simon', EVERY_SECTION).map((r) => r.slug)).toEqual(['gospel'])
+    expect(narrow(rows, 'doctrine', EVERY_SECTION).map((r) => r.slug)).toEqual(['cross'])
+  })
+
+  it('narrows to one section', () => {
+    expect(narrow(rows, '', 'Teachings').map((r) => r.slug)).toEqual(['gospel', 'dress'])
+  })
+
+  it('takes a section and a search together', () => {
+    expect(narrow(rows, 'why', 'Doctrine').map((r) => r.slug)).toEqual(['cross'])
+    expect(narrow(rows, 'prosperity', 'Doctrine')).toEqual([])
+  })
+
+  it('counts the sections, largest first', () => {
+    expect(sectionCounts(rows)).toEqual([
+      { name: 'Teachings', n: 2 },
+      { name: 'Doctrine', n: 1 },
+    ])
+  })
+
+  it('counts nothing without falling over', () => {
+    expect(sectionCounts([])).toEqual([])
+    expect(narrow([], 'anything', EVERY_SECTION)).toEqual([])
+  })
+
+  /* The sentinel must never be mistaken for a real category, or a section
+     genuinely named "all" would filter to nothing. */
+  it('uses a section sentinel no category could be', () => {
+    expect(EVERY_SECTION).not.toBe('All')
+    expect(rows.every((row) => row.category !== EVERY_SECTION)).toBe(true)
   })
 })
