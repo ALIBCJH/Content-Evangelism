@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { roleForKey } from '@/lib/posted'
-import { DESK_COOKIE, SESSION_HOURS, mintSession } from '@/lib/desk-session'
+import { writerForKey } from '@/lib/writers'
+import { DESK_COOKIE, SESSION_HOURS, mintSession, type DeskSession } from '@/lib/desk-session'
 
 /**
  * Signing in and out of the desk.
@@ -15,6 +16,11 @@ import { DESK_COOKIE, SESSION_HOURS, mintSession } from '@/lib/desk-session'
  * thing that happens, and a counter held in one serverless instance's
  * memory would not see the attempt that landed on another. What it would
  * reliably do is lock out the ministry on a bad evening.
+ *
+ * A writer's key is checked with scrypt, which is deliberately slow — a
+ * tenth of a second here, and a wall to anybody working through a stolen
+ * registry. That it is slow is also, on its own, more of a brake on
+ * guessing than a counter would have been.
  */
 export const dynamic = 'force-dynamic'
 
@@ -27,20 +33,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
-  const role = roleForKey(String(payload.key ?? ''))
-  if (!role) {
-    /* One message for both keys. Telling somebody they have the posting
-       key when they typed a guess at the review key is telling them a
-       guess was half right. */
+  const given = String(payload.key ?? '')
+
+  /* A writer's own key first, because it has a shape the ministry's two
+     do not — `id.secret` — and asking the registry about something with
+     no dot in it would be asking about a name nobody has. */
+  const writer = await writerForKey(given)
+  const ministryRole = writer ? null : roleForKey(given)
+  const desk: DeskSession | null = writer
+    ? { role: writer.canReview ? 'reviewer' : 'writer', writer: writer.id }
+    : ministryRole
+      ? { role: ministryRole }
+      : null
+
+  if (!desk) {
+    /* One message for every way of being wrong. Telling somebody they
+       have the posting key when they typed a guess at the review key is
+       telling them a guess was half right — and telling them an id exists
+       but its secret does not is worse. */
     return NextResponse.json({ error: 'That key was not recognised.' }, { status: 401 })
   }
 
-  const session = await mintSession(role, Date.now())
+  const session = await mintSession(desk, Date.now())
   if (!session) {
     return NextResponse.json({ error: 'The desk has no key configured.' }, { status: 500 })
   }
 
-  const response = NextResponse.json({ ok: true, role })
+  const response = NextResponse.json({
+    ok: true,
+    role: desk.role,
+    ...(writer ? { writer: { id: writer.id, name: writer.name } } : {}),
+  })
   response.cookies.set(DESK_COOKIE, session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

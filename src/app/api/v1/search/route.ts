@@ -1,6 +1,7 @@
 import { apiError } from '@/lib/api/errors'
 import { paginate, parseParams } from '@/lib/api/params'
 import { articleSummary, prophecyResource, teachingResource } from '@/lib/api/resources'
+import { authorDirectory } from '@/lib/authors'
 import { fail, ok } from '@/lib/api/respond'
 import { filterArticles, publishedArticles, searchAll, type SearchKind } from '@/lib/api/service'
 
@@ -55,11 +56,13 @@ export async function GET(request: Request) {
   const hits = searchAll(rows, params.q, kinds)
   const { window, pagination } = paginate(hits, params.page, params.limit)
 
+  /* Read once for the whole page rather than per hit. */
+  const directory = await authorDirectory()
   return ok({
     data: window.map((hit) => {
       const resource =
         hit.article
-          ? articleSummary(hit.article)
+          ? articleSummary(hit.article, directory)
           : hit.record
             ? prophecyResource(hit.record)
             : teachingResource(hit.recording!)

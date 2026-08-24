@@ -1,5 +1,6 @@
 import { bodyToHtml, bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
-import { authorByName, authorHref, categorySlug, siteUrl, topicHref, type Category } from '@/lib/content'
+import { authorHref, categorySlug, siteUrl, topicHref, type Category, type Author } from '@/lib/content'
+import { byName } from '@/lib/authors'
 import { recordHref, type ProphecyRecord } from '@/lib/prophecies'
 import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
@@ -42,8 +43,8 @@ function categoryOf(category: Category) {
   }
 }
 
-function authorOf(name: string) {
-  const author = authorByName(name)
+function authorOf(name: string, directory: Author[]) {
+  const author = byName(directory, name)
   return {
     name,
     ...(author
@@ -52,15 +53,21 @@ function authorOf(name: string) {
   }
 }
 
-/** An article as it appears in a listing or a search result: no body. */
-export function articleSummary(row: RealRow) {
+/**
+ * An article as it appears in a listing or a search result: no body.
+ *
+ * The author directory is handed in rather than read here. It is one
+ * store read, and a listing of a hundred articles that each fetched it
+ * would be a hundred — so the route reads it once and passes it down.
+ */
+export function articleSummary(row: RealRow, directory: Author[]) {
   return {
     id: row.slug,
     type: 'article' as const,
     slug: row.slug,
     title: row.title,
     summary: row.dek,
-    author: authorOf(row.authorName),
+    author: authorOf(row.authorName, directory),
     category: categoryOf(row.category),
     tags: row.tags,
     publishedAt: row.publishedAt,
@@ -87,9 +94,9 @@ export function articleSummary(row: RealRow) {
  * agent would otherwise have to infer from prose: the chapter headings,
  * the passages cited, the questions the piece answers at its foot.
  */
-export function articleDetail(row: RealRow, related: RealRow[] = []) {
+export function articleDetail(row: RealRow, directory: Author[], related: RealRow[] = []) {
   return {
-    ...articleSummary(row),
+    ...articleSummary(row, directory),
     /* Absent rather than echoing publishedAt: a piece nobody has edited
        has no modification date, and inventing one would have an agent
        report a revision that never happened. */

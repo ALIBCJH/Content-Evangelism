@@ -21,7 +21,14 @@ export async function GET(_request: Request, { params }: Params) {
   return NextResponse.json({ article })
 }
 
-/** PUT /api/articles/[slug] — update an article in place (requires posting key). */
+/**
+ * PUT /api/articles/[slug] — update an article in place.
+ *
+ * The byline is not touched. An edit is not a change of authorship: a
+ * reviewer fixing a paragraph in somebody's teaching must not end up
+ * signing it, and a writer reworking their own already carries their own
+ * name. The one way a byline is set is at the moment a piece is created.
+ */
 export async function PUT(request: Request, { params }: Params) {
   let payload: Record<string, unknown>
   try {
@@ -33,7 +40,8 @@ export async function PUT(request: Request, { params }: Params) {
   const { error, input } = validateInput(payload)
   if (error || !input) return NextResponse.json({ error }, { status: 400 })
 
-  const result = await updatePostedArticle(params.slug, input, await deskToken(request))
+  const { authorName: _byline, ...withoutByline } = input
+  const result = await updatePostedArticle(params.slug, withoutByline, await deskToken(request))
   if (!result.article) {
     const message =
       result.status === 401

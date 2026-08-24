@@ -8,6 +8,7 @@ import {
   fromThisSite,
   readSession,
   type DeskRole,
+  type DeskSession,
 } from '@/lib/desk-session'
 import { isAllowedImageHost } from '@/lib/seo'
 
@@ -610,6 +611,19 @@ export function keyForRole(role: DeskRole): string {
 }
 
 /**
+ * Who a request is, as far as the cookie can say.
+ *
+ * Null for anything authenticating with a Bearer token: that is a key,
+ * not a person, and the public API has no session. Null too for a cookie
+ * arriving on a request this site did not make.
+ */
+export async function deskSession(request: Request): Promise<DeskSession | null> {
+  if (bearerToken(request)) return null
+  if (!fromThisSite(request)) return null
+  return readSession(cookieValue(request, DESK_COOKIE), Date.now())
+}
+
+/**
  * The key behind a request, however it was presented.
  *
  * Two callers, two mechanisms. Something outside a browser — the public
@@ -619,6 +633,12 @@ export function keyForRole(role: DeskRole): string {
  * the role back to the key the store expects. So the store's own checks
  * are untouched, and the key stops travelling through JavaScript.
  *
+ * A writer's own key is never what comes back. Their key opens the door
+ * and nothing else; what it buys is a session saying which desk they may
+ * use, and the store is handed the ministry's key for that desk. So
+ * removing a writer ends their access without any of their published work
+ * having been signed with something that has to be rotated.
+ *
  * The cookie is honoured only on a request this site made. See
  * `fromThisSite`.
  */
@@ -627,8 +647,8 @@ export async function deskToken(request: Request): Promise<string> {
   if (presented) return presented
   if (!fromThisSite(request)) return ''
 
-  const role = await readSession(cookieValue(request, DESK_COOKIE), Date.now())
-  return role ? keyForRole(role) : ''
+  const session = await readSession(cookieValue(request, DESK_COOKIE), Date.now())
+  return session ? keyForRole(session.role) : ''
 }
 
 /** Field checks so the posting desk gets clear messages. */

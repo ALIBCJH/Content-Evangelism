@@ -1,7 +1,8 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { authorHref, authors, siteInfo, siteUrl, type Author } from '@/lib/content'
+import { authorHref, siteInfo, siteUrl, type Author } from '@/lib/content'
+import { authorDirectory, byId } from '@/lib/authors'
 import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
 import { ArchiveView } from '@/components/archive/archive-view'
@@ -30,7 +31,7 @@ interface Params {
 
 /** The author, plus what they have published here — or null if nothing. */
 async function authorWithWork(id: string): Promise<{ author: Author; count: number } | null> {
-  const author = authors.find((candidate) => candidate.id === id)
+  const author = byId(await authorDirectory(), id)
   if (!author) return null
   const count = (await listRealRows()).filter((row) => row.authorName === author.name).length
   return count > 0 ? { author, count } : null
@@ -39,7 +40,8 @@ async function authorWithWork(id: string): Promise<{ author: Author; count: numb
 export async function generateStaticParams() {
   const rows = await listRealRows()
   const bylines = new Set(rows.map((row) => row.authorName))
-  return authors.filter((author) => bylines.has(author.name)).map((author) => ({ id: author.id }))
+  const directory = await authorDirectory()
+  return directory.filter((author) => bylines.has(author.name)).map((author) => ({ id: author.id }))
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {

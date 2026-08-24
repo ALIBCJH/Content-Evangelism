@@ -1,4 +1,5 @@
-import { CATEGORIES, authorByName, authorHref, categoryBlurb, categorySlug, siteUrl, topicHref, type Category } from '@/lib/content'
+import { CATEGORIES, authorHref, categoryBlurb, categorySlug, siteUrl, topicHref, type Author, type Category } from '@/lib/content'
+import { byName } from '@/lib/authors'
 import { prophecyRecords, recordHref, type ProphecyRecord } from '@/lib/prophecies'
 import { listRealRows, relatedRows, type RealRow } from '@/lib/rows'
 import { explain } from '@/lib/search-docs'
@@ -97,11 +98,11 @@ export function tagsWithCounts(rows: RealRow[]) {
 }
 
 /** Bylines that have published, with a profile when the site holds one. */
-export function authorsWithCounts(rows: RealRow[]) {
+export function authorsWithCounts(rows: RealRow[], directory: Author[]) {
   const counts = new Map<string, number>()
   for (const row of rows) counts.set(row.authorName, (counts.get(row.authorName) ?? 0) + 1)
   return Array.from(counts, ([name, articleCount]) => {
-    const author = authorByName(name)
+    const author = byName(directory, name)
     return {
       name,
       articleCount,

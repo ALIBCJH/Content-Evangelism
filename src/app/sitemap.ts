@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { altarEntries, altarPath } from '@/lib/altars'
 import { listAnswers } from '@/lib/questions'
-import { authorByName, authorHref, siteUrl, topicHref } from '@/lib/content'
+import { authorHref, siteUrl, topicHref } from '@/lib/content'
+import { authorDirectory, byName } from '@/lib/authors'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
 import { absoluteUrl } from '@/lib/seo'
@@ -58,10 +59,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!topics.has(href)) topics.set(href, row.publishedAt)
   }
 
-  /* Likewise for bylines that resolve to an author profile. */
+  /* Likewise for bylines that resolve to an author profile — the
+     ministry's standing masthead and everybody given a desk since. */
+  const directory = await authorDirectory()
   const authorPages = new Map<string, string>()
   for (const row of rows) {
-    const author = authorByName(row.authorName)
+    const author = byName(directory, row.authorName)
     if (!author) continue
     const href = authorHref(author)
     if (!authorPages.has(href)) authorPages.set(href, row.publishedAt)

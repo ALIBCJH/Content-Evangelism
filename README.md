@@ -109,6 +109,21 @@ again and no script on any desk page can read what replaced it. Which
 desks open depends on which key was presented. Signing out is in the
 corner of every desk.
 
+**Writers have keys of their own.** The ministry's two env keys belong to
+the ministry rather than to a person; a writer's key belongs to them, and
+is `id.secret` — the id in front, which is public (it is the address of
+their author page) and makes signing in one lookup rather than a
+comparison against every writer in turn. Because it is one lookup the
+secret is checked with scrypt, which is deliberately slow. The registry
+holds a salt and a hash and never a key, so a backup of it opens nothing.
+
+The ministry's own keys have no dot in them, fall through to the check
+they always had, and a deployment that never adds a writer is unaffected.
+
+A session says who as well as what: `{ role, writer? }`, with the writer
+absent for the env keys, which are not a person and should not pretend to
+be one.
+
 The middleware in `src/middleware.ts` does the turning away, ahead of the
 page, so a reader without a session is never sent the queue, the readers'
 questions or the list of what is on the site. The API is deliberately not
@@ -119,6 +134,22 @@ it would be a second answer to a question already answered correctly.
 **`/admin` — the posting desk.** Writing, editing and submitting, and
 nothing else. Nothing written here reaches a reader: a new teaching is
 created `pending` and waits. Opened by either key.
+
+A signed-in writer's desk is their own: it shows their work and nothing
+else — narrowed on the server, because a page that received everybody's
+drafts and filtered them in the browser would have been sent the reasons
+a reviewer sent somebody else's work back, which is between the reviewer
+and the person who wrote it. Their byline is stamped rather than typed:
+a byline is who wrote a piece, and a box somebody types is a box somebody
+can type anybody's name into. It also ended a quieter problem — "Simon
+Juma", "simon juma" and "SIMON JUMA" were three authors to the archive,
+none of whom had a page.
+
+They can rewrite what the site says about them, and it goes on their page
+the way a teaching goes on the site: after the review desk approves it.
+Their name is not among the fields, being who they are rather than what
+they say about themselves — and changing it would move their author page
+out from under every link to it.
 
 It used to carry three tabs — a dashboard of archive statistics, the
 writing form, and a management list of every published teaching with a
@@ -166,7 +197,13 @@ them:
    *inside* the teaching the time went, by heading.
 4. **Where the time goes** — by part of the site, and which invitations
    readers took.
-5. **The machinery** — store attached, whether the review desk has a key
+5. **Who writes here** — the register: add a writer and hand them a key
+   (shown once, at the moment it is made, because nothing stores it),
+   replace a lost one, turn a key off, and approve the words a writer has
+   written about themselves. Turning a key off is not deletion: a
+   writer's name is on published teachings and their author page is an
+   address somebody may have shared, so what ends is the key.
+6. **The machinery** — store attached, whether the review desk has a key
    of its own, whether anything is being counted, altar coverage.
 
 Two lists sit between 3 and 4 because they are the only ones that are

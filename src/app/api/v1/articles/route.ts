@@ -1,6 +1,7 @@
 import { apiError } from '@/lib/api/errors'
 import { paginate, parseParams } from '@/lib/api/params'
 import { articleSummary } from '@/lib/api/resources'
+import { authorDirectory } from '@/lib/authors'
 import { fail, ok } from '@/lib/api/respond'
 import { filterArticles, publishedArticles, searchAll } from '@/lib/api/service'
 
@@ -33,8 +34,10 @@ export async function GET(request: Request) {
     )
   }
 
+  /* Read once for the whole page rather than per article. */
+  const directory = await authorDirectory()
   return ok({
-    data: window.map(articleSummary),
+    data: window.map((row) => articleSummary(row, directory)),
     pagination,
     /* What was actually applied, so a caller can see that its filter was
        understood rather than ignored. */

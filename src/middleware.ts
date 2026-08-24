@@ -42,13 +42,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   if (pathname === '/admin/login') return NextResponse.next()
 
-  const role = await readSession(request.cookies.get(DESK_COOKIE)?.value, Date.now())
-  if (!role) return toLogin(request)
+  const session = await readSession(request.cookies.get(DESK_COOKIE)?.value, Date.now())
+  if (!session) return toLogin(request)
 
   /* The posting key writes; it does not decide what goes on the site.
      Sent back to the door rather than shown an empty page, because the
      useful thing to say is "that key posts but does not approve". */
-  if (pathname.startsWith('/admin/review') && role !== 'reviewer') {
+  if (pathname.startsWith('/admin/review') && session.role !== 'reviewer') {
     return toLogin(request, 'review')
   }
 

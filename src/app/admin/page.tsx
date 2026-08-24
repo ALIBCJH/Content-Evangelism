@@ -3,13 +3,14 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { formatDistanceToNowStrict, parseISO } from 'date-fns'
-import { ArrowRight, Check, Eye, EyeOff, Feather, LoaderCircle, Pencil, X } from 'lucide-react'
+import { ArrowRight, Check, Eye, EyeOff, Feather, LoaderCircle, Pencil, UserRound, X } from 'lucide-react'
 import { CATEGORIES } from '@/lib/content'
 import { ArticleProse } from '@/components/article-prose'
 import { Button } from '@/components/ui/button'
 import { BodyEditor } from '@/components/admin/body-editor'
 import { clearDraft, readDraft, useDraftAutosave, worthKeeping, type Draft } from '@/lib/draft'
 import { Input } from '@/components/ui/input'
+import { WriterProfile, type MeWriter } from '@/components/admin/writer-profile'
 
 interface ManagedArticle {
   slug: string
@@ -72,6 +73,11 @@ export default function AdminPage() {
   const [articles, setArticles] = React.useState<ManagedArticle[]>([])
   const [loadingList, setLoadingList] = React.useState(true)
   const [listError, setListError] = React.useState<string | null>(null)
+  /* Who is at the desk. Null for a session bought with one of the
+     ministry's own env keys, which belongs to the ministry rather than to
+     a person — the byline falls back to the editorial desk, as it always
+     did, and there is no page to offer. */
+  const [me, setMe] = React.useState<MeWriter | null>(null)
 
   /* Editor */
   const [editingSlug, setEditingSlug] = React.useState<string | null>(null)
@@ -145,11 +151,27 @@ export default function AdminPage() {
   const [error, setError] = React.useState<string | null>(null)
   const [publishedUrl, setPublishedUrl] = React.useState<string | null>(null)
 
+  const loadMe = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/desk/me', { cache: 'no-store' })
+      if (!res.ok) return
+      const json = await res.json()
+      setMe(json.writer ?? null)
+    } catch {
+      /* Not knowing who you are costs the byline and the profile panel,
+         not the ability to write. */
+    }
+  }, [])
+
   const loadArticles = React.useCallback(async () => {
     setLoadingList(true)
     setListError(null)
     try {
-      const res = await fetch('/api/articles', { cache: 'no-store' })
+      /* mine=1, and narrowed on the server. A page that received
+         everybody's drafts and filtered them in the browser would have
+         been sent the reasons a reviewer sent somebody else's work back,
+         which is between the reviewer and the person who wrote it. */
+      const res = await fetch('/api/articles?mine=1', { cache: 'no-store' })
       const json = await res.json()
       setArticles(json.articles ?? [])
     } catch {
@@ -158,6 +180,10 @@ export default function AdminPage() {
       setLoadingList(false)
     }
   }, [])
+
+  React.useEffect(() => {
+    void loadMe()
+  }, [loadMe])
 
   React.useEffect(() => {
     loadArticles()
@@ -251,8 +277,8 @@ export default function AdminPage() {
             The Posting Desk
           </h1>
           <p className="mt-3 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
-            Where teachings are written. Nothing sent from here reaches a reader until the review
-            desk approves it — so write freely, and send it when it is ready.
+            {me ? `${me.name}'s desk. ` : ''}Nothing sent from here reaches a reader until the
+            review desk approves it — so write freely, and send it when it is ready.
           </p>
 
           <p className="mt-5 font-sans text-sm text-ink-muted">
@@ -261,6 +287,12 @@ export default function AdminPage() {
             </Link>
           </p>
         </header>
+
+        {me && (
+          <div className="mt-10">
+            <WriterProfile writer={me} onSaved={loadMe} />
+          </div>
+        )}
 
         {/* ── What you have sent, and where it stands ─────────── */}
         <section className="mt-10">
@@ -463,12 +495,27 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="a-author" className={fieldLabel}>Author (optional)</label>
-                  <Input
-                    id="a-author" value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    placeholder="The Editorial Desk" className="mt-2"
-                  />
+                  <span className={fieldLabel}>Byline</span>
+                  {/* Shown rather than asked for. A byline is who wrote
+                      the piece, and a box somebody types is a box somebody
+                      can type anybody's name into — the server stamps a
+                      signed-in writer's own name whatever this page
+                      sends. It also ends the quieter problem: "Simon
+                      Juma", "simon juma" and "SIMON JUMA" were three
+                      authors to the archive, none of whom had a page. */}
+                  {me ? (
+                    <p className="mt-2 flex h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-5 font-sans text-sm text-ink">
+                      <UserRound aria-hidden className="h-4 w-4 shrink-0 text-gold" />
+                      {me.name}
+                    </p>
+                  ) : (
+                    <Input
+                      id="a-author" value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      placeholder="The Editorial Desk" className="mt-2"
+                      aria-label="Byline"
+                    />
+                  )}
                 </div>
               </div>
 
