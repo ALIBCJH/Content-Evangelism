@@ -1,5 +1,6 @@
 import { apiError } from '@/lib/api/errors'
 import { articleDetail } from '@/lib/api/resources'
+import { authorDirectory } from '@/lib/authors'
 import { fail, ok } from '@/lib/api/respond'
 import { getArticle } from '@/lib/api/service'
 
@@ -15,5 +16,5 @@ export async function GET(_request: Request, { params }: { params: { slug: strin
       })
     )
   }
-  return ok({ data: articleDetail(found.row, found.related) })
+  return ok({ data: articleDetail(found.row, await authorDirectory(), found.related) })
 }

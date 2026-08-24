@@ -29,7 +29,38 @@ describe('minting and reading a session', () => {
   it('reads back the role it was minted for', async () => {
     const { mintSession, readSession } = await session()
     const cookie = await mintSession('reviewer', NOW)
-    expect(await readSession(cookie, NOW)).toBe('reviewer')
+    expect(await readSession(cookie, NOW)).toEqual({ role: 'reviewer' })
+  })
+
+  /* A session bought with one of the ministry's own env keys belongs to
+     the ministry, not to a person, and says so rather than inventing
+     somebody to attribute the evening's work to. */
+  it('carries no writer when the key was the ministry’s own', async () => {
+    const { mintSession, readSession } = await session()
+    const read = await readSession(await mintSession('writer', NOW), NOW)
+    expect(read?.writer).toBeUndefined()
+  })
+
+  it('carries the writer it was minted for', async () => {
+    const { mintSession, readSession } = await session()
+    const cookie = await mintSession({ role: 'writer', writer: 'simon-juma' }, NOW)
+    expect(await readSession(cookie, NOW)).toEqual({ role: 'writer', writer: 'simon-juma' })
+  })
+
+  /* The whole reason the cookie is signed rather than merely opaque. */
+  it('refuses a cookie whose writer has been swapped', async () => {
+    const { mintSession, readSession } = await session()
+    const cookie = await mintSession({ role: 'writer', writer: 'simon-juma' }, NOW)
+    expect(await readSession(cookie.replace('simon-juma', 'someone-else'), NOW)).toBeNull()
+  })
+
+  /* The shape changed once: role and expiry, with no version and no
+     writer. Such a cookie is refused rather than migrated, which sends
+     its holder to the door — the correct outcome for a session minted
+     before the site knew who anybody was. */
+  it('refuses a session in the shape used before writers existed', async () => {
+    const { readSession } = await session()
+    expect(await readSession(`reviewer.${NOW + 3600_000}.whatever`, NOW)).toBeNull()
   })
 
   it('carries no part of the key it was bought with', async () => {
@@ -42,7 +73,7 @@ describe('minting and reading a session', () => {
   it('refuses a cookie whose role has been edited', async () => {
     const { mintSession, readSession } = await session()
     const cookie = await mintSession('writer', NOW)
-    const promoted = cookie.replace('writer', 'reviewer')
+    const promoted = cookie.replace('.writer.', '.reviewer.')
     expect(await readSession(promoted, NOW)).toBeNull()
   })
 
@@ -74,12 +105,12 @@ describe('minting and reading a session', () => {
   it('refuses everything when no key is configured at all', async () => {
     const shut = await session({ admin: '', review: '' })
     expect(await shut.mintSession('reviewer', NOW)).toBe('')
-    expect(await shut.readSession('reviewer.99999999999999.x', NOW)).toBeNull()
+    expect(await shut.readSession('v2.reviewer.-.99999999999999.x', NOW)).toBeNull()
   })
 
   it('refuses nonsense without throwing', async () => {
     const { readSession } = await session()
-    for (const value of [undefined, '', 'x', 'a.b', 'writer.abc.def', 'a.b.c.d']) {
+    for (const value of [undefined, '', 'x', 'a.b', 'writer.abc.def', 'a.b.c.d', 'v9.writer.-.1.x']) {
       expect(await readSession(value, NOW)).toBeNull()
     }
   })

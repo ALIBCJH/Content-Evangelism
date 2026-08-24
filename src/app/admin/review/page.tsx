@@ -10,6 +10,7 @@ import type { DeskNeeds, PartRow, PieceRow, WindowSummary } from '@/lib/desk-ove
 import { FindingsBand } from '@/components/admin/board/findings'
 import { HealthBand, NeedsBand, PartsBand, StretchBand } from '@/components/admin/board/bands'
 import { PiecesTable } from '@/components/admin/board/pieces-table'
+import { WritersBand } from '@/components/admin/board/writers-band'
 
 /**
  * The review desk.
@@ -413,6 +414,8 @@ export default function ReviewPage() {
               </>
             )}
           />
+
+          <WritersBand />
 
           <FindingsBand deadEnds={board.deadEnds} unread={board.unread} />
 

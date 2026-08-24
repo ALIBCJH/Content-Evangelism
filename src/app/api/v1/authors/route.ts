@@ -1,3 +1,4 @@
+import { authorDirectory } from '@/lib/authors'
 import { ok } from '@/lib/api/respond'
 import { authorsWithCounts, publishedArticles } from '@/lib/api/service'
 
@@ -11,6 +12,6 @@ export const dynamic = 'force-dynamic'
  * exists and somebody wrote it.
  */
 export async function GET() {
-  const authors = authorsWithCounts(await publishedArticles())
+  const authors = authorsWithCounts(await publishedArticles(), await authorDirectory())
   return ok({ data: authors, meta: { total: authors.length } })
 }

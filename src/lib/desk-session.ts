@@ -23,6 +23,20 @@
 /** The two desks. A reviewer may do anything a writer may. */
 export type DeskRole = 'writer' | 'reviewer'
 
+/**
+ * Who is at the desk, as the cookie carries it.
+ *
+ * `writer` is the id of somebody in the registry, and absent for the
+ * ministry's own two env keys — which belong to the ministry rather than
+ * to a person, and should not be made to pretend otherwise. So a session
+ * answers two questions where it used to answer one: what may you do, and
+ * who are you, with "nobody in particular" a real answer to the second.
+ */
+export interface DeskSession {
+  role: DeskRole
+  writer?: string
+}
+
 export const DESK_COOKIE = 'desk_session'
 
 /**
@@ -85,34 +99,55 @@ function sameSignature(a: string, b: string): boolean {
   return difference === 0
 }
 
+/**
+ * The cookie's body, before it is signed.
+ *
+ * Versioned, because the shape changed once already: a session used to be
+ * role and expiry alone. A cookie from before this is three parts where
+ * this is five, fails to parse, and sends its holder to the door — which
+ * is the correct outcome and needs no migration.
+ *
+ * A writer id cannot contain a dot (see `splitKey`), so the parts are
+ * unambiguous, and "-" stands in for nobody rather than an empty field
+ * that would collapse two dots into one.
+ */
+const VERSION = 'v2'
+const NOBODY = '-'
+
 /** Mint a session for a key that has already been checked. */
-export async function mintSession(role: DeskRole, now: number): Promise<string> {
+export async function mintSession(
+  session: DeskSession | DeskRole,
+  now: number
+): Promise<string> {
+  const { role, writer } = typeof session === 'string' ? { role: session, writer: undefined } : session
   const expires = now + SESSION_HOURS * 3600_000
-  const payload = `${role}.${expires}`
+  const payload = `${VERSION}.${role}.${writer || NOBODY}.${expires}`
   const signature = await sign(payload)
   return signature ? `${payload}.${signature}` : ''
 }
 
 /**
- * The role a cookie proves, or null — for an absent cookie, a malformed
- * one, an expired one, one signed with a key that has since been rotated,
- * and one whose role has been edited.
+ * Who a cookie proves you are, or null — for an absent cookie, a
+ * malformed one, an expired one, one signed with a key that has since
+ * been rotated, and one whose role or writer has been edited.
  */
 export async function readSession(
   value: string | undefined,
   now: number
-): Promise<DeskRole | null> {
+): Promise<DeskSession | null> {
   if (!value) return null
   const parts = value.split('.')
-  if (parts.length !== 3) return null
-  const [role, expires, signature] = parts
+  if (parts.length !== 5) return null
+  const [version, role, writer, expires, signature] = parts
+  if (version !== VERSION) return null
   if (role !== 'writer' && role !== 'reviewer') return null
 
   const at = Number(expires)
   if (!Number.isFinite(at) || at <= now) return null
 
-  const expected = await sign(`${role}.${expires}`)
-  return sameSignature(expected, signature) ? role : null
+  const expected = await sign(`${version}.${role}.${writer}.${expires}`)
+  if (!sameSignature(expected, signature)) return null
+  return { role, ...(writer === NOBODY ? {} : { writer }) }
 }
 
 /** One cookie out of a request's header, without pulling in a parser. */

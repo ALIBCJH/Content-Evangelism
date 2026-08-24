@@ -39,3 +39,17 @@ export function revalidateAnswers(slug?: string): void {
   revalidatePath('/sitemap.xml')
   if (slug) revalidatePath(`/questions/${slug}`)
 }
+
+/**
+ * A writer added, or new words on their page.
+ *
+ * An author page is generated for anybody in the directory who has
+ * published, so adding a writer changes what /authors/[id] can serve and
+ * what the sitemap should list. Same caveat as above on the sitemap: the
+ * call is right, the metadata route does not take it, and it catches up
+ * on its own cycle.
+ */
+export function revalidateAuthors(): void {
+  revalidatePath('/authors/[id]', 'page')
+  revalidatePath('/sitemap.xml')
+}

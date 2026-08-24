@@ -2,12 +2,12 @@ import * as React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import {
-  authorByName,
   authorHref,
   categoryBlurb,
   siteInfo,
   siteUrl,
 } from '@/lib/content'
+import { findAuthorByName } from '@/lib/authors'
 import { getPostedArticle, listPostedArticles } from '@/lib/posted'
 import { listRealRows, relatedRows } from '@/lib/rows'
 import { bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const article = await getPostedArticle(params.slug)
   if (!article) return { title: 'Article not found', robots: { index: false, follow: false } }
 
-  const author = authorByName(article.authorName)
+  const author = await findAuthorByName(article.authorName)
   return {
     title: article.title,
     description: article.dek,
@@ -91,7 +91,7 @@ export default async function PostedArticlePage({ params }: Params) {
   )
 
   const url = `${siteUrl}/articles/${article.slug}`
-  const author = authorByName(article.authorName)
+  const author = await findAuthorByName(article.authorName)
   const image = article.imageUrl
     ? await schemaImage(article.imageUrl, article.imageAlt)
     : null
