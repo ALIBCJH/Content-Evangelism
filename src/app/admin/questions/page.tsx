@@ -3,8 +3,8 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { formatDistanceToNowStrict, parseISO } from 'date-fns'
-import { Check, LoaderCircle, Trash2, Undo2, XCircle } from 'lucide-react'
-import type { Question, QuestionStatus } from '@/lib/questions'
+import { Check, ExternalLink, LoaderCircle, Trash2, Undo2, Upload, XCircle } from 'lucide-react'
+import type { PublishInput, Question, QuestionStatus } from '@/lib/questions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -21,6 +21,15 @@ import { Input } from '@/components/ui/input'
  * "what has nobody answered yet". A note can be kept against any of them —
  * a draft of the answer, or the reason it was set aside — so the thinking
  * survives whoever was at the desk that day.
+ *
+ * Any of them can also be answered in the open, which is a second thing
+ * and not a status: the desk writes out the question as it should be
+ * published and the answer under it, and that pair becomes a page at
+ * /questions. What the reader typed never goes up — an answer worth
+ * publishing is worth wording — and neither does their name or address.
+ * Taking a page down is one button, and the address it had is kept
+ * against the question so that putting it back does not break a link
+ * somebody has already shared.
  */
 
 const FILTERS: { key: QuestionStatus | 'all'; label: string }[] = [
@@ -34,6 +43,101 @@ const STATUS_LABEL: Record<QuestionStatus, string> = {
   new: 'Unanswered',
   answered: 'Answered',
   'set-aside': 'Set aside',
+}
+
+/**
+ * Answering one in the open.
+ *
+ * Two fields and never one: the question as it should be published, which
+ * is the desk's sentence rather than the reader's paragraph, and the
+ * answer, written in the same grammar a teaching is written in. The
+ * fields start from what is already there — the published pair if this
+ * has been up before, otherwise the reader's words and the desk's note,
+ * which is usually where the answer was drafted.
+ */
+function PublishPanel({
+  question,
+  busy,
+  onPublish,
+  onTakeDown,
+}: {
+  question: Question
+  busy: boolean
+  onPublish: (published: PublishInput) => void
+  onTakeDown: () => void
+}) {
+  const [asked, setAsked] = React.useState(
+    question.published?.question ?? question.body.slice(0, 300)
+  )
+  const [answer, setAnswer] = React.useState(question.published?.answer ?? question.note ?? '')
+
+  const ready = asked.trim().length >= 10 && answer.trim().length >= 20
+
+  return (
+    <details open={Boolean(question.published)} className="mt-6 border-t border-rule pt-5">
+      <summary className="cursor-pointer font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-navy hover:text-gold">
+        {question.published ? 'Published answer' : 'Answer in the open'}
+      </summary>
+
+      <p className="mt-4 max-w-[60ch] text-[0.8125rem] leading-[1.65] text-ink-muted">
+        This becomes a page at <code className="font-mono">/questions</code>. The reader&rsquo;s own
+        words, their name and their address are never part of it — write the question out as it
+        should be read by somebody who did not ask it.
+      </p>
+
+      <label className="kicker mt-5 block text-ink-subtle" htmlFor={`asked-${question.id}`}>
+        The question, as published
+      </label>
+      <textarea
+        id={`asked-${question.id}`}
+        value={asked}
+        rows={2}
+        onChange={(event) => setAsked(event.target.value)}
+        className="focus-ring mt-2 w-full resize-y rounded-2xl border border-hairline-strong bg-surface px-4 py-3 text-[0.9375rem] leading-[1.6] text-ink transition-colors focus:border-gold/60"
+      />
+
+      <label className="kicker mt-4 block text-ink-subtle" htmlFor={`answer-${question.id}`}>
+        The answer
+      </label>
+      <textarea
+        id={`answer-${question.id}`}
+        value={answer}
+        rows={8}
+        placeholder="Blank line between paragraphs. ## for a heading, > for quoted Scripture, [a phrase](/articles/slug) to link a teaching."
+        onChange={(event) => setAnswer(event.target.value)}
+        className="focus-ring mt-2 w-full resize-y rounded-2xl border border-hairline-strong bg-surface px-4 py-3 font-reading text-[0.9375rem] leading-[1.7] text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
+      />
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          size="sm"
+          disabled={busy || !ready}
+          onClick={() => onPublish({ question: asked.trim(), answer: answer.trim() })}
+        >
+          <Upload aria-hidden />
+          {question.published ? 'Update the page' : 'Publish'}
+        </Button>
+        {question.published && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={busy}
+            onClick={onTakeDown}
+            className="text-status-danger hover:text-status-danger"
+          >
+            Take it down
+          </Button>
+        )}
+        {question.published && (
+          <span className="font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-subtle">
+            /questions/{question.published.slug}
+          </span>
+        )}
+      </div>
+    </details>
+  )
 }
 
 function ago(iso: string): string {
@@ -73,7 +177,10 @@ export default function QuestionsPage() {
   }
 
   /** One question changed — patch it in place rather than reloading the queue. */
-  const patch = async (id: string, body: { status?: QuestionStatus; note?: string }) => {
+  const patch = async (
+    id: string,
+    body: { status?: QuestionStatus; note?: string; published?: PublishInput | null }
+  ) => {
     setBusy(id)
     try {
       const response = await fetch(`/api/questions/${id}`, {
@@ -194,6 +301,16 @@ export default function QuestionsPage() {
                     <Link href={question.fromPath} className="normal-case hover:text-gold">
                       {question.fromTitle ?? question.fromPath}
                     </Link>
+                    {question.published && (
+                      <Link
+                        href={`/questions/${question.published.slug}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1.5 rounded-chip border border-gold/60 bg-chip-gold px-2.5 py-1 text-gold-ink hover:text-gold"
+                      >
+                        Published
+                        <ExternalLink aria-hidden className="h-3 w-3" />
+                      </Link>
+                    )}
                   </div>
 
                   <p className="whitespace-pre-wrap text-[1.0625rem] leading-[1.7] text-ink-900">
@@ -284,6 +401,13 @@ export default function QuestionsPage() {
                       </span>
                     )}
                   </div>
+
+                  <PublishPanel
+                    question={question}
+                    busy={busy === question.id}
+                    onPublish={(published) => patch(question.id, { published })}
+                    onTakeDown={() => patch(question.id, { published: null })}
+                  />
                 </li>
               ))}
             </ul>

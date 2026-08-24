@@ -881,6 +881,7 @@ export const footerColumns: FooterColumn[] = [
     title: 'Teachings',
     links: [
       { label: 'All Teachings', href: '/teachings' },
+      { label: 'Questions Answered', href: '/questions' },
       { label: 'Repentance', href: '/topics/teachings' },
       { label: 'Prophecy', href: '/topics/prophecy' },
       { label: 'Devotional', href: '/topics/devotional' },

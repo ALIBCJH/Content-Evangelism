@@ -15,6 +15,7 @@ import { JsonLd } from '@/components/json-ld'
 import { ContinueReading } from '@/components/continue-reading'
 import { FollowChannel } from '@/components/follow-channel'
 import { MoreArticles } from '@/components/more-articles'
+import { PieceActions } from '@/components/piece-actions'
 import { ReadingProgress } from '@/components/progress-bar'
 import { SectionTimer } from '@/lib/section-time'
 import { ShareRow } from '@/components/share-row'
@@ -241,6 +242,11 @@ export function ArticleLayout({
                   <p className="mb-3.5 max-w-[44rem] text-pretty font-apparatus text-[0.9375rem] leading-[1.55] text-ink-700 sm:text-[1rem]">
                     {dek}
                   </p>
+
+                  {/* Read it to me, or keep it for when the line drops.
+                      Both were reachable only from the archive's cards,
+                      which is not the page most readers arrive on. */}
+                  <PieceActions slug={slug} title={title} className="mt-4" />
                 </div>
 
                 {/* The way back and the desk's verdict, in the width a

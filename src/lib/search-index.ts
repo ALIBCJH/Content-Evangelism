@@ -1,4 +1,6 @@
 import { altarEntries, altarPath, countyNumber } from '@/lib/altars'
+import { bodyToPlainText } from '@/lib/article-body'
+import { listAnswers } from '@/lib/questions'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
 import { dateline, type SearchDoc } from '@/lib/search-docs'
@@ -6,8 +8,8 @@ import { teachingHref, teachingRecordings } from '@/lib/teachings'
 
 /**
  * One flat index over everything the site holds — the writing, the
- * prophetic record, the recorded teachings and the altars — for the
- * search overlay and the search page.
+ * prophetic record, the recorded teachings, the altars and the questions
+ * answered in the open — for the search overlay and the search page.
  *
  * The recordings were missing from it until now, which meant a reader who
  * searched for a teaching by name was told the site had nothing, while
@@ -27,7 +29,7 @@ import { teachingHref, teachingRecordings } from '@/lib/teachings'
  * live in search-docs.ts, which the client imports instead.
  */
 export async function buildSearchIndex(): Promise<SearchDoc[]> {
-  const rows = await listRealRows()
+  const [rows, answers] = await Promise.all([listRealRows(), listAnswers()])
 
   const articles: SearchDoc[] = rows.map((row) => ({
     kind:
@@ -102,5 +104,20 @@ export async function buildSearchIndex(): Promise<SearchDoc[]> {
     }
   })
 
-  return [...articles, ...records, ...recordings, ...altars]
+  /* An answer is found by the question, which is what a reader types —
+     so the question is the title and the answer is the haystack. */
+  const questions: SearchDoc[] = answers.map((answer) => {
+    const plain = bodyToPlainText(answer.answer)
+    return {
+      kind: 'Answer',
+      title: answer.question,
+      href: `/questions/${answer.slug}`,
+      date: dateline(answer.publishedAt),
+      ref: 'Questions answered',
+      excerpt: plain.slice(0, 220),
+      text: `${answer.question}\n${plain}\nquestion answered asked`.toLowerCase(),
+    }
+  })
+
+  return [...articles, ...records, ...recordings, ...altars, ...questions]
 }

@@ -57,6 +57,8 @@ they share the `.next` directory and will corrupt each other. If you see
 | `/about` | The ministry: what it works from, holds to, and where it meets |
 | `/topics/<slug>` | One section, e.g. `/topics/oracles` |
 | `/authors/<id>` | A byline and everything under it |
+| `/questions` | Questions readers sent, answered in the open |
+| `/questions/<slug>` | One question and the desk's answer, as a `QAPage` |
 | `/search` | Search across everything, with content-type facets |
 | `/admin` | The posting desk |
 | `/feed.xml`, `/sitemap.xml`, `/robots.txt` | For machines |
@@ -103,6 +105,15 @@ Two desks, and two keys.
 **`/admin` — the posting desk.** Writing, editing and submitting. Nothing
 written here reaches a reader: a new teaching is created `pending` and
 waits. Needs `ADMIN_TOKEN`.
+
+**`/admin/questions` — the question queue.** Every question sent from the
+box at the foot of a page, newest first. Any of them can also be answered
+in the open: the desk writes the question as it should be published and
+the answer under it, and that pair becomes a page at `/questions/<slug>`.
+The reader's own words, their name and their address are never part of
+it. The address is minted once from the question and kept, so rewording
+does not break a link somebody shared, and taking a page down and putting
+it back returns it to the same URL. Needs `ADMIN_TOKEN`.
 
 **`/admin/review` — the review desk.** A senior reviewer reads a pending
 teaching in full and approves it, sends it back with a reason, or removes
@@ -186,6 +197,13 @@ has no worker gets the site exactly as it was.
 invite and a "New teachings on WhatsApp" link appears at the foot of every
 teaching and in the footer. Unset, nothing is offered. No addresses, no
 consent to record, nothing to unsubscribe from at this end.
+
+**Listening, and keeping.** Every teaching carries *Listen* and *Save*
+under its standfirst. Listen is the browser's own voice (`src/lib/speech.ts`)
+with a player pinned to the foot of the window; Save tells the worker to
+fetch the teaching now, so it opens with no connection later and waits
+under *Saved* in the archive. Both had been reachable only from the
+archive's cards, which is not the page most readers arrive on.
 
 **Reading the verse.** The archive is its own concordance: `scripture-index.ts`
 collects every passage these teachings quote in full, so a reference in the
