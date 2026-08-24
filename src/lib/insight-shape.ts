@@ -75,10 +75,56 @@ const KNOWN_PATHS: RegExp[] = [
   /^\/teachings\/[a-z0-9-]{1,60}$/,
   /^\/topics\/[a-z0-9-]{1,40}$/,
   /^\/authors\/[a-z0-9-]{1,40}$/,
+  /* Real pages that were shipping uncounted. The answered questions are
+     published work with their own addresses, and the altars are the page
+     a reader opens to find out where to go on Sunday — the desk could not
+     see either of them being read. */
+  /^\/questions$/,
+  /^\/questions\/[a-z0-9-]{1,90}$/,
+  /^\/altars$/,
+  /^\/altars\/[a-z0-9-]{1,60}$/,
   /^\/search$/,
   /^\/about$/,
   /^\/docs\/api$/,
 ]
+
+/**
+ * The part of the site a path belongs to.
+ *
+ * "Where are readers spending their time" is not answerable page by page
+ * — a hundred teachings each with a hundred visits look like nothing
+ * beside one front page with two thousand, and the honest comparison is
+ * between the rooms rather than the doors. The order here is the order
+ * they are shown in.
+ */
+export const SITE_PARTS = [
+  'Front page',
+  'Articles',
+  'Teachings',
+  'Prophecies',
+  'Questions',
+  'Altars',
+  'Topics',
+  'Authors',
+  'Search',
+  'About',
+  'API',
+] as const
+export type SitePart = (typeof SITE_PARTS)[number]
+
+export function sitePart(path: string): SitePart {
+  if (path === '/') return 'Front page'
+  if (path.startsWith('/articles')) return 'Articles'
+  if (path.startsWith('/teachings')) return 'Teachings'
+  if (path.startsWith('/prophecies')) return 'Prophecies'
+  if (path.startsWith('/questions')) return 'Questions'
+  if (path.startsWith('/altars')) return 'Altars'
+  if (path.startsWith('/topics')) return 'Topics'
+  if (path.startsWith('/authors')) return 'Authors'
+  if (path.startsWith('/search')) return 'Search'
+  if (path.startsWith('/docs')) return 'API'
+  return 'About'
+}
 
 export function cleanPath(raw: unknown): string | null {
   if (typeof raw !== 'string') return null
@@ -152,3 +198,65 @@ export function cleanBatch(raw: unknown): EventBatch | null {
     Object.keys(sections).length === 0
   return empty ? null : batch
 }
+
+/* ── Days ─────────────────────────────────────────────────────────── */
+
+/**
+ * The clock the counters are kept by.
+ *
+ * Nairobi, not UTC. The ministry's evening — when the site is busiest —
+ * runs from 18:00 to 23:00 local, which UTC splits across two dates for
+ * two of those hours. A day that ends at three in the morning local time
+ * is not a day anybody at this desk would recognise, and every comparison
+ * built on it inherits the seam.
+ */
+export const SITE_ZONE = 'Africa/Nairobi'
+
+/** A day as the store names it: YYYY-MM-DD, in the site's own zone. */
+export function dayKey(at: number): string {
+  /* en-CA renders ISO order, which is the one format that sorts. */
+  return new Date(at).toLocaleDateString('en-CA', { timeZone: SITE_ZONE })
+}
+
+/** The last `count` days ending today, oldest first. */
+export function recentDays(count: number, now: number): string[] {
+  const days: string[] = []
+  for (let back = count - 1; back >= 0; back -= 1) {
+    days.push(dayKey(now - back * 86_400_000))
+  }
+  return days
+}
+
+/**
+ * How long a day's counters are kept.
+ *
+ * Long enough to compare a month against the month before it, short
+ * enough that the store prunes itself rather than growing for ever. The
+ * all-time totals are never dropped; it is only the day-by-day breakdown
+ * that ages out.
+ */
+export const DAYS_KEPT = 100
+
+/** What one day of the whole site came to. */
+export interface DayTotals {
+  day: string
+  views: number
+  seconds: number
+  finished: number
+}
+
+/* ── Reading one page's counters ──────────────────────────────────── */
+
+/** Mean engaged time on a page, in seconds. */
+export const averageSecondsOf = (page: Pick<PageInsight, 'views' | 'seconds'>): number =>
+  page.views > 0 ? Math.round(page.seconds / page.views) : 0
+
+/**
+ * How many of the readers who opened a piece reached the foot of it, 0–1.
+ *
+ * More telling than views on their own: a teaching opened two hundred
+ * times and finished four is not a popular teaching, it is a headline
+ * that does not survive its first paragraph.
+ */
+export const finishRateOf = (page: Pick<PageInsight, 'views' | 'finished'>): number =>
+  page.views > 0 ? Math.min(1, page.finished / page.views) : 0
