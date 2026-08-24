@@ -6,8 +6,6 @@ import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import { ArrowRight, Check, Eye, EyeOff, Feather, LoaderCircle, Pencil, X } from 'lucide-react'
 import { CATEGORIES } from '@/lib/content'
 import { ArticleProse } from '@/components/article-prose'
-import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { Button } from '@/components/ui/button'
 import { BodyEditor } from '@/components/admin/body-editor'
 import { clearDraft, readDraft, useDraftAutosave, worthKeeping, type Draft } from '@/lib/draft'
@@ -236,10 +234,14 @@ export default function AdminPage() {
     }
   }
 
+  /* No masthead and no footer. The reader's navigation was on this page —
+     Articles, Prophecy Archive, Teachings, About, and a theme switch —
+     which is the site's chrome on a page that is not the site: every one
+     of those links takes a writer out of the desk mid-piece, and the
+     draft they were holding is only saved because something else saves
+     it. What is left above the writing is the way out of the desk. */
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto max-w-5xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-5xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
         {/* ── Desk header ─────────────────────────────────────── */}
         <header className="flex flex-col items-center text-center">
           <span className="grid h-12 w-12 place-items-center rounded-full border border-gold/40 bg-gold/10">
@@ -636,8 +638,6 @@ export default function AdminPage() {
             </form>
           )}
 
-      </main>
-      <SiteFooter />
-    </>
+    </main>
   )
 }
