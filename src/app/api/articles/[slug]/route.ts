@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
-  bearerToken,
+  deskToken,
   deletePostedArticle,
   getPostedArticle,
   updatePostedArticle,
@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: Params) {
   const { error, input } = validateInput(payload)
   if (error || !input) return NextResponse.json({ error }, { status: 400 })
 
-  const result = await updatePostedArticle(params.slug, input, bearerToken(request))
+  const result = await updatePostedArticle(params.slug, input, await deskToken(request))
   if (!result.article) {
     const message =
       result.status === 401
@@ -52,7 +52,7 @@ export async function PUT(request: Request, { params }: Params) {
 
 /** DELETE /api/articles/[slug] — remove an article (requires posting key). */
 export async function DELETE(request: Request, { params }: Params) {
-  const status = await deletePostedArticle(params.slug, bearerToken(request))
+  const status = await deletePostedArticle(params.slug, await deskToken(request))
   if (status === 204) {
     revalidatePublished(params.slug)
     return NextResponse.json({ ok: true })

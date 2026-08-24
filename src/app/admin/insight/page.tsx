@@ -35,19 +35,18 @@ function readable(id: string): string {
 }
 
 export default function InsightPage() {
-  const [key, setKey] = React.useState('')
   const [pages, setPages] = React.useState<PageInsight[] | null>(null)
   const [error, setError] = React.useState('')
   const [loading, setLoading] = React.useState(false)
 
-  const load = async (event: React.FormEvent) => {
-    event.preventDefault()
+  /* Loaded on arrival rather than on a button. Getting here at all now
+     means a key was accepted at the door, so asking for one again before
+     showing the numbers was asking twice. */
+  const load = React.useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/insight', {
-        headers: { Authorization: `Bearer ${key}` },
-      })
+      const response = await fetch('/api/insight', { cache: 'no-store' })
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string }
         setError(body.error ?? `The desk returned ${response.status}.`)
@@ -60,7 +59,11 @@ export default function InsightPage() {
       setError('Could not reach the desk.')
     }
     setLoading(false)
-  }
+  }, [])
+
+  React.useEffect(() => {
+    void load()
+  }, [load])
 
   const totals = (pages ?? []).reduce(
     (sum, p) => ({
@@ -110,30 +113,22 @@ export default function InsightPage() {
         How the site is read
       </h1>
       <p className="mb-9 max-w-[640px] text-[0.9375rem] leading-[1.7] text-ink-700">
-        Counters only. No cookie is set, no identifier is issued and nothing is
+        Counters only. No cookie is set on a reader, no identifier is issued and nothing is
         stored about any reader — so there are no visitors here, only visits.
         Readers who ask not to be counted, through Do Not Track or Global
         Privacy Control, are not counted.
       </p>
 
-      <form onSubmit={load} className="mb-10 flex flex-wrap items-end gap-3">
-        <label className="block">
-          <span className="kicker mb-2 block text-ink-subtle">Posting key</span>
-          <input
-            type="password"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            className="focus-ring w-[260px] rounded-tile border border-rule bg-card px-4 py-3 text-[0.9375rem]"
-          />
-        </label>
+      <div className="mb-10 flex flex-wrap items-end gap-3">
         <button
-          type="submit"
-          disabled={loading || !key}
+          type="button"
+          onClick={() => void load()}
+          disabled={loading}
           className="focus-ring rounded-tile bg-plate px-6 py-3 text-[0.9375rem] font-semibold text-plate-pale disabled:opacity-50"
         >
-          {loading ? 'Reading…' : 'Show the numbers'}
+          {loading ? 'Reading…' : 'Refresh the numbers'}
         </button>
-      </form>
+      </div>
 
       {error && (
         <p className="mb-8 rounded-tile border border-dashed border-source-rule bg-source-bg px-5 py-4 text-[0.9375rem] text-source-ink">

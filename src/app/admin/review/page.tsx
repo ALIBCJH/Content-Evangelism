@@ -2,9 +2,8 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { CheckCircle2, Loader2, Undo2, Trash2, KeyRound } from 'lucide-react'
+import { CheckCircle2, Loader2, Undo2, Trash2 } from 'lucide-react'
 import { ArticleProse } from '@/components/article-prose'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -14,7 +13,9 @@ import { Button } from '@/components/ui/button'
  * This page is where somebody senior reads a piece as a reader will get
  * it, and decides. It is deliberately a different page with a different
  * key: the separation is the whole point, and a single page with an
- * "approve" button on it would not be one.
+ * "approve" button on it would not be one. The key is presented at the
+ * door now rather than on this page — a session that reaches here is one
+ * the middleware has already established may approve.
  *
  * A reviewer reads the piece in full here rather than on a preview URL,
  * because a preview URL for unpublished work is a way for unpublished
@@ -43,20 +44,18 @@ const dated = (iso?: string) =>
     : ''
 
 export default function ReviewPage() {
-  const [key, setKey] = React.useState('')
   const [articles, setArticles] = React.useState<Article[] | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
   const [open, setOpen] = React.useState<string | null>(null)
   const [notes, setNotes] = React.useState<Record<string, string>>({})
 
-  const load = React.useCallback(async (withKey: string) => {
+  const load = React.useCallback(async () => {
     setError(null)
     try {
-      const response = await fetch('/api/articles', {
-        headers: withKey ? { Authorization: `Bearer ${withKey}` } : {},
-        cache: 'no-store',
-      })
+      /* No Authorization header: the session cookie is attached by the
+         browser and resolved to this reviewer's key on the server. */
+      const response = await fetch('/api/articles', { cache: 'no-store' })
       const body = await response.json()
       if (!response.ok) {
         setError(body.error ?? `The desk returned ${response.status}.`)
@@ -69,7 +68,7 @@ export default function ReviewPage() {
   }, [])
 
   React.useEffect(() => {
-    void load('')
+    void load()
   }, [load])
 
   const waiting = (articles ?? []).filter((article) => article.status === 'pending')
@@ -80,23 +79,19 @@ export default function ReviewPage() {
     action: 'approve' | 'send-back' | 'unpublish',
     note?: string
   ) => {
-    if (!key) {
-      setError('Enter the review key first.')
-      return
-    }
     setBusy(slug)
     setError(null)
     try {
       const response = await fetch(`/api/review/${slug}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, note }),
       })
       const body = await response.json()
       if (!response.ok) setError(body.error ?? 'That did not go through.')
       else {
         setOpen(null)
-        await load(key)
+        await load()
       }
     } catch {
       setError('Could not reach the desk.')
@@ -105,21 +100,14 @@ export default function ReviewPage() {
   }
 
   const remove = async (slug: string) => {
-    if (!key) {
-      setError('Enter the review key first.')
-      return
-    }
     if (!window.confirm('Remove this piece permanently? The writing is not recoverable.')) return
     setBusy(slug)
     try {
-      const response = await fetch(`/api/articles/${slug}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${key}` },
-      })
+      const response = await fetch(`/api/articles/${slug}`, { method: 'DELETE' })
       if (!response.ok) {
         const body = await response.json().catch(() => ({}))
         setError(body.error ?? 'That did not go through.')
-      } else await load(key)
+      } else await load()
     } catch {
       setError('Could not reach the desk.')
     }
@@ -146,29 +134,6 @@ export default function ReviewPage() {
         teaching.
       </p>
 
-      <div className="mt-6 max-w-md">
-        <label htmlFor="review-key" className={label}>
-          Review key
-        </label>
-        <div className="relative mt-2">
-          <KeyRound
-            aria-hidden
-            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle"
-          />
-          <Input
-            id="review-key"
-            type="password"
-            value={key}
-            onChange={(event) => {
-              setKey(event.target.value)
-              void load(event.target.value)
-            }}
-            placeholder="Needed to approve, send back or remove"
-            className="pl-10"
-          />
-        </div>
-      </div>
-
       {error && (
         <p role="alert" className="mt-5 font-sans text-sm text-status-danger">
           {error}
@@ -184,9 +149,7 @@ export default function ReviewPage() {
 
         {waiting.length === 0 ? (
           <p className="rounded-2xl border border-hairline bg-surface px-5 py-6 font-sans text-sm text-ink-muted">
-            {key
-              ? 'Nothing is waiting. Everything written has been dealt with.'
-              : 'Enter the review key to see what is waiting.'}
+            Nothing is waiting. Everything written has been dealt with.
           </p>
         ) : (
           <ul className="flex flex-col gap-4">
@@ -291,7 +254,7 @@ export default function ReviewPage() {
       </section>
 
       {/* ── What is already out ─────────────────────────────────────── */}
-      {key && live.length > 0 && (
+      {live.length > 0 && (
         <section className="mt-12">
           <h2 className="mb-4 flex items-baseline gap-3 font-display text-xl text-ink-strong">
             On the site

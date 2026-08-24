@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { bearerToken } from '@/lib/posted'
+import { deskToken } from '@/lib/posted'
 import { askQuestion, listQuestions, validateQuestion } from '@/lib/questions'
 
 export const dynamic = 'force-dynamic'
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 
 /** GET /api/questions — the queue, for the desk. Requires the posting key. */
 export async function GET(request: Request) {
-  const { status, questions } = await listQuestions(bearerToken(request))
+  const { status, questions } = await listQuestions(await deskToken(request))
   if (!questions) return NextResponse.json({ error: 'Invalid posting key.' }, { status })
   return NextResponse.json({ questions })
 }
