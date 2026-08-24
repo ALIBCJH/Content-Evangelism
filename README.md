@@ -315,6 +315,7 @@ ministry does not own.
 
 | Variable | What it does |
 | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | The address this deployment answers on, with no trailing slash. Every canonical tag, the sitemap, the feed, every Open Graph URL and every `@id` in the structured data is built from it. **Set this the moment the site gets a domain** — a deployment serving one address while declaring another tells Google the real page is elsewhere, and Google believes it. Unset, it falls back to `https://repentandpreparetheway.org`. |
 | `GOOGLE_SITE_VERIFICATION` | The token from Search Console. Set this first — nothing else can be measured until the property is verified and the sitemap submitted. |
 | `SOCIAL_PROFILES` | Comma-separated official profile URLs (Facebook, X, Instagram…). They join YouTube and the radio station in the Organization `sameAs` set, which is what ties this domain to the ministry as an entity. |
 | `TWITTER_HANDLE` | Including the `@`. Fills `twitter:site` / `twitter:creator`. |
