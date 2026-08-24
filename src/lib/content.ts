@@ -170,7 +170,7 @@ export const navSections: NavSection[] = [
     href: '/about',
     items: [
       'The Ministry', 'History', 'Mission', 'Leadership',
-      'Statement of Faith', 'What We Believe', 'Locations',
+      'Statement of Faith', 'What We Believe', 'Altars & Locations',
     ],
   },
 ]
@@ -874,7 +874,7 @@ export const footerColumns: FooterColumn[] = [
       { label: 'About', href: '/about' },
       { label: 'Mission', href: '/about#mission' },
       { label: 'Statement of Faith', href: '/about#faith' },
-      { label: 'Locations', href: '/about#locations' },
+      { label: 'Altars & Locations', href: '/altars' },
     ],
   },
   {
