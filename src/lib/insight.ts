@@ -1,6 +1,14 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { type ClickLabel, type EventBatch, type PageInsight } from '@/lib/insight-shape'
+import {
+  DAYS_KEPT,
+  dayKey,
+  recentDays,
+  type ClickLabel,
+  type DayTotals,
+  type EventBatch,
+  type PageInsight,
+} from '@/lib/insight-shape'
 
 export * from '@/lib/insight-shape'
 
@@ -30,11 +38,20 @@ export * from '@/lib/insight-shape'
  * landing together cannot lose each other's numbers. Redis does that
  * itself; the file driver gets the same guarantee from a write queue and
  * an atomic rename — see `writeFile`.
+ *
+ * Everything is counted twice: once into a total that is never reset, and
+ * once into the day it happened on. The totals alone were a shelf that
+ * only ever grew, which meant a teaching published a year ago outranked a
+ * better one from last week for ever, and "how are we doing this month"
+ * had no answer at all. The day shelf expires after `DAYS_KEPT`, so it
+ * prunes itself; the totals do not, so nothing is ever lost.
  */
 
 const KV_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? ''
 const KV_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN ?? ''
 const KV_KEY = 'insight'
+/** One hash per day, under its own key, so a day can expire on its own. */
+const dayHash = (day: string) => `insight:d:${day}`
 const STORE = path.join(process.cwd(), 'data', 'insight.json')
 const usingKv = Boolean(KV_URL && KV_TOKEN)
 
@@ -53,6 +70,32 @@ async function kvCommand(command: (string | number)[]): Promise<unknown> {
   return payload.result
 }
 
+/**
+ * Several commands in one round trip.
+ *
+ * Recording used to be one HTTPS request per field, fired in parallel — a
+ * reader finishing a teaching with six sections cost eight calls, and now
+ * that every field is counted twice it would cost sixteen. Upstash takes
+ * an array of commands at /pipeline and answers them in order, so it is
+ * one call whatever the batch holds.
+ */
+async function kvPipeline(commands: (string | number)[][]): Promise<unknown[]> {
+  if (commands.length === 0) return []
+  const response = await fetch(`${KV_URL.replace(/\/+$/, '')}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(commands),
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error(`Upstash pipeline returned ${response.status}.`)
+  const payload = (await response.json()) as ({ result?: unknown; error?: string })[]
+  if (!Array.isArray(payload)) throw new Error('Upstash pipeline returned an unexpected shape.')
+  return payload.map((step) => {
+    if (step?.error) throw new Error(`Upstash pipeline: ${step.error}`)
+    return step?.result
+  })
+}
+
 const field = (p: string, name: string) => `${p}::${name}`
 
 /** Field names as they are stored, so the file driver matches Redis. */
@@ -68,7 +111,7 @@ function increments(batch: EventBatch): [string, number][] {
   return out
 }
 
-export async function record(batches: EventBatch[]): Promise<boolean> {
+export async function record(batches: EventBatch[], now = Date.now()): Promise<boolean> {
   const pairs = batches.flatMap(increments)
   if (pairs.length === 0) return true
 
@@ -76,14 +119,24 @@ export async function record(batches: EventBatch[]): Promise<boolean> {
   const totals = new Map<string, number>()
   for (const [name, n] of pairs) totals.set(name, (totals.get(name) ?? 0) + n)
 
+  const day = dayKey(now)
+
   try {
     if (usingKv) {
-      await Promise.all(
-        Array.from(totals, ([name, n]) => kvCommand(['HINCRBY', KV_KEY, name, n]))
-      )
+      const commands: (string | number)[][] = []
+      Array.from(totals).forEach(([name, n]) => {
+        commands.push(['HINCRBY', KV_KEY, name, n])
+        commands.push(['HINCRBY', dayHash(day), name, n])
+      })
+      /* Refreshed on every write rather than set once. A key created on a
+         quiet day and never touched again would otherwise expire from the
+         moment it was made, and the expiry is meant to be measured from
+         the last thing that happened, not the first. */
+      commands.push(['EXPIRE', dayHash(day), DAYS_KEPT * 86_400])
+      await kvPipeline(commands)
       return true
     }
-    await writeFile(totals)
+    await writeFile(totals, day)
     return true
   } catch {
     /* A reader's page must never fail because a counter did. */
@@ -108,12 +161,29 @@ export async function record(batches: EventBatch[]): Promise<boolean> {
  */
 let writing: Promise<void> = Promise.resolve()
 
-function writeFile(totals: Map<string, number>): Promise<void> {
+/** The file driver's document: the totals, and the days beside them. */
+interface FileStore {
+  all: Record<string, number>
+  days: Record<string, Record<string, number>>
+}
+
+function writeFile(totals: Map<string, number>, day: string): Promise<void> {
   writing = writing.then(async () => {
-    const current = await readRaw()
+    const current = await readFileStore()
+    const today = (current.days[day] ??= {})
     Array.from(totals).forEach(([name, n]) => {
-      current[name] = (current[name] ?? 0) + n
+      current.all[name] = (current.all[name] ?? 0) + n
+      today[name] = (today[name] ?? 0) + n
     })
+
+    /* The day shelf prunes itself on Redis by expiring. Nothing expires a
+       file, so it is pruned here — otherwise `npm run dev` would grow a
+       document for ever with no ceiling anybody would notice. */
+    const keep = new Set(recentDays(DAYS_KEPT, Date.now()))
+    for (const held of Object.keys(current.days)) {
+      if (!keep.has(held)) delete current.days[held]
+    }
+
     await fs.mkdir(path.dirname(STORE), { recursive: true })
     const temporary = `${STORE}.${process.pid}.tmp`
     await fs.writeFile(temporary, `${JSON.stringify(current, null, 2)}\n`, 'utf8')
@@ -122,27 +192,70 @@ function writeFile(totals: Map<string, number>): Promise<void> {
   return writing
 }
 
+/** Upstash answers HGETALL as a flat array or an object, depending. */
+function asCounters(flat: unknown): Record<string, number> {
+  const out: Record<string, number> = {}
+  if (Array.isArray(flat)) {
+    for (let i = 0; i < flat.length; i += 2) out[String(flat[i])] = Number(flat[i + 1]) || 0
+  } else if (flat && typeof flat === 'object') {
+    for (const [k, v] of Object.entries(flat as Record<string, unknown>)) out[k] = Number(v) || 0
+  }
+  return out
+}
+
+/**
+ * The file document, in either shape it may be on disk.
+ *
+ * Before there were days it was a flat map of counters. A deployment
+ * upgrading in place has one of those, and reading it as though the whole
+ * document were the totals is exactly right — so the old shape is not a
+ * migration, it is just a document with no days in it yet.
+ */
+async function readFileStore(): Promise<FileStore> {
+  try {
+    const parsed = JSON.parse(await fs.readFile(STORE, 'utf8')) as unknown
+    if (!parsed || typeof parsed !== 'object') return { all: {}, days: {} }
+    const shaped = parsed as Partial<FileStore> & Record<string, unknown>
+    if (shaped.all && typeof shaped.all === 'object') {
+      return { all: shaped.all as Record<string, number>, days: (shaped.days ?? {}) as FileStore['days'] }
+    }
+    return { all: parsed as Record<string, number>, days: {} }
+  } catch {
+    return { all: {}, days: {} }
+  }
+}
+
 async function readRaw(): Promise<Record<string, number>> {
   try {
-    if (usingKv) {
-      const flat = (await kvCommand(['HGETALL', KV_KEY])) as unknown
-      const out: Record<string, number> = {}
-      if (Array.isArray(flat)) {
-        for (let i = 0; i < flat.length; i += 2) out[String(flat[i])] = Number(flat[i + 1]) || 0
-      } else if (flat && typeof flat === 'object') {
-        for (const [k, v] of Object.entries(flat as Record<string, unknown>)) out[k] = Number(v) || 0
-      }
-      return out
-    }
-    return JSON.parse(await fs.readFile(STORE, 'utf8')) as Record<string, number>
+    if (usingKv) return asCounters(await kvCommand(['HGETALL', KV_KEY]))
+    return (await readFileStore()).all
   } catch {
     return {}
   }
 }
 
-/** Every page that has been read, busiest first. */
-export async function readInsight(): Promise<PageInsight[]> {
-  const raw = await readRaw()
+/** The counters for a run of days, in the order they were asked for. */
+async function readDays(days: string[]): Promise<Record<string, number>[]> {
+  try {
+    if (usingKv) {
+      const answers = await kvPipeline(days.map((day) => ['HGETALL', dayHash(day)]))
+      return answers.map(asCounters)
+    }
+    const store = await readFileStore()
+    return days.map((day) => store.days[day] ?? {})
+  } catch {
+    return days.map(() => ({}))
+  }
+}
+
+/**
+ * Counters as they are stored, arranged by the page they belong to.
+ *
+ * Shared by the all-time read and the by-day one, which hold identical
+ * field names in different hashes — the only difference between "ever"
+ * and "this week" here is which shelf the numbers came off.
+ */
+function toPages(raw: Record<string, number>): PageInsight[] {
   const pages = new Map<string, PageInsight>()
 
   for (const [name, value] of Object.entries(raw)) {
@@ -166,6 +279,44 @@ export async function readInsight(): Promise<PageInsight[]> {
   return Array.from(pages.values()).sort((a, b) => b.views - a.views)
 }
 
-/** Mean engaged time on a page, in seconds. */
-export const averageSeconds = (page: PageInsight): number =>
-  page.views > 0 ? Math.round(page.seconds / page.views) : 0
+/** Every page that has been read, ever, busiest first. */
+export async function readInsight(): Promise<PageInsight[]> {
+  return toPages(await readRaw())
+}
+
+/**
+ * The same thing for a run of recent days, and the shape of those days.
+ *
+ * Two answers from one read, because the desk asks two questions of the
+ * same numbers: which pieces held readers over this stretch, and whether
+ * the stretch was better or worse than the one before it. `series` is
+ * every day in the window including the empty ones — a chart with the
+ * quiet days missing is a chart that lies about the shape.
+ */
+export async function readInsightRange(
+  days: number,
+  now = Date.now()
+): Promise<{ pages: PageInsight[]; series: DayTotals[]; days: string[] }> {
+  const wanted = recentDays(Math.max(1, Math.min(days, DAYS_KEPT)), now)
+  const counters = await readDays(wanted)
+
+  const summed: Record<string, number> = {}
+  const series: DayTotals[] = wanted.map((day, index) => {
+    const held = counters[index] ?? {}
+    const totals: DayTotals = { day, views: 0, seconds: 0, finished: 0 }
+    for (const [name, value] of Object.entries(held)) {
+      summed[name] = (summed[name] ?? 0) + value
+      if (name.endsWith('::views')) totals.views += value
+      else if (name.endsWith('::seconds')) totals.seconds += value
+      else if (name.endsWith('::finished')) totals.finished += value
+    }
+    return totals
+  })
+
+  return { pages: toPages(summed), series, days: wanted }
+}
+
+/* The per-page arithmetic lives in insight-shape, so the desk's own
+   client page can do it without node:fs coming with it. Kept under the
+   names callers already use. */
+export { averageSecondsOf as averageSeconds, finishRateOf as finishRate } from '@/lib/insight-shape'

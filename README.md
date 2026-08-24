@@ -129,10 +129,57 @@ it. The address is minted once from the question and kept, so rewording
 does not break a link somebody shared, and taking a page down and putting
 it back returns it to the same URL. Opened by either key.
 
-**`/admin/review` — the review desk.** A senior reviewer reads a pending
-teaching in full and approves it, sends it back with a reason, or removes
-it. Approving puts it on the site and marks it verified. A live piece can
-also be unpublished from here. Opened by `REVIEW_TOKEN` alone: a session
+**`/admin/review` — the review desk, and the board.** A senior reviewer
+reads a pending teaching in full and approves it, sends it back with a
+reason, or removes it. Approving puts it on the site and marks it
+verified. A live piece can also be unpublished from here.
+
+It is also where the ministry sees how it is read. What the desk has to
+decide, what readers did, and whether the machinery is sound were three
+things on three pages, and the effect was that nobody looked at any of
+them. They are five bands on one page now, in the order somebody needs
+them:
+
+1. **What needs you** — waiting for review, live but never verified, sent
+   back, and readers waiting on an answer. Decisions before measurements:
+   a desk that opens on a chart is a dashboard, and the queue under it is
+   what keeps a teaching from a reader.
+2. **The last 7 / 30 / 90 days** — visits, engaged time, how many reached
+   the end, and the change against the stretch before.
+3. **Everything written** — every piece as one row, sortable, with visits,
+   finish rate and time in the chosen window. A row opens to show where
+   *inside* the teaching the time went, by heading.
+4. **Where the time goes** — by part of the site, and which invitations
+   readers took.
+5. **The machinery** — store attached, whether the review desk has a key
+   of its own, whether anything is being counted, altar coverage.
+
+Two lists sit between 3 and 4 because they are the only ones that are
+advice rather than reporting: pieces readers **open and abandon** (enough
+visits to judge, and fewer than a quarter reaching the end), and pieces
+**published and barely opened**.
+
+The arithmetic is in `src/lib/desk-overview.ts` — pure functions of data
+handed in, so what the desk is shown can be checked on a table — and
+`/api/desk/overview` composes it in one answer rather than leaving a
+browser to assemble a board out of four loading states.
+
+**One word is used carefully: visits, never visitors.** Nothing is stored
+per reader, by design, so one reader opening a teaching three times and
+three readers opening it once are the same number. A board that said
+"people" would be inventing a figure the site deliberately refuses to
+collect, and the page says so where the numbers are.
+
+**How the counting works.** A reader's page reports on itself to
+`POST /api/insight` — a path from a fixed list, engaged seconds, whether
+the foot of the piece was reached, clicks from a fixed list, and seconds
+per heading. It honours Do Not Track and Global Privacy Control, and
+refuses to count if either arrives anyway. Everything is counted twice:
+into a total that is never reset, and into the day it happened on, in the
+site's own clock rather than UTC — the ministry's evening runs past the
+UTC midnight, and a day with a seam in the middle of it is not one
+anybody at this desk would recognise. Day counters expire after
+`DAYS_KEPT` so the store prunes itself; the totals are never dropped. Opened by `REVIEW_TOKEN` alone: a session
 bought with the posting key is turned away at the door and refused by
 `POST /api/review/<slug>` as well, so the separation is real rather than
 a hidden button.

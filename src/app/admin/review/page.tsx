@@ -2,9 +2,14 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { CheckCircle2, Loader2, Undo2, Trash2 } from 'lucide-react'
+import { CheckCircle2, Loader2, Undo2, Trash2, RefreshCw } from 'lucide-react'
 import { ArticleProse } from '@/components/article-prose'
 import { Button } from '@/components/ui/button'
+import type { DayTotals } from '@/lib/insight-shape'
+import type { DeskNeeds, PartRow, PieceRow, WindowSummary } from '@/lib/desk-overview'
+import { FindingsBand } from '@/components/admin/board/findings'
+import { HealthBand, NeedsBand, PartsBand, StretchBand } from '@/components/admin/board/bands'
+import { PiecesTable } from '@/components/admin/board/pieces-table'
 
 /**
  * The review desk.
@@ -20,6 +25,18 @@ import { Button } from '@/components/ui/button'
  * A reviewer reads the piece in full here rather than on a preview URL,
  * because a preview URL for unpublished work is a way for unpublished
  * work to get out.
+ *
+ * It is also the board. What the desk has to decide, what readers did
+ * with what it published, and whether the machinery underneath is sound
+ * were three things on three pages, and the effect was that nobody looked
+ * at any of them: the counters sat behind a key on a page you had to know
+ * existed, and the fact that most of what is on the site was never
+ * checked against the ministry's own teaching was a grey word at the end
+ * of a row. They are one page now, in the order somebody actually needs
+ * them — the decisions first, the measurements under them.
+ *
+ * Everything measured is arithmetic done in `desk-overview.ts` and handed
+ * over by `/api/desk/overview`; this file draws it and owns the actions.
  */
 
 interface Article {
@@ -38,6 +55,29 @@ interface Article {
   readMinutes: number
 }
 
+/** Everything /api/desk/overview answers with. */
+interface Board {
+  days: number
+  needs: DeskNeeds
+  summary: WindowSummary
+  series: DayTotals[]
+  pieces: PieceRow[]
+  deadEnds: PieceRow[]
+  unread: PieceRow[]
+  parts: PartRow[]
+  clicks: { label: string; count: number }[]
+  healthNotes: { level: 'bad' | 'warn' | 'good'; note: string }[]
+}
+
+/**
+ * The stretches worth asking for.
+ *
+ * A week is what changed since the last time somebody looked, a month is
+ * the working answer, and three months is as far back as the day-by-day
+ * counters are kept — see DAYS_KEPT.
+ */
+const WINDOWS = [7, 30, 90]
+
 const dated = (iso?: string) =>
   iso
     ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
@@ -49,30 +89,52 @@ export default function ReviewPage() {
   const [busy, setBusy] = React.useState<string | null>(null)
   const [open, setOpen] = React.useState<string | null>(null)
   const [notes, setNotes] = React.useState<Record<string, string>>({})
+  const [board, setBoard] = React.useState<Board | null>(null)
+  const [days, setDays] = React.useState<number>(30)
+  const [loading, setLoading] = React.useState(true)
 
-  const load = React.useCallback(async () => {
+  /**
+   * The queue and the board, together.
+   *
+   * Two answers rather than one because the queue holds every teaching's
+   * full body — a reviewer reads it here — and the board holds none of
+   * it. Asked for at the same moment so the page arrives whole rather
+   * than settling into place a band at a time.
+   */
+  const load = React.useCallback(async (over: number) => {
     setError(null)
+    setLoading(true)
     try {
       /* No Authorization header: the session cookie is attached by the
          browser and resolved to this reviewer's key on the server. */
-      const response = await fetch('/api/articles', { cache: 'no-store' })
-      const body = await response.json()
-      if (!response.ok) {
-        setError(body.error ?? `The desk returned ${response.status}.`)
-        return
-      }
-      setArticles(body.articles as Article[])
+      const [queue, overview] = await Promise.all([
+        fetch('/api/articles', { cache: 'no-store' }),
+        fetch(`/api/desk/overview?days=${over}`, { cache: 'no-store' }),
+      ])
+
+      const queueBody = await queue.json().catch(() => ({}))
+      if (!queue.ok) setError(queueBody.error ?? `The desk returned ${queue.status}.`)
+      else setArticles(queueBody.articles as Article[])
+
+      const boardBody = await overview.json().catch(() => ({}))
+      if (overview.ok) setBoard(boardBody as Board)
+      /* The queue is the part that must work. A board that failed to
+         arrive is worth saying once and not worth blocking the desk. */
+      else if (queue.ok) setError(boardBody.error ?? 'The numbers could not be read.')
     } catch {
       setError('Could not reach the desk.')
     }
+    setLoading(false)
   }, [])
 
   React.useEffect(() => {
-    void load()
-  }, [load])
+    void load(days)
+  }, [load, days])
 
+  /* Only the queue is read off the full articles: it is the one part of
+     the page that needs each teaching's body. Everything already on the
+     site is drawn from the board, which carries the counters with it. */
   const waiting = (articles ?? []).filter((article) => article.status === 'pending')
-  const live = (articles ?? []).filter((article) => article.status !== 'pending')
 
   const decide = async (
     slug: string,
@@ -91,7 +153,7 @@ export default function ReviewPage() {
       if (!response.ok) setError(body.error ?? 'That did not go through.')
       else {
         setOpen(null)
-        await load()
+        await load(days)
       }
     } catch {
       setError('Could not reach the desk.')
@@ -107,7 +169,7 @@ export default function ReviewPage() {
       if (!response.ok) {
         const body = await response.json().catch(() => ({}))
         setError(body.error ?? 'That did not go through.')
-      } else await load()
+      } else await load(days)
     } catch {
       setError('Could not reach the desk.')
     }
@@ -125,19 +187,54 @@ export default function ReviewPage() {
         · Review
       </p>
 
-      <h1 className="font-display text-3xl font-semibold text-ink-strong md:text-4xl">
-        What is waiting to go on the site
-      </h1>
-      <p className="mt-3 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
-        Nothing written at the posting desk reaches a reader until it is approved here. Approving
-        puts the teaching on the site and marks it as checked against the ministry&apos;s own
-        teaching.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-semibold text-ink-strong md:text-4xl">
+            The review desk
+          </h1>
+          <p className="mt-3 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
+            Nothing written at the posting desk reaches a reader until it is approved here.
+            Approving puts the teaching on the site and marks it as checked against the
+            ministry&apos;s own teaching.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1 rounded-full border border-hairline p-1">
+          {WINDOWS.map((window) => (
+            <button
+              key={window}
+              type="button"
+              onClick={() => setDays(window)}
+              aria-pressed={days === window}
+              className={`focus-ring rounded-full px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-kicker transition-colors ${
+                days === window ? 'bg-gold/15 text-gold' : 'text-ink-subtle hover:text-ink-muted'
+              }`}
+            >
+              {window} days
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => void load(days)}
+            disabled={loading}
+            aria-label="Read the numbers again"
+            className="focus-ring rounded-full px-2.5 py-1.5 text-ink-subtle transition-colors hover:text-gold disabled:opacity-40"
+          >
+            <RefreshCw aria-hidden className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
 
       {error && (
         <p role="alert" className="mt-5 font-sans text-sm text-status-danger">
           {error}
         </p>
+      )}
+
+      {board && (
+        <div className="mt-10">
+          <NeedsBand needs={board.needs} />
+        </div>
       )}
 
       {/* ── The queue ───────────────────────────────────────────────── */}
@@ -253,43 +350,48 @@ export default function ReviewPage() {
         )}
       </section>
 
-      {/* ── What is already out ─────────────────────────────────────── */}
-      {live.length > 0 && (
-        <section className="mt-12">
-          <h2 className="mb-4 flex items-baseline gap-3 font-display text-xl text-ink-strong">
-            On the site
-            <span className="tabular font-sans text-sm text-ink-subtle">{live.length}</span>
-          </h2>
-          <ul className="divide-y divide-hairline rounded-2xl border border-hairline bg-surface">
-            {live.map((article) => (
-              <li key={article.slug} className="flex flex-wrap items-center gap-3 px-5 py-3">
-                <Link
-                  href={`/articles/${article.slug}`}
-                  className="min-w-0 flex-1 font-sans text-sm text-ink-strong hover:text-gold"
-                >
-                  {article.title}
-                </Link>
-                <span className="font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">
-                  {article.verified ? 'Verified' : 'Not verified'}
-                </span>
-                {/* Taking a teaching down is not a small thing: its address
-                    is out there and will stop answering. */}
-                <button
-                  type="button"
-                  onClick={() => decide(article.slug, 'unpublish')}
-                  disabled={busy === article.slug}
-                  className="focus-ring font-sans text-xs font-bold uppercase tracking-kicker text-ink-subtle transition-colors hover:text-status-danger"
-                >
-                  Unpublish
-                </button>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 font-sans text-xs text-ink-subtle">
-            Unpublishing takes a teaching off the site and returns it to the queue. Its address stops
-            answering for anybody holding the link.
-          </p>
-        </section>
+      {/* ── The measurements ────────────────────────────────────────── */}
+      {board && (
+        <div className="mt-14 flex flex-col gap-14">
+          <StretchBand summary={board.summary} series={board.series} days={board.days} />
+
+          <PiecesTable
+            rows={board.pieces}
+            days={board.days}
+            renderActions={(row) =>
+              row.status !== 'pending' ? (
+                <>
+                  {/* Taking a teaching down is not a small thing: its
+                      address is out there and will stop answering. */}
+                  <button
+                    type="button"
+                    onClick={() => decide(row.slug, 'unpublish')}
+                    disabled={busy === row.slug}
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-chip border border-hairline px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-status-danger/60 hover:text-status-danger disabled:opacity-40"
+                  >
+                    <Undo2 aria-hidden className="h-3.5 w-3.5" />
+                    Unpublish
+                  </button>
+                  <Link
+                    href={`/admin?edit=${row.slug}`}
+                    className="focus-ring rounded-chip border border-hairline px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold"
+                  >
+                    Edit
+                  </Link>
+                  <span className="font-sans text-xs text-ink-subtle">
+                    Unpublishing returns it to the queue and its address stops answering.
+                  </span>
+                </>
+              ) : null
+            }
+          />
+
+          <FindingsBand deadEnds={board.deadEnds} unread={board.unread} />
+
+          <PartsBand parts={board.parts} clicks={board.clicks} />
+
+          <HealthBand notes={board.healthNotes} />
+        </div>
       )}
     </main>
   )
