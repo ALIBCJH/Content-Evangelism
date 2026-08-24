@@ -175,7 +175,25 @@ export const navSections: NavSection[] = [
   },
 ]
 
-export const siteUrl = 'https://repentandpreparetheway.org'
+/**
+ * Where this site lives, as it tells the outside world.
+ *
+ * Every canonical tag, the sitemap, the feed, every Open Graph URL and
+ * every `@id` in the structured data is built from this one value — a
+ * hundred and sixty of them. Which is why it cannot be a constant: a
+ * deployment that serves one address while declaring another is telling
+ * Google the real page is somewhere else, and Google believes it. The
+ * site would look simply un-indexed, with nothing on the page to say why.
+ *
+ * `NEXT_PUBLIC_` because `content.ts` is imported by client components,
+ * so the value has to survive into the browser bundle. Set it in the
+ * deployment to whatever host actually answers — including the port, if
+ * there is one. Unset, it stays what it has always been, so nothing moves
+ * for a deployment that has not been told otherwise.
+ */
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://repentandpreparetheway.org')
+  .trim()
+  .replace(/\/+$/, '')
 
 /**
  * Where a reader is told that something new has been published.
