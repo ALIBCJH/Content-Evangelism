@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { ArrowUpRight, MapPin, Phone, X } from 'lucide-react'
 import { altarHref, counties, type County } from '@/lib/content'
 import {
@@ -8,6 +9,7 @@ import {
   awaitingCounties,
   countyCardId,
   countyNumber,
+  entriesIn,
   locatedCounties,
   searchCounties,
 } from '@/lib/altars'
@@ -270,13 +272,25 @@ function CountyCard({
           the card lists them rather than picking one and calling it the
           county's. */}
       <ul className="space-y-4">
-        {county.altars?.map((altar) => (
+        {entriesIn(county).map(({ altar, slug }) => (
           <li
             key={altar.placeId}
             className="border-t border-rule-soft pt-4 first:border-t-0 first:pt-0"
           >
-            <p className="text-[0.875rem] font-medium leading-[1.45] text-ink-900">{altar.name}</p>
-            <p className="mt-1 text-[0.8125rem] leading-[1.5] text-ink-subtle">{altar.area}</p>
+            {/* The name is the way in to the altar's own page — the one
+                that carries the county, the coordinates and what else is
+                near, and the one a search engine can rank for the town. */}
+            <Link
+              href={`/altars/${slug}`}
+              className="focus-ring group block rounded-[6px]"
+            >
+              <span className="block text-[0.875rem] font-medium leading-[1.45] text-ink-900 underline-offset-4 group-hover:text-gold-ink group-hover:underline">
+                {altar.name}
+              </span>
+              <span className="mt-1 block text-[0.8125rem] leading-[1.5] text-ink-subtle">
+                {altar.area}
+              </span>
+            </Link>
 
             {altar.confirmed === false && (
               <p className="mt-2 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-source-label">
