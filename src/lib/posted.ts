@@ -551,12 +551,32 @@ export async function reviewArticle(
 }
 
 /** Returns the status code: 204 deleted, 404 unknown, 401 bad key. */
+/**
+ * Remove a teaching for good.
+ *
+ * The rule is the same one the rest of this module keeps: the write key
+ * writes, and the review key decides what is on the site — and taking
+ * something off the site is deciding. So a piece still in the queue may
+ * be deleted by whoever is writing, and a piece a reader can reach may
+ * not.
+ *
+ * This was `authorized`, which is to say any desk key. Moving the button
+ * to the review desk without moving the rule would have been a button
+ * moved and nothing else: the endpoint is public, documented, and
+ * reachable with the posting key by anybody who reads /docs/api.
+ *
+ * 403 rather than 401, because the key is genuine and the answer is not
+ * "who are you" but "not you".
+ */
 export async function deletePostedArticle(slug: string, token: string): Promise<number> {
   if (!authorized(token)) return 401
 
   const articles = await readStore()
+  const standing = articles.find((a) => a.slug === slug)
+  if (!standing) return 404
+  if (isLive(standing) && !canReview(token)) return 403
+
   const remaining = articles.filter((a) => a.slug !== slug)
-  if (remaining.length === articles.length) return 404
   return (await writeStore(remaining)) ? 204 : 500
 }
 

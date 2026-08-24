@@ -162,7 +162,16 @@ export default function ReviewPage() {
   }
 
   const remove = async (slug: string) => {
-    if (!window.confirm('Remove this piece permanently? The writing is not recoverable.')) return
+    /* Named rather than "this piece": the table runs to dozens of rows and
+       an unnamed confirmation is one somebody agrees to without reading. */
+    const title = (articles ?? []).find((held) => held.slug === slug)?.title ?? slug
+    if (
+      !window.confirm(
+        `Delete "${title}" for good?\n\nThe writing is not recoverable, and if it is on the site its address stops answering.`
+      )
+    ) {
+      return
+    }
     setBusy(slug)
     try {
       const response = await fetch(`/api/articles/${slug}`, { method: 'DELETE' })
@@ -358,32 +367,51 @@ export default function ReviewPage() {
           <PiecesTable
             rows={board.pieces}
             days={board.days}
-            renderActions={(row) =>
-              row.status !== 'pending' ? (
-                <>
-                  {/* Taking a teaching down is not a small thing: its
-                      address is out there and will stop answering. */}
-                  <button
-                    type="button"
-                    onClick={() => decide(row.slug, 'unpublish')}
-                    disabled={busy === row.slug}
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-chip border border-hairline px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-status-danger/60 hover:text-status-danger disabled:opacity-40"
-                  >
-                    <Undo2 aria-hidden className="h-3.5 w-3.5" />
-                    Unpublish
-                  </button>
-                  <Link
-                    href={`/admin?edit=${row.slug}`}
-                    className="focus-ring rounded-chip border border-hairline px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold"
-                  >
-                    Edit
-                  </Link>
-                  <span className="font-sans text-xs text-ink-subtle">
-                    Unpublishing returns it to the queue and its address stops answering.
-                  </span>
-                </>
-              ) : null
-            }
+            renderActions={(row) => (
+              <>
+                <Link
+                  href={`/admin?edit=${row.slug}`}
+                  className="focus-ring rounded-chip border border-hairline px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold"
+                >
+                  Edit at the posting desk
+                </Link>
+
+                {row.status !== 'pending' && (
+                  <>
+                    {/* Taking a teaching down is not a small thing: its
+                        address is out there and will stop answering. */}
+                    <button
+                      type="button"
+                      onClick={() => decide(row.slug, 'unpublish')}
+                      disabled={busy === row.slug}
+                      className="focus-ring inline-flex items-center gap-1.5 rounded-chip border border-hairline px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-40"
+                    >
+                      <Undo2 aria-hidden className="h-3.5 w-3.5" />
+                      Unpublish
+                    </button>
+                    <span className="font-sans text-xs text-ink-subtle">
+                      Unpublishing returns it to the queue; its address stops answering.
+                    </span>
+                  </>
+                )}
+
+                {/* Deleting was on the posting desk, next to Edit, on every
+                    published teaching — so the one irreversible act at this
+                    ministry sat under the hand of whoever was writing, one
+                    button away from the one they meant. It is here now,
+                    behind the review key, folded inside a row somebody has
+                    deliberately opened. */}
+                <button
+                  type="button"
+                  onClick={() => remove(row.slug)}
+                  disabled={busy === row.slug}
+                  className="focus-ring ml-auto inline-flex items-center gap-1.5 rounded-chip px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-ink-subtle transition-colors hover:text-status-danger disabled:opacity-40"
+                >
+                  <Trash2 aria-hidden className="h-3.5 w-3.5" />
+                  Delete for good
+                </button>
+              </>
+            )}
           />
 
           <FindingsBand deadEnds={board.deadEnds} unread={board.unread} />

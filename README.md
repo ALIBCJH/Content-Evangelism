@@ -116,9 +116,24 @@ behind the middleware: a route handler checks the key it is given on
 every call — cookie or `Authorization: Bearer` — and a gate in front of
 it would be a second answer to a question already answered correctly.
 
-**`/admin` — the posting desk.** Writing, editing and submitting. Nothing
-written here reaches a reader: a new teaching is created `pending` and
-waits. Opened by either key.
+**`/admin` — the posting desk.** Writing, editing and submitting, and
+nothing else. Nothing written here reaches a reader: a new teaching is
+created `pending` and waits. Opened by either key.
+
+It used to carry three tabs — a dashboard of archive statistics, the
+writing form, and a management list of every published teaching with a
+Delete beside each one. Two of those answered questions a writer never
+asks, and the third put the one irreversible act at this ministry under
+the hand of whoever was writing, one button away from the one they meant.
+Both have moved to the review desk, where the board says all of it
+better.
+
+What is left is the writing, and one panel above it answering the
+question a writer actually has: **what happened to the piece I sent?**
+Sent back sits at the top with the reviewer's reason and a way straight
+into the piece, because it is the only one of the three states waiting on
+them. Beside the editor is a preview of the teaching as a reader will get
+it.
 
 **`/admin/questions` — the question queue.** Every question sent from the
 box at the foot of a page, newest first. Any of them can also be answered
@@ -317,7 +332,12 @@ API (same deployment, Next.js route handlers):
 - `GET  /api/articles` — list posted articles (public)
 - `POST /api/articles` — create; requires `Authorization: Bearer <ADMIN_TOKEN>`
 - `GET  /api/articles/:slug` — single article (public)
-- `DELETE /api/articles/:slug` — remove; requires the same bearer token
+- `DELETE /api/articles/:slug` — remove for good. A piece still in the
+  queue takes the posting key; one that is **on the site** takes
+  `REVIEW_TOKEN`, and answers 403 to the posting key. Taking a teaching
+  off the site is deciding what is on it, which is the review desk's to
+  decide — and an endpoint that is public and documented cannot be
+  governed by which page happens to draw the button
 - `POST /api/questions` — a reader asking something (public; honeypot and
   rate limited)
 - `GET  /api/questions` — the queue, worked at `/admin/questions`; requires

@@ -2,9 +2,9 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink, Search } from 'lucide-react'
 import type { PieceRow } from '@/lib/desk-overview'
-import { ENOUGH_TO_JUDGE } from '@/lib/desk-overview'
+import { ENOUGH_TO_JUDGE, EVERY_SECTION, narrow, sectionCounts } from '@/lib/desk-overview'
 import { count, dated, duration, headingWords, percent } from './format'
 
 /**
@@ -94,8 +94,20 @@ export function PiecesTable({
   const [key, setKey] = React.useState<SortKey>('attention')
   const [ascending, setAscending] = React.useState(false)
   const [open, setOpen] = React.useState<string | null>(null)
+  const [needle, setNeedle] = React.useState('')
+  const [section, setSection] = React.useState<string>(EVERY_SECTION)
 
-  const shown = React.useMemo(() => sorted(rows, key, ascending), [rows, key, ascending])
+  /* The counts are the filter and the balance at once. The posting desk
+     drew a bar chart of section counts on one tab and offered a section
+     dropdown on another — the same fact twice, and neither let you act on
+     it. A row of counts you can press answers "is the archive lopsided"
+     and "show me the lopsided part" with one control. */
+  const sections = React.useMemo(() => sectionCounts(rows), [rows])
+
+  const shown = React.useMemo(
+    () => sorted(narrow(rows, needle, section), key, ascending),
+    [rows, key, ascending, needle, section]
+  )
 
   const head = (column: (typeof COLUMNS)[number]) => {
     const active = key === column.key
@@ -142,8 +154,43 @@ export function PiecesTable({
       </h2>
       <p className="mt-2 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
         Visits and time are for the last {days} days. Open a row to see where inside the teaching
-        the time was spent.
+        the time was spent, and what may be done with it.
       </p>
+
+      <div className="mt-4 flex flex-col gap-3">
+        <div className="relative max-w-md">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle"
+          />
+          <input
+            type="search"
+            value={needle}
+            onChange={(event) => setNeedle(event.target.value)}
+            placeholder="Filter by title, byline or section…"
+            aria-label="Filter the pieces"
+            className="focus-ring h-10 w-full rounded-full border border-hairline-strong bg-surface pl-10 pr-4 font-sans text-sm text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          <SectionChip
+            label="Everything"
+            n={rows.length}
+            active={section === EVERY_SECTION}
+            onPress={() => setSection(EVERY_SECTION)}
+          />
+          {sections.map((entry) => (
+            <SectionChip
+              key={entry.name}
+              label={entry.name}
+              n={entry.n}
+              active={section === entry.name}
+              onPress={() => setSection(section === entry.name ? EVERY_SECTION : entry.name)}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* The table scrolls inside its own box rather than pushing the page
           sideways — at 390px five columns do not fit and never will. */}
@@ -159,7 +206,7 @@ export function PiecesTable({
                   colSpan={COLUMNS.length}
                   className="px-4 py-8 text-center font-sans text-sm text-ink-muted"
                 >
-                  Nothing written yet.
+                  {rows.length === 0 ? 'Nothing written yet.' : 'Nothing matches that filter.'}
                 </td>
               </tr>
             )}
@@ -292,5 +339,35 @@ function SectionBreakdown({ row, actions }: { row: PieceRow; actions?: React.Rea
 
       {actions && <div className="mt-4 flex flex-wrap items-center gap-3">{actions}</div>}
     </div>
+  )
+}
+
+
+/** One section, its count, and whether the table is narrowed to it. */
+function SectionChip({
+  label,
+  n,
+  active,
+  onPress,
+}: {
+  label: string
+  n: number
+  active: boolean
+  onPress: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onPress}
+      aria-pressed={active}
+      className={`focus-ring rounded-chip border px-3 py-1.5 font-sans text-xs font-semibold transition-colors ${
+        active
+          ? 'border-gold/60 bg-gold/15 text-gold'
+          : 'border-hairline text-ink-muted hover:border-gold/40 hover:text-ink-strong'
+      }`}
+    >
+      {label}
+      <span className="tabular ml-1.5 text-ink-subtle">{n}</span>
+    </button>
   )
 }

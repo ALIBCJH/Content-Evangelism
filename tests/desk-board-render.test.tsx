@@ -115,6 +115,24 @@ describe('the bands draw', () => {
     expect(html).toContain('Too few visits to judge')
   })
 
+  /* The management controls that came off the posting desk. */
+  it('offers a filter and the section counts', () => {
+    const html = renderToStaticMarkup(<PiecesTable rows={ROWS} days={30} />)
+    expect(html).toContain('Filter by title, byline or section')
+    expect(html).toContain('Everything')
+    /* Two published Teachings and one pending, all in the same section. */
+    expect(html).toContain('Teachings')
+  })
+
+  it('puts the actions the desk supplies inside the opened row only', () => {
+    const closed = renderToStaticMarkup(
+      <PiecesTable rows={ROWS} days={30} renderActions={() => <button>Delete for good</button>} />
+    )
+    /* Nothing is open on first paint, so the irreversible act is not on
+       screen until somebody has deliberately opened a row. */
+    expect(closed).not.toContain('Delete for good')
+  })
+
   it('draws both findings lists, and says so when they are empty', () => {
     const html = renderToStaticMarkup(<FindingsBand deadEnds={[]} unread={[]} />)
     expect(html).toContain('Opened, then left')
