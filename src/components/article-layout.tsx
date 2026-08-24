@@ -145,6 +145,9 @@ function Controls({ verified, className = '' }: { verified?: boolean; className?
  * between them. Both hang off the same grid now, so the headline starts
  * where the chapters start and ends where the teaching ends.
  */
+/** The element the reading bar measures, named so a server page can point at it. */
+const READING_TARGET = 'the-teaching'
+
 const TRACKS =
   'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14'
 
@@ -187,8 +190,11 @@ export function ArticleLayout({
           ],
         }}
       />
+      {/* The teaching is what is measured, not the page it sits on —
+          see the note on `targetId`. */}
       <ReadingProgress
         piece={{ slug, title, href: `/articles/${slug}`, readMinutes }}
+        targetId={READING_TARGET}
       />
       {/* Which chapter of this teaching holds a reader, and for how long.
           The page tracker already counts the visit; this counts where the
@@ -316,7 +322,13 @@ export function ArticleLayout({
               className="mb-10 rounded-panel border border-rule bg-card px-6 py-5 lg:hidden"
             />
 
-            {children}
+            {/* What the reading bar measures: the teaching itself, from
+                its first line to its last. Everything below this — the
+                Scriptures cited, the byline, the share row, Read Next —
+                is apparatus, and a reader who has reached the end of the
+                writing has finished the teaching whether or not they go
+                on to scroll through it. */}
+            <div id={READING_TARGET}>{children}</div>
 
             <div className="mt-16 border-t border-rule pt-8">
               {refs.length > 0 && (
