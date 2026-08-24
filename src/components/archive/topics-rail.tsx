@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import type { Category } from '@/lib/content'
 import { clock, type SpeechState } from '@/lib/speech'
-import { minutesLeft, type ReadingMark } from '@/lib/reading-progress'
+import { minutesLeft, percentRead, type ReadingMark } from '@/lib/reading-progress'
 
 /**
  * The rail beside the archive: what is in it, what you were reading, and
@@ -101,11 +101,11 @@ export function TopicsRail({
                   >
                     <span
                       className="block h-full rounded-full bg-gold"
-                      style={{ width: `${Math.round(held.progress * 100)}%` }}
+                      style={{ width: `${percentRead(held)}%` }}
                     />
                   </span>
                   <span className="kicker mt-2 block text-ink-subtle">
-                    <span className="tabular">{Math.round(held.progress * 100)}%</span> ·{' '}
+                    <span className="tabular">{percentRead(held)}%</span> ·{' '}
                     <span className="tabular">{minutesLeft(held)}</span> min left
                   </span>
                 </Link>

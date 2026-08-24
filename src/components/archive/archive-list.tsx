@@ -6,7 +6,7 @@ import type { ArchiveItem } from '@/lib/archive-items'
 import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
-import { useReadingProgress } from '@/lib/reading-progress'
+import { unfinished as stillReading, useReadingProgress } from '@/lib/reading-progress'
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
@@ -119,22 +119,23 @@ export function ArchiveList({
 
   const [lead, ...rest] = shown
 
-  /* Everything begun and not finished, most recent first — and still in
-     the archive: a teaching withdrawn since it was read should not be
-     offered back. The piece open under the card is left out, since the
-     reader is in it rather than away from it. */
-  const unfinished = React.useMemo(
-    () =>
-      marks.filter(
-        (held) => held.slug !== lead?.slug && items.some((item) => item.slug === held.slug)
-      ),
-    [marks, items, lead?.slug]
+  /* Everything read, most recent first, and still in the archive: a
+     teaching withdrawn since it was read should not be offered back. */
+  const history = React.useMemo(
+    () => marks.filter((held) => items.some((item) => item.slug === held.slug)),
+    [marks, items]
   )
 
-  /* The rail offers the one to come back to; the shelf at the foot of the
-     page carries the whole of it, so a reader meets it either at the top
-     of a wide screen or at the end of a scroll, and never twice at once. */
-  const inTheRail = unfinished.slice(0, 1)
+  /* The rail offers the one to come back to, which is a different list
+     from the shelf: only what is unfinished, and never the piece open
+     under the card, since the reader is in it rather than away from it.
+     The shelf at the foot of the page carries the whole history — what
+     was finished as well as what was not — because that is the question
+     it exists to answer. */
+  const inTheRail = React.useMemo(
+    () => stillReading(history).filter((held) => held.slug !== lead?.slug).slice(0, 1),
+    [history, lead?.slug]
+  )
 
   /* The section each piece belongs to, which the mark itself does not
      carry — it holds only what is needed to get back into the reading. */
@@ -341,7 +342,7 @@ export function ArchiveList({
 
       {/* The whole shelf, where a reader who has scrolled the archive
           without finding anything new will meet it. */}
-      <ReadingHistory marks={unfinished} ready={marksReady} sections={sections} />
+      <ReadingHistory marks={history} ready={marksReady} sections={sections} />
     </>
   )
 }
