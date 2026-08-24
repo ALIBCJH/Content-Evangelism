@@ -20,19 +20,27 @@ function loadWorker() {
   const handlers: Record<string, Handler> = {}
   const stores = new Map<string, Map<string, string>>()
 
+  /* A cache key is a URL, and the browser resolves a relative one against
+     the worker's scope before storing it — so '/altars' put in at install
+     and 'https://site.test/altars' asked for on a navigation are the same
+     entry. The harness has to agree, or it will report a hit the browser
+     would miss and a miss the browser would hit. */
+  const keyFor = (request: any) =>
+    new URL(typeof request === 'string' ? request : request.url, 'https://site.test').href
+
   const cacheFor = (name: string) => {
     if (!stores.has(name)) stores.set(name, new Map())
     const store = stores.get(name)!
     return {
-      addAll: async (urls: string[]) => urls.forEach((url) => store.set(url, `body:${url}`)),
+      addAll: async (urls: string[]) => urls.forEach((url) => store.set(keyFor(url), `body:${url}`)),
       put: async (request: any, response: any) => {
-        store.set(typeof request === 'string' ? request : request.url, response?.body ?? 'body')
+        store.set(keyFor(request), response?.body ?? 'body')
       },
       match: async (request: any) => {
-        const key = typeof request === 'string' ? request : request.url
+        const key = keyFor(request)
         return store.has(key) ? { body: store.get(key), from: name } : undefined
       },
-      delete: async (request: any) => store.delete(typeof request === 'string' ? request : request.url),
+      delete: async (request: any) => store.delete(keyFor(request)),
     }
   }
 
@@ -41,10 +49,9 @@ function loadWorker() {
     keys: async () => Array.from(stores.keys()),
     delete: async (name: string) => stores.delete(name),
     match: async (request: any, options?: { cacheName?: string }) => {
-      const key = typeof request === 'string' ? request : request.url
-      if (options?.cacheName) return cacheFor(options.cacheName).match(key)
+      if (options?.cacheName) return cacheFor(options.cacheName).match(request)
       for (const name of Array.from(stores.keys())) {
-        const hit = await cacheFor(name).match(key)
+        const hit = await cacheFor(name).match(request)
         if (hit) return hit
       }
       return undefined
@@ -186,5 +193,54 @@ describe('an old worker', () => {
     const left = await worker.caches.keys()
     expect(left).not.toContain('shell-v0')
     expect(left).toContain('pages-v1')
+  })
+})
+
+describe('the altars, kept in advance', () => {
+  it('puts them on the device at install, not on a visit', async () => {
+    const worker = loadWorker()
+    await worker.handlers.install({ waitUntil: (p: Promise<any>) => p })
+
+    const pages = await worker.caches.open('pages-v1')
+    expect(await pages.match('/altars')).toBeTruthy()
+  })
+
+  it('serves them when the network is gone and they were never opened', async () => {
+    const worker = loadWorker()
+    await worker.handlers.install({ waitUntil: (p: Promise<any>) => p })
+    worker.fetch.mockRejectedValueOnce(new Error('offline'))
+
+    const { event, answered } = fetchEvent({
+      url: 'https://site.test/altars',
+      method: 'GET',
+      mode: 'navigate',
+    })
+    worker.handlers.fetch(event)
+
+    const response = await answered()
+    expect(response.body).toContain('/altars')
+    /* The offline page would also be a truthy answer, so name the cache
+       it actually came from rather than trusting the body alone. */
+    expect(response.from).toBe('pages-v1')
+  })
+
+  it('installs anyway when the altars cannot be fetched', async () => {
+    const worker = loadWorker()
+    /* The shell precache resolves; the altars do not. A reader with no
+       altars cached is a smaller failure than a reader with no worker. */
+    worker.fetch.mockRejectedValue(new Error('offline'))
+    const original = worker.caches.open
+    worker.caches.open = (async (name: string) => {
+      const cache = await original(name)
+      if (name !== 'pages-v1') return cache
+      return { ...cache, addAll: async () => Promise.reject(new Error('no network')) }
+    }) as typeof worker.caches.open
+
+    let installing: Promise<any> = Promise.resolve()
+    worker.handlers.install({ waitUntil: (p: Promise<any>) => (installing = p) })
+    await expect(installing).resolves.not.toThrow()
+
+    worker.caches.open = original
+    expect(await (await worker.caches.open('shell-v1')).match('/offline')).toBeTruthy()
   })
 })

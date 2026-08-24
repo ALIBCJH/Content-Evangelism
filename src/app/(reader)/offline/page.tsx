@@ -25,10 +25,25 @@ export default function OfflinePage() {
         The teachings you saved, and the ones you have already read, are here and will open without
         a connection. Anything else waits until there is one.
       </p>
-      <p className="mt-8">
+
+      {/* Kept on the device at install rather than on a visit, so this is
+          a promise the page can make: where the ministry meets, and the
+          number to call, are readable with no signal at all. */}
+      <p className="mt-4 text-[1.0625rem] leading-[1.7] text-ink-700">
+        Where the ministry meets is here too — every altar, its address and its phone number, kept
+        on this device.
+      </p>
+
+      <p className="mt-8 flex flex-wrap justify-center gap-3">
+        <Link
+          href="/altars"
+          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-cta px-5 py-2.5 text-[0.9375rem] font-semibold text-cta-ink transition-colors hover:bg-cta-hover"
+        >
+          Where we meet
+        </Link>
         <Link
           href="/"
-          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-cta px-5 py-2.5 text-[0.9375rem] font-semibold text-cta-ink transition-colors hover:bg-cta-hover"
+          className="focus-ring inline-flex items-center gap-2 rounded-chip border border-hairline-strong px-5 py-2.5 text-[0.9375rem] font-semibold text-ink transition-colors hover:border-gold/60"
         >
           What is saved
         </Link>
