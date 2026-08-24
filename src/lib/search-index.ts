@@ -1,3 +1,4 @@
+import { altarEntries, altarPath, countyNumber } from '@/lib/altars'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
 import { dateline, type SearchDoc } from '@/lib/search-docs'
@@ -5,13 +6,18 @@ import { teachingHref, teachingRecordings } from '@/lib/teachings'
 
 /**
  * One flat index over everything the site holds — the writing, the
- * prophetic record and the recorded teachings — for the search overlay
- * and the search page.
+ * prophetic record, the recorded teachings and the altars — for the
+ * search overlay and the search page.
  *
  * The recordings were missing from it until now, which meant a reader who
  * searched for a teaching by name was told the site had nothing, while
  * the teaching sat on its own page. An archive that cannot find its own
  * holdings is not an archive.
+ *
+ * The altars were missing for the same reason and cost more: a reader who
+ * typed their own county into the masthead — the most local question this
+ * site can be asked — was told there was nothing, while the altar sat on
+ * a page one click away.
  *
  * It is built on the server and handed to the client as data, so the
  * overlay answers a keystroke without a round trip. Bodies are folded into
@@ -70,5 +76,31 @@ export async function buildSearchIndex(): Promise<SearchDoc[]> {
       .toLowerCase(),
   }))
 
-  return [...articles, ...records, ...recordings]
+  /* An altar is not a document and has no date, so the slot the other
+     three print a dateline in carries the county's number and name — the
+     locator a reader is actually scanning the row for. */
+  const altars: SearchDoc[] = altarEntries.map((entry) => {
+    const { county, altar } = entry
+    return {
+      kind: 'Altar',
+      title: altar.name,
+      href: altarPath(entry),
+      date: `${countyNumber(county.no)} · ${county.name.toUpperCase()}`,
+      ref: `${county.name} County · ${altar.area}`,
+      excerpt: `${altar.area} — where the ministry meets in ${county.name} County.`,
+      text: [
+        altar.name,
+        altar.area,
+        county.name,
+        `${county.name} county`,
+        altar.phone,
+        'altar church service where we meet location directions sunday',
+      ]
+        .filter(Boolean)
+        .join('\n')
+        .toLowerCase(),
+    }
+  })
+
+  return [...articles, ...records, ...recordings, ...altars]
 }

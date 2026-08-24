@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { altarEntries, altarPath } from '@/lib/altars'
 import { authorByName, authorHref, siteUrl, topicHref } from '@/lib/content'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
@@ -64,6 +65,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
+  /* One entry per altar. These are the pages a local search can land on
+     — "repentance and holiness church nakuru" — and a page nobody crawls
+     answers nobody. */
+  const altars: MetadataRoute.Sitemap = altarEntries.map((entry) => ({
+    url: `${siteUrl}${altarPath(entry)}`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }))
+
   const sections: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/prophecies`, priority: 0.8, changeFrequency: 'weekly' as const },
     { url: `${siteUrl}/teachings`, priority: 0.7, changeFrequency: 'weekly' as const },
@@ -86,6 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     ...sections,
+    ...altars,
     ...articles,
     ...records,
     ...derived(topics, 0.7),
