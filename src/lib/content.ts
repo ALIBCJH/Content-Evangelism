@@ -188,12 +188,21 @@ export const navSections: NavSection[] = [
  * `NEXT_PUBLIC_` because `content.ts` is imported by client components,
  * so the value has to survive into the browser bundle. Set it in the
  * deployment to whatever host actually answers — including the port, if
- * there is one. Unset, it stays what it has always been, so nothing moves
- * for a deployment that has not been told otherwise.
+ * there is one.
+ *
+ * The default is the address the site is actually served from today, so a
+ * deployment nobody has configured describes itself correctly rather than
+ * pointing at a domain the ministry does not yet control. When the site
+ * moves to its permanent home, change this line or set the variable —
+ * either works, and both move every canonical, the sitemap, the feed, the
+ * Open Graph tags and the structured data together.
  */
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://repentandpreparetheway.org')
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://read.repentanceonline.com')
   .trim()
   .replace(/\/+$/, '')
+
+/** The address without its scheme, for the places that print it as words. */
+export const siteHost = siteUrl.replace(/^https?:\/\//, '')
 
 /**
  * Where a reader is told that something new has been published.

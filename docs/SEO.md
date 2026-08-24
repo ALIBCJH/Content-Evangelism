@@ -41,9 +41,9 @@ itself the moment it is published from the Posting Desk:
 
 ### Google Search Console
 1. Go to https://search.google.com/search-console → Add property →
-   **Domain** → `repentandpreparetheway.org`.
+   **URL prefix** → `https://read.repentanceonline.com/`.
 2. It gives you a TXT record — add it in your DNS host, wait, Verify.
-3. Sitemaps (left menu) → add `https://repentandpreparetheway.org/sitemap.xml`.
+3. Sitemaps (left menu) → add `https://read.repentanceonline.com/sitemap.xml`.
 4. For the first ~10 articles: URL Inspection → paste the article URL →
    **Request indexing**. This pulls new sites into the index days faster.
 5. After 2–3 weeks, live in the **Performance** report: it shows the exact
@@ -56,7 +56,7 @@ itself the moment it is published from the Posting Desk:
    DuckDuckGo, so this is worth the five minutes.
 
 ### After DNS verification, also confirm:
-- `https://repentandpreparetheway.org/robots.txt` loads and references the sitemap.
+- `https://read.repentanceonline.com/robots.txt` loads and references the sitemap.
 - Rich results test: https://search.google.com/test/rich-results on one
   article URL — should detect Article + Breadcrumb.
 

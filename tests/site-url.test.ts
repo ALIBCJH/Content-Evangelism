@@ -29,10 +29,17 @@ describe('the address the site gives for itself', () => {
     )
   })
 
-  it('keeps the published address when nothing is set', async () => {
-    /* A deployment nobody has configured must not start describing itself
-       as somewhere else. */
-    expect(await siteUrlWith()).toBe('https://repentandpreparetheway.org')
+  it('falls back to the address the site is actually served from', async () => {
+    /* A deployment nobody has configured must describe itself as where it
+       is, not as somewhere the ministry does not yet control. */
+    expect(await siteUrlWith()).toBe('https://read.repentanceonline.com')
+  })
+
+  it('gives the host without a scheme, for printing', async () => {
+    vi.resetModules()
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://read.repentanceonline.com')
+    const { siteHost } = await import('@/lib/content')
+    expect(siteHost).toBe('read.repentanceonline.com')
   })
 
   it('never ends in a slash', async () => {

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import * as React from 'react'
-import { siteInfo } from '@/lib/content'
+import { siteHost, siteInfo } from '@/lib/content'
 
 /**
  * The shared social-preview card.
@@ -106,7 +106,10 @@ export function OgCard({ kicker, title }: { kicker: string; title: string }) {
                 color: '#9FB4C8',
               }}
             >
-              repentandpreparetheway.org
+              {/* The site's own address, not a literal — this card is the
+                  first thing a link shows on WhatsApp, and a card naming a
+                  domain the link does not go to is worse than no card. */}
+              {siteHost}
             </div>
           </div>
         </div>
