@@ -193,7 +193,6 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               width={34}
               height={34}
               priority
-              unoptimized
               className="h-[34px] w-[34px] rounded-full"
             />
             {/* The publication's own name, which is what a masthead
@@ -333,7 +332,6 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                     alt=""
                     width={28}
                     height={28}
-                    unoptimized
                     className="h-7 w-7 shrink-0 rounded-full"
                   />
                   {/* Two lines rather than an ellipsis: the name of the

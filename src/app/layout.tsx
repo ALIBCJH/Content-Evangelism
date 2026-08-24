@@ -59,6 +59,14 @@ const mono = JetBrains_Mono({
  * connection to open on a slow network, and `display: swap` on each, so
  * the text is legible before the fonts land. That matters most for the
  * readers this ministry actually has, on Kenyan mobile data.
+ *
+ * All of them are preloaded, and that was measured rather than assumed.
+ * Six families is a lot of font files racing each other on a slow
+ * connection, and taking the preload off the reading layer to clear the
+ * way for the chrome looked obviously right: it cost 1.5s of First
+ * Contentful Paint and 2s of Speed Index, because a face nobody has
+ * asked for yet is a face the browser does not start fetching until it
+ * has laid the text out. It was tried, it was worse, it is not here.
  */
 
 /* Article headlines, the italic standfirst, and the chapter headings. At
@@ -71,7 +79,12 @@ const newsreader = Newsreader({
      weight from 300 up is available from the one file, and `opsz` keeps
      the standfirst and the 56px headline evenly drawn. */
   axes: ['opsz'],
-  style: ['normal', 'italic'],
+  /* Upright only. The italic was declared here and rendered nowhere —
+     nothing in the site sets `font-article` in italic, and the italic a
+     teaching does use is the body's own face, Gentium. Because
+     `next/font` preloads every face it is given, that unused italic was
+     the single largest download on the site: 144kB of variable font,
+     fetched on every page, ahead of the text, to draw nothing. */
   variable: '--font-newsreader',
   display: 'swap',
 })
