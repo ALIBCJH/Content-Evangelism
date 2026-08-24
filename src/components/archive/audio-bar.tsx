@@ -16,17 +16,25 @@ import { clock, type SpeechState } from '@/lib/speech'
  * So below `lg` the player is a bar at the foot of the window instead. It
  * appears only while something is loaded, sits above the ask button, and
  * carries the same three controls the rail does.
+ *
+ * A teaching's own page has no rail player at any width — the controls
+ * there are in the band, and a reader who has scrolled past them is as
+ * stranded on a desktop as on a phone. So that page asks for the bar
+ * `everywhere`, and the breakpoint that hides it goes away.
  */
 export function AudioBar({
   speech,
   onPause,
   onResume,
   onStop,
+  everywhere = false,
 }: {
   speech: SpeechState
   onPause: () => void
   onResume: () => void
   onStop: () => void
+  /** Shown at every width, for a page with no rail player to fall back on. */
+  everywhere?: boolean
 }) {
   /* The ask button is fixed to the same corner and knows nothing about
      this bar. Rather than thread state through the layout that holds
@@ -44,7 +52,7 @@ export function AudioBar({
   if (!speech.piece) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gold-pale/30 bg-plate px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-plate-pale shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.5)] lg:hidden">
+    <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-gold-pale/30 bg-plate px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-plate-pale shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.5)] ${everywhere ? '' : 'lg:hidden'}`}>
       <div className="flex items-center gap-3">
         <button
           type="button"

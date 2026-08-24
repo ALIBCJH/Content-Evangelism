@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server'
 import { bearerToken } from '@/lib/posted'
+import { revalidateAnswers } from '@/lib/revalidate'
 import {
   QUESTION_STATUSES,
   deleteQuestion,
+  listQuestions,
   updateQuestion,
+  validateAnswer,
+  type PublishInput,
   type QuestionStatus,
 } from '@/lib/questions'
 
 export const dynamic = 'force-dynamic'
+
+/** The address a question's page is at now, before anything changes it. */
+async function slugOf(id: string, token: string): Promise<string | undefined> {
+  const listed = await listQuestions(token)
+  return listed.questions?.find((question) => question.id === id)?.published?.slug
+}
 
 interface Params {
   params: { id: string }
@@ -37,12 +47,32 @@ export async function PATCH(request: Request, { params }: Params) {
   }
   const note = payload.note === undefined ? undefined : String(payload.note).slice(0, 4000)
 
+  /* `published` is three states, not two: absent leaves the page as it
+     is, null takes it down, and an object publishes or rewrites it. */
+  let published: PublishInput | null | undefined
+  if (payload.published === null) {
+    published = null
+  } else if (payload.published !== undefined) {
+    const checked = validateAnswer(payload.published as Record<string, unknown>)
+    if (!checked.input) return NextResponse.json({ error: checked.error }, { status: 400 })
+    published = checked.input
+  }
+
+  const standingSlug = published === null ? await slugOf(params.id, bearerToken(request)) : undefined
+
   const result = await updateQuestion(
     params.id,
-    { status: status as QuestionStatus | undefined, note },
+    { status: status as QuestionStatus | undefined, note, published },
     bearerToken(request)
   )
   if (!result.question) return NextResponse.json({ error: result.error }, { status: result.status })
+
+  /* A page went up, changed or came down: the desk should see it on the
+     site rather than five minutes after the site agrees. The slug is the
+     one it had, so taking a page down flushes the address it was at. */
+  if (published !== undefined) {
+    revalidateAnswers(result.question.published?.slug ?? standingSlug)
+  }
   return NextResponse.json({ ok: true, question: result.question })
 }
 

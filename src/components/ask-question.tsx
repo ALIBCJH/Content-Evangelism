@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Church, FileText, LoaderCircle, Send, UserRound } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, BookOpen, Church, FileText, LoaderCircle, Send, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -109,6 +110,22 @@ export function AskQuestion({
             asked in good faith is welcome, and it reaches the desk directly.
           </p>
 
+          {/* Answers used to reach one reader and stop there. The ones that
+              were of use to more than one are pages now, and somebody about
+              to type a question may find it already answered. */}
+          <p className="mt-5">
+            <Link
+              href="/questions"
+              className="focus-ring group inline-flex items-center gap-2 rounded-chip font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-gold-ink"
+            >
+              Read what has already been answered
+              <ArrowRight
+                aria-hidden
+                className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+          </p>
+
           <ul className="mt-8 grid gap-4">
             <Topic icon={<Church aria-hidden />} name="The Ministry of Repentance and Holiness">
               What it teaches and why, what it has preached, what stands in the
@@ -152,13 +169,21 @@ export function AskQuestion({
               writes back to you there. Nothing you sent appears on this site
               unless it is answered publicly — and never with your address.
             </p>
-            <button
-              type="button"
-              onClick={() => setState('idle')}
-              className="mt-7 self-start font-mono text-[0.75rem] tracking-[0.06em] text-navy transition-colors hover:text-gold"
-            >
-              ASK ANOTHER →
-            </button>
+            <p className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <button
+                type="button"
+                onClick={() => setState('idle')}
+                className="font-mono text-[0.75rem] tracking-[0.06em] text-navy transition-colors hover:text-gold"
+              >
+                ASK ANOTHER →
+              </button>
+              <Link
+                href="/questions"
+                className="font-mono text-[0.75rem] tracking-[0.06em] text-gold-ink transition-colors hover:text-gold"
+              >
+                QUESTIONS ANSWERED →
+              </Link>
+            </p>
           </div>
         ) : (
           <form

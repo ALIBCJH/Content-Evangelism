@@ -29,6 +29,30 @@ const KV_KEY = 'questions'
 const STORE = path.join(process.cwd(), 'data', 'questions.json')
 const usingKv = Boolean(KV_URL && KV_TOKEN)
 
+/**
+ * A question the desk has answered in the open.
+ *
+ * This is a separate thing from the question in the queue, and
+ * deliberately so. What a reader typed is theirs — it may name them, it
+ * may name somebody else, it may be three paragraphs of context around
+ * one sentence of question. What is published is the desk's wording of
+ * what was asked and the desk's answer to it, written on purpose.
+ *
+ * Nothing on this shape can identify anybody: there is no name here, no
+ * address, no path, and no id back to the queue. The public read below
+ * builds these fresh rather than filtering a question, so a field added
+ * to the queue later cannot leak by having been forgotten about.
+ */
+export interface PublishedAnswer {
+  /** Its own address: /questions/<slug>. Minted once and then kept. */
+  slug: string
+  /** The question as it is published — the desk's wording, not the reader's. */
+  question: string
+  /** The answer, in the same body grammar a teaching is written in. */
+  answer: string
+  publishedAt: string
+}
+
 /** Where a question stands with the desk. */
 export type QuestionStatus = 'new' | 'answered' | 'set-aside'
 
@@ -51,6 +75,8 @@ export interface Question {
   note?: string
   /** Set whenever the desk touches the question. */
   handledAt?: string
+  /** Present once the desk has answered this one in the open. */
+  published?: PublishedAnswer
 }
 
 export interface QuestionInput {
@@ -59,6 +85,12 @@ export interface QuestionInput {
   email?: string
   fromPath: string
   fromTitle?: string
+}
+
+/** What the desk sends when it publishes, or `null` to take it down. */
+export interface PublishInput {
+  question: string
+  answer: string
 }
 
 export interface QuestionResult {
@@ -183,6 +215,62 @@ export function validateQuestion(
   }
 }
 
+/* ── Publishing an answer ─────────────────────────────────────────── */
+
+const ANSWER_LIMITS = { question: 300, answer: 12_000 }
+
+/** The question as a URL says it, cut at a whole word. */
+function slugFor(question: string): string {
+  const full = question
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['\u2019]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  if (full.length <= 70) return full || 'question'
+  /* Only a slug the length cut through loses its last word — trimming
+     unconditionally would drop the last word of every question. */
+  const cut = full.slice(0, 70)
+  return cut.replace(/-[^-]*$/, '') || cut
+}
+
+/** The same, made unique against everything already published. */
+function freeSlug(question: string, taken: Set<string>): string {
+  const base = slugFor(question)
+  if (!taken.has(base)) return base
+  for (let n = 2; n < 100; n += 1) {
+    const candidate = `${base}-${n}`
+    if (!taken.has(candidate)) return candidate
+  }
+  return `${base}-${Date.now()}`
+}
+
+/**
+ * The desk's wording, checked before it becomes a page.
+ *
+ * The messages are for whoever is at the desk rather than for a reader,
+ * so they say what is wrong and what the limit is.
+ */
+export function validateAnswer(payload: Record<string, unknown>): {
+  error?: string
+  input?: PublishInput
+} {
+  const question = String(payload.question ?? '').trim()
+  const answer = String(payload.answer ?? '').trim()
+
+  if (question.length < 10) return { error: 'Write out the question as it should be published.' }
+  if (question.length > ANSWER_LIMITS.question) {
+    return { error: `The published question must be under ${ANSWER_LIMITS.question} characters.` }
+  }
+  if (answer.length < 20) return { error: 'The answer is too short to publish.' }
+  if (answer.length > ANSWER_LIMITS.answer) {
+    return { error: `The answer must be under ${ANSWER_LIMITS.answer} characters.` }
+  }
+  return { input: { question, answer } }
+}
+
 /* ── Reads and writes ─────────────────────────────────────────────── */
 
 /**
@@ -211,6 +299,32 @@ export async function askQuestion(input: QuestionInput): Promise<QuestionResult>
 }
 
 /**
+ * The answers, for anybody — no key, because these are pages.
+ *
+ * Built field by field rather than by taking the `published` object off
+ * the question, so that this function cannot start returning something
+ * new because somebody added a field upstream.
+ */
+export async function listAnswers(): Promise<PublishedAnswer[]> {
+  const questions = await readStore()
+  return questions
+    .filter((question) => question.published?.slug && question.published.answer)
+    .map((question) => ({
+      slug: question.published!.slug,
+      question: question.published!.question,
+      answer: question.published!.answer,
+      publishedAt: question.published!.publishedAt,
+    }))
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+}
+
+/** One answer, by its address. */
+export async function answerBySlug(slug: string): Promise<PublishedAnswer | undefined> {
+  const answers = await listAnswers()
+  return answers.find((answer) => answer.slug === slug)
+}
+
+/**
  * The posting key, checked the way the article store checks it: unset
  * means reads are closed, because a missing secret must never mean
  * "allow everyone" — and unlike page counters, these are people's words
@@ -229,7 +343,7 @@ export async function listQuestions(token: string): Promise<{ status: number; qu
 
 export async function updateQuestion(
   id: string,
-  patch: { status?: QuestionStatus; note?: string },
+  patch: { status?: QuestionStatus; note?: string; published?: PublishInput | null },
   token: string
 ): Promise<QuestionResult> {
   if (!authorized(token)) return { status: 401, error: 'Invalid posting key.' }
@@ -238,12 +352,38 @@ export async function updateQuestion(
   const index = questions.findIndex((q) => q.id === id)
   if (index === -1) return { status: 404, error: 'No question with that id.' }
 
+  const standing = questions[index]
+
+  /* Publishing. The slug is minted the first time and kept for good after
+     that: the desk rewording a question must not break a link somebody
+     has already shared, or an address a search engine has indexed. A
+     question published in the open is answered by definition, so the
+     status follows rather than being set separately and forgotten. */
+  let published = standing.published
+  if (patch.published === null) {
+    published = undefined
+  } else if (patch.published) {
+    const taken = new Set(
+      questions
+        .filter((q) => q.id !== id && q.published?.slug)
+        .map((q) => q.published!.slug)
+    )
+    published = {
+      slug: standing.published?.slug ?? freeSlug(patch.published.question, taken),
+      question: patch.published.question,
+      answer: patch.published.answer,
+      publishedAt: standing.published?.publishedAt ?? new Date().toISOString(),
+    }
+  }
+
   const question: Question = {
-    ...questions[index],
+    ...standing,
     ...(patch.status ? { status: patch.status } : {}),
     ...(patch.note !== undefined ? { note: patch.note.trim() || undefined } : {}),
+    ...(published ? { status: 'answered' as QuestionStatus, published } : {}),
     handledAt: new Date().toISOString(),
   }
+  if (!published) delete question.published
   questions[index] = question
 
   if (!(await writeStore(questions))) {

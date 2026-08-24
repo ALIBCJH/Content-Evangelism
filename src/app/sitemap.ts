@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { altarEntries, altarPath } from '@/lib/altars'
+import { listAnswers } from '@/lib/questions'
 import { authorByName, authorHref, siteUrl, topicHref } from '@/lib/content'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
@@ -19,8 +20,27 @@ import { absoluteUrl } from '@/lib/seo'
 export const revalidate = 300
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const rows = await listRealRows()
+  const [rows, answers] = await Promise.all([listRealRows(), listAnswers()])
   const newest = rows[0]?.publishedAt
+
+  /* The questions answered in the open, and their index — offered only
+     once there is something under it, like the topic and author pages. */
+  const questions: MetadataRoute.Sitemap = answers.length
+    ? [
+        {
+          url: `${siteUrl}/questions`,
+          lastModified: answers[0].publishedAt,
+          changeFrequency: 'weekly' as const,
+          priority: 0.6,
+        },
+        ...answers.map((answer) => ({
+          url: `${siteUrl}/questions/${answer.slug}`,
+          lastModified: answer.publishedAt,
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        })),
+      ]
+    : []
 
   const articles: MetadataRoute.Sitemap = rows.map((row) => ({
     url: `${siteUrl}${row.href}`,
@@ -97,6 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...sections,
     ...altars,
+    ...questions,
     ...articles,
     ...records,
     ...derived(topics, 0.7),
