@@ -100,11 +100,25 @@ live immediately.
 
 ## The light CMS backend
 
-Two desks, and two keys.
+Two desks, two keys, and one door in front of both.
+
+**`/admin/login` — the door.** Every page under `/admin` is behind it. A
+key is typed here once, checked on the server, and exchanged for a signed
+session cookie that lasts twelve hours; the key itself never travels
+again and no script on any desk page can read what replaced it. Which
+desks open depends on which key was presented. Signing out is in the
+corner of every desk.
+
+The middleware in `src/middleware.ts` does the turning away, ahead of the
+page, so a reader without a session is never sent the queue, the readers'
+questions or the list of what is on the site. The API is deliberately not
+behind the middleware: a route handler checks the key it is given on
+every call — cookie or `Authorization: Bearer` — and a gate in front of
+it would be a second answer to a question already answered correctly.
 
 **`/admin` — the posting desk.** Writing, editing and submitting. Nothing
 written here reaches a reader: a new teaching is created `pending` and
-waits. Needs `ADMIN_TOKEN`.
+waits. Opened by either key.
 
 **`/admin/questions` — the question queue.** Every question sent from the
 box at the foot of a page, newest first. Any of them can also be answered
@@ -113,14 +127,25 @@ the answer under it, and that pair becomes a page at `/questions/<slug>`.
 The reader's own words, their name and their address are never part of
 it. The address is minted once from the question and kept, so rewording
 does not break a link somebody shared, and taking a page down and putting
-it back returns it to the same URL. Needs `ADMIN_TOKEN`.
+it back returns it to the same URL. Opened by either key.
 
 **`/admin/review` — the review desk.** A senior reviewer reads a pending
 teaching in full and approves it, sends it back with a reason, or removes
 it. Approving puts it on the site and marks it verified. A live piece can
-also be unpublished from here. Needs `REVIEW_TOKEN`, which falls back to
-`ADMIN_TOKEN` when unset — so a ministry running the desk single-handed
-is not left with a queue nobody can clear.
+also be unpublished from here. Opened by `REVIEW_TOKEN` alone: a session
+bought with the posting key is turned away at the door and refused by
+`POST /api/review/<slug>` as well, so the separation is real rather than
+a hidden button.
+
+`REVIEW_TOKEN` falls back to `ADMIN_TOKEN` when unset — so a ministry
+running the desk single-handed is not left with a queue nobody can clear,
+and that one key is treated as the reviewer's. Setting both is what
+separates the writer from the approver.
+
+The cookie is signed with a secret derived from the two keys rather than
+configured separately, which means rotating a key — the thing you do when
+you fear one has escaped — also ends every session bought with it,
+without anybody having to remember a second variable.
 
 A teaching with no status is live. That is load-bearing rather than lazy:
 everything written before there was a review step keeps its place on the
@@ -128,8 +153,7 @@ site and its indexed address.
 
 Articles can be posted from the browser at **`/admin`** ("The Posting Desk") —
 title, category, summary, body, an optional image (with a description of
-what it shows, which is required once an image is set), and the posting
-key. Published pieces appear at `/articles/<slug>` and at the head of the
+what it shows, which is required once an image is set). Published pieces appear at `/articles/<slug>` and at the head of the
 archive on `/articles`.
 
 The body is plain text with a small grammar (`src/lib/article-body.ts`):
@@ -298,9 +322,13 @@ and the site keeps serving its built-in pieces.
 
 1. Push this folder to a Git repository and import it in Vercel
    (framework preset: Next.js — no extra config needed).
-2. In Project → Settings → Environment Variables, set
-   `ADMIN_TOKEN` to a strong secret. This is the posting key typed
-   into `/admin`. (Locally it defaults to `change-me`.)
+2. In Project → Settings → Environment Variables, set `ADMIN_TOKEN` to a
+   strong secret — `openssl rand -base64 32` — and, if the writer and the
+   approver are different people, `REVIEW_TOKEN` to a different one.
+   These are the keys typed at `/admin/login`. Both are read on the
+   server at request time, so **a change to either needs a redeploy**
+   before the running site sees it. (Locally `ADMIN_TOKEN` defaults to
+   `change-me`.)
 3. Attach an Upstash Redis store (Storage tab → Create → Upstash Redis)
    and let it inject its variables into the project. This is what makes
    the posting desk able to save at all: Vercel's filesystem is

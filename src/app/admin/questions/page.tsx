@@ -6,12 +6,11 @@ import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import { Check, ExternalLink, LoaderCircle, Trash2, Undo2, Upload, XCircle } from 'lucide-react'
 import type { PublishInput, Question, QuestionStatus } from '@/lib/questions'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 /**
  * The question queue, for the desk.
  *
- * Behind the posting key like everything under /admin, and here the key is
+ * Behind the door like everything under /admin, and here that door is
  * doing real work: these are people's words, sometimes their names, and
  * sometimes an email address they gave in confidence so that somebody
  * would write back.
@@ -149,19 +148,19 @@ function ago(iso: string): string {
 }
 
 export default function QuestionsPage() {
-  const [key, setKey] = React.useState('')
   const [questions, setQuestions] = React.useState<Question[] | null>(null)
   const [filter, setFilter] = React.useState<QuestionStatus | 'all'>('new')
   const [error, setError] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [busy, setBusy] = React.useState('')
 
-  const load = async (event?: React.FormEvent) => {
-    event?.preventDefault()
+  const load = React.useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/questions', { headers: { Authorization: `Bearer ${key}` } })
+      /* The session cookie goes with it; the key itself never comes near
+         this page. */
+      const response = await fetch('/api/questions', { cache: 'no-store' })
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string }
         setError(body.error ?? `The desk returned ${response.status}.`)
@@ -174,7 +173,13 @@ export default function QuestionsPage() {
       setError('Could not reach the desk.')
     }
     setLoading(false)
-  }
+  }, [])
+
+  /* Opened on arrival. A key was accepted at the door; asking for it
+     again before showing the queue was asking twice. */
+  React.useEffect(() => {
+    void load()
+  }, [load])
 
   /** One question changed — patch it in place rather than reloading the queue. */
   const patch = async (
@@ -185,7 +190,7 @@ export default function QuestionsPage() {
     try {
       const response = await fetch(`/api/questions/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       const payload = (await response.json().catch(() => ({}))) as {
@@ -210,10 +215,7 @@ export default function QuestionsPage() {
     if (!window.confirm('Delete this question for good?')) return
     setBusy(id)
     try {
-      const response = await fetch(`/api/questions/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${key}` },
-      })
+      const response = await fetch(`/api/questions/${id}`, { method: 'DELETE' })
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string }
         setError(body.error ?? 'That did not delete.')
@@ -248,21 +250,13 @@ export default function QuestionsPage() {
         published.
       </p>
 
-      <form onSubmit={load} className="mb-10 flex flex-wrap items-center gap-3">
-        <Input
-          type="password"
-          value={key}
-          onChange={(event) => setKey(event.target.value)}
-          placeholder="Posting key"
-          className="max-w-[280px]"
-          autoComplete="current-password"
-        />
-        <Button type="submit" disabled={loading || !key}>
+      <div className="mb-10 flex flex-wrap items-center gap-3">
+        <Button type="button" onClick={() => void load()} disabled={loading}>
           {loading ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
-          {loading ? 'Opening' : 'Open the queue'}
+          {loading ? 'Opening' : 'Refresh the queue'}
         </Button>
         {error && <span className="text-[0.875rem] text-status-danger">{error}</span>}
-      </form>
+      </div>
 
       {questions && (
         <>

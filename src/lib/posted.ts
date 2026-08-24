@@ -2,6 +2,13 @@ import { timingSafeEqual } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { CATEGORIES, type Category } from '@/lib/content'
+import {
+  DESK_COOKIE,
+  cookieValue,
+  fromThisSite,
+  readSession,
+  type DeskRole,
+} from '@/lib/desk-session'
 import { isAllowedImageHost } from '@/lib/seo'
 
 export { CATEGORIES }
@@ -559,6 +566,49 @@ export async function deletePostedArticle(slug: string, token: string): Promise<
 export function bearerToken(request: Request): string {
   const header = request.headers.get('authorization') ?? ''
   return header.startsWith('Bearer ') ? header.slice(7) : ''
+}
+
+/**
+ * Which desk a presented key belongs to, or null if it belongs to
+ * neither.
+ *
+ * The review key is tried first, and that ordering is the single-key
+ * case: a deployment with no REVIEW_TOKEN has `reviewKey()` fall back to
+ * the posting key, both tests pass, and the holder should be told they
+ * are the reviewer — because they are, and the desk they most need is
+ * the one that clears the queue.
+ */
+export function roleForKey(given: string): DeskRole | null {
+  if (canReview(given)) return 'reviewer'
+  if (sameKey(given, writeKey())) return 'writer'
+  return null
+}
+
+/** The key a role holds, for handing on to the store's own checks. */
+export function keyForRole(role: DeskRole): string {
+  return role === 'reviewer' ? reviewKey() : writeKey()
+}
+
+/**
+ * The key behind a request, however it was presented.
+ *
+ * Two callers, two mechanisms. Something outside a browser — the public
+ * API, a script, the examples in /docs/api — sends a Bearer token and is
+ * unaffected by any of this. A desk page sends nothing at all: the
+ * browser attaches the session cookie, this resolves it to a role, and
+ * the role back to the key the store expects. So the store's own checks
+ * are untouched, and the key stops travelling through JavaScript.
+ *
+ * The cookie is honoured only on a request this site made. See
+ * `fromThisSite`.
+ */
+export async function deskToken(request: Request): Promise<string> {
+  const presented = bearerToken(request)
+  if (presented) return presented
+  if (!fromThisSite(request)) return ''
+
+  const role = await readSession(cookieValue(request, DESK_COOKIE), Date.now())
+  return role ? keyForRole(role) : ''
 }
 
 /** Field checks so the posting desk gets clear messages. */

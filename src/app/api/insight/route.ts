@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { bearerToken } from '@/lib/posted'
+import { authorizedForDesk, deskToken } from '@/lib/posted'
 import { cleanBatch, readInsight, record } from '@/lib/insight'
 
 export const dynamic = 'force-dynamic'
@@ -80,8 +80,11 @@ export async function POST(request: Request) {
 
 /** GET /api/insight — the counters, for the desk. Requires the posting key. */
 export async function GET(request: Request) {
-  const expected = process.env.ADMIN_TOKEN ?? ''
-  if (!expected || bearerToken(request) !== expected) {
+  /* Whichever desk key the caller holds. It compared against ADMIN_TOKEN
+     alone and with ===, which meant a reviewer was refused their own
+     counters and the comparison told a guesser how much of the key was
+     right. `authorizedForDesk` answers both. */
+  if (!authorizedForDesk(await deskToken(request))) {
     return NextResponse.json({ error: 'Invalid posting key.' }, { status: 401 })
   }
   return NextResponse.json({ pages: await readInsight() })

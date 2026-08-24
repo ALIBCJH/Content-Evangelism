@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import {
-  ArrowRight, BookOpen, Check, Eye, EyeOff, Feather, KeyRound,
+  ArrowRight, BookOpen, Check, Eye, EyeOff, Feather,
   LayoutDashboard, Layers, LoaderCircle, Pencil, PenLine, Search,
   Trash2, X,
 } from 'lucide-react'
@@ -62,7 +62,6 @@ function wordsIn(body: string): number {
 
 export default function AdminPage() {
   const [tab, setTab] = React.useState<Tab>('dashboard')
-  const [postingKey, setPostingKey] = React.useState('')
 
   /* Archive */
   const [articles, setArticles] = React.useState<ManagedArticle[]>([])
@@ -211,20 +210,15 @@ export default function AdminPage() {
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!postingKey) {
-      setError('Enter the posting key at the top of the page first.')
-      return
-    }
     setError(null)
     setStatus('saving')
     try {
       const endpoint = editingSlug ? `/api/articles/${editingSlug}` : '/api/articles'
       const res = await fetch(endpoint, {
         method: editingSlug ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${postingKey}`,
-        },
+        /* No Authorization header. The browser carries the session set at
+           the door, and the server turns it back into this desk's key. */
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, category, dek, body, authorName, imageUrl, imageAlt, tags }),
       })
       const json = await res.json()
@@ -247,18 +241,11 @@ export default function AdminPage() {
   }
 
   const onDelete = async (slug: string) => {
-    if (!postingKey) {
-      setManageError('Enter the posting key at the top of the page first — deleting requires it.')
-      return
-    }
     if (!window.confirm('Remove this article permanently?')) return
     setDeletingSlug(slug)
     setManageError(null)
     try {
-      const res = await fetch(`/api/articles/${slug}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${postingKey}` },
-      })
+      const res = await fetch(`/api/articles/${slug}`, { method: 'DELETE' })
       const json = await res.json()
       if (!res.ok) {
         setManageError(json.error ?? 'Delete failed.')
@@ -298,20 +285,6 @@ export default function AdminPage() {
           <h1 className="mt-4 font-display text-3xl font-semibold text-ink-strong md:text-4xl">
             The Posting Desk
           </h1>
-
-          {/* One key for the whole desk — every write action uses it. */}
-          <div className="relative mt-5 w-full max-w-sm">
-            <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle" />
-            <Input
-              type="password"
-              value={postingKey}
-              onChange={(e) => setPostingKey(e.target.value)}
-              placeholder="Posting key (needed to publish or delete)"
-              className="pl-11"
-              autoComplete="current-password"
-              aria-label="Posting key"
-            />
-          </div>
 
           {/* max-w-full and a scroll rather than three fixed tabs: at
               390px the third one was off the edge of the screen. */}

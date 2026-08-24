@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { bearerToken, reviewArticle } from '@/lib/posted'
+import { deskToken, reviewArticle } from '@/lib/posted'
 import { revalidatePublished } from '@/lib/revalidate'
 
 export const dynamic = 'force-dynamic'
@@ -31,7 +31,7 @@ export async function POST(request: Request, { params }: { params: { slug: strin
   const result = await reviewArticle(
     params.slug,
     { action, note: typeof payload.note === 'string' ? payload.note : undefined },
-    bearerToken(request)
+    await deskToken(request)
   )
   if (!result.article) {
     return NextResponse.json({ error: result.error }, { status: result.status })

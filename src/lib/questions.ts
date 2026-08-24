@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { authorizedForDesk } from '@/lib/posted'
 
 /**
  * The questions readers send in.
@@ -330,9 +331,17 @@ export async function answerBySlug(slug: string): Promise<PublishedAnswer | unde
  * "allow everyone" — and unlike page counters, these are people's words
  * and sometimes their email addresses.
  */
+/**
+ * Either desk key opens the queue.
+ *
+ * It checked ADMIN_TOKEN alone, which was wrong in both directions once
+ * the two keys were genuinely separate: a reviewer holding only the
+ * review key was refused a queue they are senior enough to clear, and the
+ * `===` behind it returned as soon as two bytes differed. The store's own
+ * check is constant-time and knows about both keys, so defer to it.
+ */
 function authorized(token: string): boolean {
-  const expected = process.env.ADMIN_TOKEN ?? ''
-  return expected.length > 0 && token === expected
+  return authorizedForDesk(token)
 }
 
 export async function listQuestions(token: string): Promise<{ status: number; questions?: Question[] }> {

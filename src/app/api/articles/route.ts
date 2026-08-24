@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   authorizedForDesk,
-  bearerToken,
+  deskToken,
   createPostedArticle,
   listPostedArticles,
   validateInput,
@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic'
  * waiting. A caller with no key, or a wrong one, gets the site.
  */
 export async function GET(request: Request) {
-  const key = bearerToken(request)
+  const key = await deskToken(request)
   const includePending = key.length > 0 && authorizedForDesk(key)
   const articles = await listPostedArticles({ includePending })
   return NextResponse.json({ articles })
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const { error, input } = validateInput(payload)
   if (error || !input) return NextResponse.json({ error }, { status: 400 })
 
-  const result = await createPostedArticle(input, bearerToken(request))
+  const result = await createPostedArticle(input, await deskToken(request))
   if (!result.article) {
     const message = result.status === 401 ? 'Invalid posting key.' : result.error
     return NextResponse.json({ error: message }, { status: result.status })

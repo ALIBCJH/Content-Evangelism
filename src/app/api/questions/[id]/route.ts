@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { bearerToken } from '@/lib/posted'
+import { deskToken } from '@/lib/posted'
 import { revalidateAnswers } from '@/lib/revalidate'
 import {
   QUESTION_STATUSES,
@@ -58,12 +58,12 @@ export async function PATCH(request: Request, { params }: Params) {
     published = checked.input
   }
 
-  const standingSlug = published === null ? await slugOf(params.id, bearerToken(request)) : undefined
+  const standingSlug = published === null ? await slugOf(params.id, await deskToken(request)) : undefined
 
   const result = await updateQuestion(
     params.id,
     { status: status as QuestionStatus | undefined, note, published },
-    bearerToken(request)
+    await deskToken(request)
   )
   if (!result.question) return NextResponse.json({ error: result.error }, { status: result.status })
 
@@ -78,7 +78,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
 /** DELETE /api/questions/[id] — remove it for good. */
 export async function DELETE(request: Request, { params }: Params) {
-  const status = await deleteQuestion(params.id, bearerToken(request))
+  const status = await deleteQuestion(params.id, await deskToken(request))
   if (status === 204) return NextResponse.json({ ok: true })
   const error =
     status === 401 ? 'Invalid posting key.' : status === 404 ? 'Not found.' : 'Delete failed.'
