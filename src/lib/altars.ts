@@ -1,5 +1,5 @@
 import { counties, type Altar, type County } from '@/lib/content'
-import { countyShapes } from '@/lib/county-map'
+import { countyShapes, unprojectPin } from '@/lib/county-map'
 import { byScore, score } from '@/lib/search-docs'
 
 /**
@@ -103,6 +103,16 @@ const slugify = (value: string): string =>
 
 /** The town in "Kenyatta St, Kitale" — what a reader would call the place. */
 const townOf = (altar: Altar): string => altar.area.split(',').pop()?.trim() ?? altar.area
+
+/**
+ * A county as a URL says it — the same rule the altar pages are named by,
+ * so /altars/nakuru and /altars#nakuru are plainly the same place.
+ */
+export const countySlug = (county: County): string => slugify(county.name)
+
+/** The county a link is asking for, or nothing. */
+export const countyBySlug = (slug: string): County | undefined =>
+  counties.find((county) => countySlug(county) === slug)
 
 export interface AltarEntry {
   county: County
@@ -219,4 +229,90 @@ export function countyViewBox(no: number, padding = 0.45): string {
   const x = (west + east) / 2 - side / 2
   const y = (north + south) / 2 - side / 2
   return `${x.toFixed(1)} ${y.toFixed(1)} ${side.toFixed(1)} ${side.toFixed(1)}`
+}
+
+/* ── Where a county is, when it holds no altar ───────────────────── */
+
+/** The rings in a path: it holds nothing but move-tos and line-tos. */
+function ringsOf(d: string): [number, number][] [] {
+  return d
+    .split('M')
+    .filter(Boolean)
+    .map((chunk) => {
+      const numbers = (chunk.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number)
+      const ring: [number, number][] = []
+      for (let i = 0; i + 1 < numbers.length; i += 2) ring.push([numbers[i], numbers[i + 1]])
+      return ring
+    })
+}
+
+/** Shoelace: twice the signed area, which is all the centroid needs. */
+const twiceArea = (ring: [number, number][]): number => {
+  let sum = 0
+  for (let i = 0; i < ring.length; i += 1) {
+    const [x1, y1] = ring[i]
+    const [x2, y2] = ring[(i + 1) % ring.length]
+    sum += x1 * y2 - x2 * y1
+  }
+  return sum
+}
+
+/**
+ * The middle of a county, in degrees.
+ *
+ * Twenty-one counties hold no altar we can name, and telling a reader in
+ * Samburu only that we hold nothing is answering with a shrug. To say
+ * what is nearest instead, the page has to know where Samburu is — and
+ * nobody typed that in. It is the centroid of the county's own outline,
+ * read back through the projection that drew it, so the figure comes from
+ * the same boundary the map is drawn from and cannot drift away from it.
+ *
+ * The largest ring only: a county's islands and inlets do not move where
+ * the county is, and Lamu's archipelago would drag its centre out to sea.
+ */
+export function countyCentre(no: number): [number, number] | undefined {
+  const shape = countyShapes.find((candidate) => candidate.no === no)
+  if (!shape) return undefined
+
+  const rings = ringsOf(shape.d).filter((ring) => ring.length > 2)
+  if (rings.length === 0) return undefined
+
+  const ring = rings.reduce((biggest, candidate) =>
+    Math.abs(twiceArea(candidate)) > Math.abs(twiceArea(biggest)) ? candidate : biggest,
+  )
+
+  const area = twiceArea(ring)
+  if (area === 0) return undefined
+
+  let x = 0
+  let y = 0
+  for (let i = 0; i < ring.length; i += 1) {
+    const [x1, y1] = ring[i]
+    const [x2, y2] = ring[(i + 1) % ring.length]
+    const cross = x1 * y2 - x2 * y1
+    x += (x1 + x2) * cross
+    y += (y1 + y2) * cross
+  }
+
+  const at = unprojectPin(x / (3 * area), y / (3 * area))
+  return [at.latitude, at.longitude]
+}
+
+/**
+ * The altars nearest a county, measured from the middle of it.
+ *
+ * For a county with nothing recorded this is the whole answer the page
+ * has: not "we hold nothing", but "the nearest is Nanyuki, ninety
+ * kilometres". Altars inside the county itself are left out — a county
+ * that has one does not need to be told where it is.
+ */
+export function nearestToCounty(county: County, limit = 3): { entry: AltarEntry; km: number }[] {
+  const centre = countyCentre(county.no)
+  if (!centre) return []
+
+  return altarEntries
+    .filter((entry) => entry.county.no !== county.no)
+    .map((entry) => ({ entry, km: distanceKm(centre, entry.altar.at) }))
+    .sort((a, b) => a.km - b.km)
+    .slice(0, limit)
 }

@@ -11,9 +11,17 @@
  *   shell   the build's own files, which are content-hashed and so may be
  *           served from the cache without asking
  *   pages   what the reader has actually opened, kept as a fallback for
- *           when the network is not there
+ *           when the network is not there — plus the altars, put there at
+ *           install whether they have opened it or not
  *   saved   the pieces they deliberately put aside, which are fetched at
  *           the moment they press Save rather than hoped for later
+ *
+ * The altars are the one page kept in advance. Everything else here is a
+ * copy of something the reader chose; that page is a copy of something
+ * they may need before they know to choose it — an address and a phone
+ * number, wanted precisely when the signal is worst and least likely to
+ * have been loaded first. One page holds every altar the ministry has
+ * given us, so one request buys all of them.
  *
  * Written by hand rather than generated. It is ninety lines, it is the
  * only thing between a reader and a blank screen, and a build tool's
@@ -25,6 +33,8 @@ const SHELL = `shell-${VERSION}`
 const PAGES = `pages-${VERSION}`
 const SAVED = `saved-${VERSION}`
 const OFFLINE_URL = '/offline'
+/* Kept at install, not on a visit. See the note above. */
+const ALWAYS = ['/altars']
 const MINE = [SHELL, PAGES, SAVED]
 
 /* What may be served from cache without a thought: everything under it is
@@ -36,7 +46,17 @@ const NEVER = [/^\/admin/, /^\/api\//]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(SHELL).then((cache) => cache.addAll([OFFLINE_URL])).then(() => self.skipWaiting())
+    Promise.all([
+      caches.open(SHELL).then((cache) => cache.addAll([OFFLINE_URL])),
+      /* Best effort, and deliberately not allowed to fail the install: a
+         reader whose altars did not cache is a smaller failure than a
+         reader left with no worker at all. The next online visit puts it
+         in the cache anyway, by the ordinary route every page takes. */
+      caches
+        .open(PAGES)
+        .then((cache) => cache.addAll(ALWAYS))
+        .catch(() => undefined),
+    ]).then(() => self.skipWaiting())
   )
 })
 

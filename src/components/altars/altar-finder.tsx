@@ -7,11 +7,15 @@ import { altarHref, counties, type County } from '@/lib/content'
 import {
   altarsIn,
   awaitingCounties,
+  countyBySlug,
   countyCardId,
   countyNumber,
+  countySlug,
   entriesIn,
   locatedCounties,
+  nearestToCounty,
   searchCounties,
+  type AltarEntry,
 } from '@/lib/altars'
 import { AltarMap } from '@/components/altars/altar-map'
 
@@ -36,10 +40,41 @@ export function AltarFinder() {
   const [active, setActive] = React.useState<number | null>(null)
   const resultsRef = React.useRef<HTMLDivElement>(null)
 
+  /* The county a reader picked is in the address bar, so the answer can be
+     sent to somebody: /altars#samburu opens on Samburu and on what is
+     nearest to it. Read after mount rather than during render — the server
+     has no hash to render, and a page that disagrees with itself on the
+     first paint is a page that flickers. Written with replaceState so the
+     back button still leaves the page rather than walking a reader back
+     through every county they tried. */
+  React.useEffect(() => {
+    const fromHash = () => {
+      const slug = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+      setSelected(slug ? (countyBySlug(slug)?.no ?? null) : null)
+    }
+    fromHash()
+    window.addEventListener('hashchange', fromHash)
+    return () => window.removeEventListener('hashchange', fromHash)
+  }, [])
+
+  const remember = (no: number | null) => {
+    const county = no ? counties.find((candidate) => candidate.no === no) : undefined
+    const url = county ? `#${countySlug(county)}` : window.location.pathname
+    window.history.replaceState(null, '', url)
+  }
+
   const matches = React.useMemo(() => searchCounties(locatedCounties, query), [query])
   const matchedNumbers = React.useMemo(() => new Set(matches.map((c) => c.no)), [matches])
 
   const selectedCounty = selected ? counties.find((c) => c.no === selected) : undefined
+
+  /* What is near whatever they picked. For a county with nothing recorded
+     this is the entire answer the page has; for one with an altar it is
+     the next question — how far is the one after this. */
+  const nearby = React.useMemo(
+    () => (selectedCounty ? nearestToCounty(selectedCounty, 3) : []),
+    [selectedCounty],
+  )
   const shown = selectedCounty
     ? locatedCounties.filter((county) => county.no === selectedCounty.no)
     : matches
@@ -48,7 +83,11 @@ export function AltarFinder() {
      so a tap that changes them silently looks like a tap that did
      nothing. The scroll is what says "the answer moved down there". */
   const select = (no: number) => {
-    setSelected((current) => (current === no ? null : no))
+    setSelected((current) => {
+      const next = current === no ? null : no
+      remember(next)
+      return next
+    })
     setQuery('')
     requestAnimationFrame(() => {
       if (window.matchMedia('(min-width: 1024px)').matches) return
@@ -64,6 +103,7 @@ export function AltarFinder() {
   const clear = () => {
     setSelected(null)
     setQuery('')
+    remember(null)
   }
 
   /* What the map is showing, said in words — for a reader who cannot see
@@ -135,6 +175,7 @@ export function AltarFinder() {
               onChange={(event) => {
                 setQuery(event.target.value)
                 setSelected(null)
+                remember(null)
               }}
               placeholder="County, altar or place"
               className="focus-ring w-full rounded-chip border border-rule bg-card py-2.5 pl-10 pr-4 text-[0.9375rem] text-ink-900 placeholder:text-ink-subtle"
@@ -182,6 +223,15 @@ export function AltarFinder() {
               hold. We would rather say so than send anyone to a pin nobody has checked. If you
               know the altar here, tell us and it is added.
             </p>
+
+            {/* Not "we hold nothing", which is a shrug. The nearest altar
+                and how far off it is, which is an answer a reader in
+                Samburu can act on this Sunday. */}
+            <Nearby
+              items={nearby}
+              title={`Nearest to ${selectedCounty.name}`}
+              note={`Straight-line, from the middle of ${selectedCounty.name} — not by road.`}
+            />
           </div>
         ) : shown.length === 0 ? (
           <p className="rounded-panel border border-rule bg-card px-6 py-10 text-center text-[0.9375rem] text-ink-muted">
@@ -203,6 +253,19 @@ export function AltarFinder() {
               />
             ))}
           </ul>
+        )}
+
+        {/* What else is within reach of the county they picked. The cards
+            above answer "is there one here"; this answers the question
+            underneath it, which is "and how far is the next". */}
+        {selectedCounty && altarsIn(selectedCounty) > 0 && nearby.length > 0 && (
+          <div className="mt-8 rounded-panel border border-rule bg-card p-6 sm:p-7">
+            <Nearby
+              items={nearby}
+              title={`Nearest to ${selectedCounty.name}`}
+              note={`Straight-line, from the middle of ${selectedCounty.name} — not by road.`}
+            />
+          </div>
         )}
 
         {/* ── The counties still to be filled in ─────────────────── */}
@@ -238,6 +301,62 @@ export function AltarFinder() {
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * The altars nearest somewhere, with how far off each one is.
+ *
+ * Every row is the way to that altar's own page rather than a dead line
+ * of text: a reader who has just been told the nearest altar is ninety
+ * kilometres away wants the address and the number, not the name.
+ */
+function Nearby({
+  items,
+  title,
+  note,
+}: {
+  items: { entry: AltarEntry; km: number }[]
+  title: string
+  note: string
+}) {
+  if (items.length === 0) return null
+
+  return (
+    <section className="mt-7 border-t border-rule-soft pt-6 first:mt-0 first:border-t-0 first:pt-0">
+      <h3 className="mb-4 inline-block border-b-[3px] border-gold pb-2 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-navy">
+        {title}
+      </h3>
+      <ul>
+        {items.map(({ entry, km }) => (
+          <li key={entry.slug} className="border-b border-rule last:border-b-0">
+            <Link
+              href={`/altars/${entry.slug}`}
+              className="focus-ring group -mx-2 flex items-baseline gap-3 rounded-tile px-2 py-3 transition-colors hover:bg-chip-gold/50"
+            >
+              <span
+                aria-hidden
+                className="tabular w-5 shrink-0 font-apparatus text-[0.8125rem] font-bold leading-none text-gold"
+              >
+                {countyNumber(entry.county.no)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-apparatus text-[0.9375rem] font-semibold leading-[1.3] text-navy transition-colors group-hover:text-gold-ink">
+                  {entry.county.name}
+                </span>
+                <span className="mt-0.5 block text-[0.8125rem] leading-[1.45] text-ink-subtle">
+                  {entry.altar.name}
+                </span>
+              </span>
+              <span className="tabular shrink-0 font-mono text-[0.6875rem] text-ink-subtle">
+                {Math.round(km)} km
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[0.8125rem] leading-[1.6] text-ink-subtle">{note}</p>
+    </section>
   )
 }
 

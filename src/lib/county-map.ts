@@ -30,6 +30,20 @@ export function projectPin(latitude: number, longitude: number) {
   }
 }
 
+/**
+ * The same projection, run backwards: a point on the drawing, read as
+ * coordinates. It is what lets a county's own shape say where the county
+ * is — the centre of Samburu is not a figure anybody typed in, it is the
+ * middle of the outline this file already carries.
+ */
+export function unprojectPin(x: number, y: number) {
+  const scale = mapBox.width / ((mapBounds.east - mapBounds.west) * mapBounds.squeeze)
+  return {
+    latitude: mapBounds.north - y / scale,
+    longitude: mapBounds.west + x / (mapBounds.squeeze * scale),
+  }
+}
+
 /** One outline per county, keyed by the number the Constitution gives it. */
 export const countyShapes: { no: number; d: string }[] = [
   { no: 1, d: 'M717.5 1173.5L719.3 1173.1L720.6 1178L719.1 1182.1L720.8 1181.4L720.7 1184.8L723.8 1187.1L732 1174.4L722.3 1173.4L724.9 1172.8L722.8 1171.4L723.5 1170.1L720.3 1169.5L716.8 1170.1L717.5 1173.5ZM707.4 1178.8L707.4 1182L710 1182.7L709.6 1185.1L717.5 1183.7L715.8 1178.2L711.1 1177.8L712.5 1176.6L711.3 1173.1L707.5 1176.6L707.4 1178.8ZM714.7 1197.8L716.6 1199.1L720.7 1190.9L718.1 1188.7L717.3 1189.6L716.3 1185.9L713.6 1187.1L714.3 1188.5L710.5 1187.6L709.5 1190.9L709.8 1194.3L712.5 1190.8L716.2 1194.8L714.7 1197.8ZM719.5 1183.3L716.5 1184.5L720.2 1189.3L721.7 1188.2L719.5 1183.3ZM714.4 1174.6L713.6 1176.4L716.2 1175.8L719 1177.7L718.4 1174.7L714.4 1174.6Z' },

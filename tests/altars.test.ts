@@ -7,9 +7,11 @@ import {
   altarPath,
   altarPlaceData,
   awaitingCounties,
+  countyCentre,
   countyNumber,
   countyViewBox,
   distanceKm,
+  nearestToCounty,
   entriesIn,
   locatedCounties,
   nearestEntries,
@@ -252,5 +254,60 @@ describe('the altars, in the site’s own search', () => {
     const index = await buildSearchIndex()
     expect(index.filter((doc) => doc.kind === 'Teaching').length).toBeGreaterThan(0)
     expect(index.filter((doc) => doc.kind === 'Prophecy').length).toBeGreaterThan(0)
+  })
+})
+
+describe('a county that holds no altar', () => {
+  it('knows where it is, from its own outline', () => {
+    /* Read off the boundary rather than typed in, so these are a check on
+       the projection as much as on the centroid: Nairobi is just south of
+       the equator at 36.8°E, Turkana is far north-west, Lamu far east. */
+    const [nairobiLat, nairobiLon] = countyCentre(47)!
+    expect(nairobiLat).toBeCloseTo(-1.29, 1)
+    expect(nairobiLon).toBeCloseTo(36.86, 1)
+
+    const [turkanaLat, turkanaLon] = countyCentre(23)!
+    expect(turkanaLat).toBeGreaterThan(2.5)
+    expect(turkanaLon).toBeLessThan(36)
+
+    const [, lamuLon] = countyCentre(5)!
+    expect(lamuLon).toBeGreaterThan(40)
+  })
+
+  it('places every county inside Kenya', () => {
+    for (const county of counties) {
+      const centre = countyCentre(county.no)
+      expect(centre, county.name).toBeDefined()
+      const [latitude, longitude] = centre!
+      expect(latitude).toBeGreaterThan(mapBounds.south)
+      expect(latitude).toBeLessThan(mapBounds.north)
+      expect(longitude).toBeGreaterThan(mapBounds.west)
+      expect(longitude).toBeLessThan(mapBounds.east)
+    }
+  })
+
+  it('answers with the nearest altars instead of with nothing', () => {
+    /* Twenty-one counties have no meeting place recorded. Every one of
+       them still has an answer to give. */
+    for (const county of awaitingCounties) {
+      const near = nearestToCounty(county, 3)
+      expect(near, county.name).toHaveLength(3)
+      expect([...near].sort((a, b) => a.km - b.km)).toEqual(near)
+    }
+  })
+
+  it('names the altar a reader in that county would actually drive to', () => {
+    const kwale = counties.find((county) => county.name === 'Kwale')!
+    expect(nearestToCounty(kwale, 1)[0].entry.slug).toBe('mombasa')
+
+    const nyandarua = counties.find((county) => county.name === 'Nyandarua')!
+    expect(nearestToCounty(nyandarua, 1)[0].entry.slug).toBe('laikipia-nyahururu')
+  })
+
+  it('never offers a county its own altar as the nearest one', () => {
+    for (const county of locatedCounties) {
+      const near = nearestToCounty(county, 5)
+      expect(near.every((row) => row.entry.county.no !== county.no), county.name).toBe(true)
+    }
   })
 })
