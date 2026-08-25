@@ -5,6 +5,7 @@ import { OfflineReady } from '@/components/offline-ready'
 import { PastoralCare } from '@/components/pastoral-care'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
+import { BottomNav } from '@/components/bottom-nav'
 import { Tracker } from '@/components/insight/tracker'
 
 /**
@@ -17,7 +18,7 @@ import { Tracker } from '@/components/insight/tracker'
 export default async function ReaderLayout({ children }: { children: React.ReactNode }) {
   const docs = await buildSearchIndex()
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="has-bottom-nav flex min-h-screen flex-col">
       <SiteHeader docs={docs} />
       <div className="flex-1">{children}</div>
       {/* Every reader page ends the same way: the way to reach a person,
@@ -26,6 +27,10 @@ export default async function ReaderLayout({ children }: { children: React.React
           be the one that forgot it. */}
       <PastoralCare />
       <SiteFooter />
+      {/* The reader's own navigation, at the foot of a phone. It is fixed
+          over the document, so `has-bottom-nav` on the shell is what
+          keeps it from covering the end of the footer. */}
+      <BottomNav />
       {/* Carried on every reader page: a question does not wait for the
           foot of the piece to arrive. */}
       <AskBot />

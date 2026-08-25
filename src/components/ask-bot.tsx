@@ -189,7 +189,7 @@ export function AskBot() {
           id="ask-bot-panel"
           role="dialog"
           aria-labelledby="ask-bot-title"
-          className="fixed bottom-[5.5rem] right-5 z-40 flex max-h-[min(32rem,calc(100vh-8rem))] w-[min(24rem,calc(100vw-2.5rem))] flex-col rounded-panel border border-rule bg-card shadow-glow-soft sm:right-6"
+          className="ask-panel fixed bottom-[5.5rem] right-5 z-40 flex max-h-[min(32rem,calc(100vh-8rem))] w-[min(24rem,calc(100vw-2.5rem))] flex-col rounded-panel border border-rule bg-card shadow-glow-soft sm:right-6"
         >
           <div className="border-b border-rule px-5 pb-3.5 pt-4">
             <span className="kicker text-gold">Ask the archive</span>
