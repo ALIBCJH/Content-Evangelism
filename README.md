@@ -327,6 +327,32 @@ address per ten minutes.
 
 ## What a reader gets
 
+**Navigation, at the bottom, on a phone.** Four destinations — Reading,
+Prophecy, Teachings, Saved — fixed to the foot of the window below `lg`.
+The only way through the site on a phone was the menu button in the
+masthead: a sheet to open, read and dismiss to go one place, put at the
+furthest point on the screen from a thumb. The sheet stays for the wider
+menu; this is the short list of places somebody actually moves between.
+
+The foot of a phone screen is contested — the bar, the player while a
+teaching is read aloud, and the ask button are all pinned there — so one
+number governs the stack. `--bottom-nav-h` is the bar's height and
+`--bottom-nav-space` is that plus whatever the device reserves for a home
+indicator; the room a page leaves at its foot and the space the bar
+occupies are the same declaration and cannot drift apart. Above `lg` the
+bar is not rendered and the space collapses to zero.
+
+**Saved is a page now.** A teaching could be put aside from anywhere and
+then not be found again: saving wrote a slug to the browser and nothing
+ever read the list back, so the bookmark was a gesture with nothing
+behind it. `/saved` is what it was always implying, and the count on the
+tab is the first time the site has admitted those pieces exist. It is
+`noindex` and must be: what it renders is a list held in one reader's
+browser, so a crawler is shown an empty page and every reader a different
+one. There is no account behind any of it — the whole of it is
+`localStorage`, see `src/lib/saved.ts`. Reachable from the footer too,
+since the bar is a phone's and a desktop reader can save just as easily.
+
 **When a piece went up.** For its first day a teaching says how long ago
 it went up — "3 hours ago" — and after that it says the date. A date is
 the right answer for almost everything here, and the wrong one on the

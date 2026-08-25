@@ -122,6 +122,12 @@ export function SiteFooter() {
           <Link href="/search" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
             Search
           </Link>
+          {/* The bottom bar is the way to what a reader kept, and the bar
+              is a phone's. Without this, saving on a desktop would put a
+              teaching somewhere with no way back to it. */}
+          <Link href="/saved" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
+            Saved
+          </Link>
           <a href="/feed.xml" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
             RSS
           </a>

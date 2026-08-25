@@ -39,7 +39,9 @@ export function AudioBar({
   /* The ask button is fixed to the same corner and knows nothing about
      this bar. Rather than thread state through the layout that holds
      them both, the body says a bar is up and the stylesheet lifts the
-     button over it — see `[data-audio]` in globals.css. */
+     button over it — see `[data-audio]` in globals.css. The reader's
+     navigation is pinned below both, and `.audio-bar` is what stands
+     this off it rather than over it. */
   const playing = Boolean(speech.piece)
   React.useEffect(() => {
     if (!playing) return
@@ -52,7 +54,7 @@ export function AudioBar({
   if (!speech.piece) return null
 
   return (
-    <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-gold-pale/30 bg-plate px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-plate-pale shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.5)] ${everywhere ? '' : 'lg:hidden'}`}>
+    <div className={`audio-bar fixed inset-x-0 bottom-0 z-40 border-t border-gold-pale/30 bg-plate px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-plate-pale shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.5)] ${everywhere ? '' : 'lg:hidden'}`}>
       <div className="flex items-center gap-3">
         <button
           type="button"

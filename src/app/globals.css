@@ -445,13 +445,56 @@ option {
   background: var(--chip);
 }
 
-/* While a teaching is being read aloud on a phone, the player is a bar
-   across the foot of the window and the ask button is fixed to the same
-   corner. The button steps over it rather than sitting on top of it. The
-   bar is only there below lg, so neither is this. */
+/* The foot of a phone screen is contested: the reader's navigation is
+   pinned there, the player joins it while a teaching is being read
+   aloud, and the ask button is fixed to the same corner. Each one stacks
+   above the last rather than sitting on top of it.
+
+   One number governs all of it. `--bottom-nav-h` is the bar's own height
+   and `--bottom-nav-space` is that plus whatever the device reserves for
+   a home indicator — so the room a page leaves at its foot and the space
+   the bar occupies cannot drift apart, which is the way this kind of
+   layout usually breaks. Above lg the bar is not rendered and the space
+   collapses to nothing. */
+:root {
+  --bottom-nav-h: 3.5rem;
+  --bottom-nav-space: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --bottom-nav-space: 0px;
+  }
+}
+
+.bottom-nav {
+  height: var(--bottom-nav-space);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* The room every reader page leaves for it, so a bar fixed over the
+   document never covers the last paragraph of one. */
+.has-bottom-nav {
+  padding-bottom: var(--bottom-nav-space);
+}
+
 @media (max-width: 1023px) {
+  /* The player sits on the bar, not under it. */
+  .audio-bar {
+    bottom: var(--bottom-nav-space);
+  }
+
+  /* And the ask button above whichever of the two is currently there. */
+  .ask-launcher {
+    bottom: calc(var(--bottom-nav-space) + 1.25rem);
+  }
+
   body[data-audio] .ask-launcher {
-    bottom: 6.25rem;
+    bottom: calc(var(--bottom-nav-space) + 6.25rem);
+  }
+
+  .ask-panel {
+    bottom: calc(var(--bottom-nav-space) + 5.5rem);
   }
 }
 
