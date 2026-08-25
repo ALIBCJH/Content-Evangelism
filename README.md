@@ -327,6 +327,35 @@ address per ten minutes.
 
 ## What a reader gets
 
+**A rest in a long scroll.** A teaching here runs eight to eleven
+minutes, and the longest stretches carry six and seven paragraphs with
+nothing to rest the eye on. Some passages are set on the plate the front
+page's lead card opens on — a navy field ruled in gold, running edge to
+edge on a phone — so the scroll has a shape: prose, prose, a field of
+Scripture, prose again. It uses the design language already here, and the
+thing interrupting the reading is the Word the teaching stands on rather
+than an ornament.
+
+Which passages is `src/lib/scripture-rhythm.ts`, and the rule is
+distance: a quotation becomes a plate once six paragraphs have passed
+since the last one. Not a run of prose immediately before it — that was
+the first rule and it fired five times on one piece and never on another,
+because quotations here rarely sit at the end of a long stretch. Distance
+since the last plate is what actually governs rhythm, and it comes out at
+about one every three to five minutes across the archive, with pieces
+that quote sparingly simply getting fewer. The rule cannot invent
+Scripture that is not there, and a plate under every quotation would be
+the wallpaper it was meant to interrupt.
+
+**How much is left, not how far you have come.** The gold bar at the top
+measures the past, which is not a thing anybody is deciding about; what a
+reader is deciding is whether to carry on, and that turns on what it
+costs. So a small label says `4 min left`. It is absent at the top, where
+it would only repeat the reading time already printed under the headline,
+and absent at the end, where somebody a paragraph from finishing does not
+need telling — and where it would sit over the last lines of the
+teaching.
+
 **Navigation, at the bottom, on a phone.** Four destinations — Reading,
 Prophecy, Teachings, Saved — fixed to the foot of the window below `lg`.
 The only way through the site on a phone was the menu button in the

@@ -520,6 +520,53 @@ option {
   opacity: 0.22;
 }
 
+/* The plate as it appears inside a teaching, where it is a rest in a long
+   scroll rather than the head of a card.
+
+   On a phone it runs edge to edge — the shell's own 20px of padding taken
+   back — because a rest that is still inset in the reading column reads
+   as one more thing in the column. From 40rem up the measure is wide
+   enough that a full-bleed band would be a stripe across a page rather
+   than a passage, so it returns to the column with its corners rounded.
+
+   Colours are the plate's own and flip with the theme: navy on paper,
+   and gold on navy when the site is dark, so it stands out from the page
+   either way rather than dissolving into it. */
+.plate-bleed {
+  position: relative;
+  padding: 30px 30px 28px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.plate-bleed .plate-rule {
+  position: absolute;
+  inset-block: 26px;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 3px;
+}
+.plate-bleed .plate-mark {
+  position: absolute;
+  inset-inline-end: 24px;
+  top: 12px;
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: 3rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 40rem) {
+  .plate-bleed {
+    margin-inline: -20px;
+    border-radius: 0;
+    padding: 26px 20px 24px;
+  }
+  .plate-bleed .plate-mark {
+    inset-inline-end: 16px;
+    font-size: 2.5rem;
+  }
+}
+
 /* The opening letter of a teaching, set as a drop cap.
    Only where a page asks for it: a teaching read on its own page opens
    under its own headline and standfirst, where a drop cap would be the
