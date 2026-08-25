@@ -327,6 +327,23 @@ address per ten minutes.
 
 ## What a reader gets
 
+**Which screen the site is read on.** The board shows the share of visits
+that opened on a narrow window and on a wide one, against the same
+breakpoint the layout changes at — so it answers the question a decision
+about the layout actually needs: how many readers got the phone layout.
+
+It is a class of screen, not a class of device. No user agent is read, no
+identifier is issued, nothing is stored per reader; what goes up is one
+of two site-wide counters, and a counter cannot be walked back to a
+person. That is the same bargain the rest of the counting is built on,
+and this does not break it — there are still no unique visitors here.
+
+Visits counted before this shipped carry no screen, so the split is drawn
+only from the visits that have one and the board prints how many are
+missing rather than folding them into either side. A split that quietly
+counted the old visits as desktop would be a wrong answer wearing a
+confident face.
+
 **A rest in a long scroll.** A teaching here runs eight to eleven
 minutes, and the longest stretches carry six and seven paragraphs with
 nothing to rest the eye on. Some passages are set on the plate the front

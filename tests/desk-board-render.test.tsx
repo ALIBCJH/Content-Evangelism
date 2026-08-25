@@ -20,6 +20,10 @@ import type { DayTotals, PageInsight } from '@/lib/insight-shape'
 const day = (n: number, views: number): DayTotals => ({
   day: `2026-08-${String(n).padStart(2, '0')}`,
   views,
+  /* Most reading here happens on a phone, so the fixtures read like the
+     site rather than like a even split that never occurs. */
+  small: Math.round(views * 0.7),
+  large: views - Math.round(views * 0.7),
   seconds: views * 90,
   finished: Math.floor(views / 3),
 })

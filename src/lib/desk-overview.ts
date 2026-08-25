@@ -3,6 +3,7 @@ import {
   averageSecondsOf,
   finishRateOf,
   sitePart,
+  screenSplitOf,
   type ClickLabel,
   type DayTotals,
   type PageInsight,
@@ -275,16 +276,35 @@ export interface WindowSummary {
   finishRate: number
   /** Change against the window before, 0.12 being twelve per cent up. */
   change: { visits: number | null; seconds: number | null }
+  /**
+   * Which screen the site was read on across the window.
+   *
+   * `counted` is what the split is actually drawn from, and it is not
+   * the same as `visits`: every visit recorded before the screen was
+   * counted has no screen, and `unattributed` is how many. The desk
+   * shows that number rather than folding it into one side, because a
+   * split that quietly counts old visits as desktop is a wrong answer
+   * presented as a confident one.
+   */
+  screens: ReturnType<typeof screenSplitOf>
 }
 
-function sum(series: DayTotals[]): { visits: number; seconds: number; finished: number } {
+function sum(series: DayTotals[]): {
+  visits: number
+  seconds: number
+  finished: number
+  small: number
+  large: number
+} {
   return series.reduce(
     (totals, day) => ({
       visits: totals.visits + day.views,
       seconds: totals.seconds + day.seconds,
       finished: totals.finished + day.finished,
+      small: totals.small + day.small,
+      large: totals.large + day.large,
     }),
-    { visits: 0, seconds: 0, finished: 0 }
+    { visits: 0, seconds: 0, finished: 0, small: 0, large: 0 }
   )
 }
 
@@ -311,6 +331,7 @@ export function summarise(series: DayTotals[], previous: DayTotals[]): WindowSum
       visits: shift(now.visits, before.visits),
       seconds: shift(now.seconds, before.seconds),
     },
+    screens: screenSplitOf({ views: now.visits, small: now.small, large: now.large }),
   }
 }
 

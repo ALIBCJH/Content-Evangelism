@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { usePathname } from 'next/navigation'
-import type { ClickLabel } from '@/lib/insight-shape'
+import { WIDE_FROM_PX, type ClickLabel, type Screen } from '@/lib/insight-shape'
 import { optedOut, report } from '@/lib/insight-report'
 
 /**
@@ -33,6 +33,20 @@ import { optedOut, report } from '@/lib/insight-report'
 const IDLE_AFTER_MS = 2 * 60 * 1000
 const FLUSH_EVERY_MS = 30 * 1000
 
+/**
+ * Which screen this page opened on.
+ *
+ * The window's own width, measured against the breakpoint the site
+ * changes layout at — so the answer is "which layout did this reader
+ * get", which is the question a decision about the layout needs. No user
+ * agent is read and no device is identified; this is a coin toss between
+ * two counters and nothing about it reaches the store except which of
+ * the two went up.
+ */
+function screenNow(): Screen {
+  return window.innerWidth >= WIDE_FROM_PX ? 'large' : 'small'
+}
+
 export function Tracker() {
   const pathname = usePathname()
 
@@ -48,7 +62,19 @@ export function Tracker() {
 
     const send = (useBeacon: boolean) => {
       if (!seconds && !clicks.length && !finished && !views) return
-      const batch = { path: pathname, views, seconds, finished, clicks }
+      /* Only on the batch that carries the view, and read at the moment
+         it is sent rather than at mount: the two counters are a division
+         of the views, and sending a screen on every flush would raise
+         them past the views they divide. A reader who turns the phone
+         mid-teaching is not a second visit. */
+      const batch = {
+        path: pathname,
+        ...(views ? { screen: screenNow() } : {}),
+        views,
+        seconds,
+        finished,
+        clicks,
+      }
       views = 0
       seconds = 0
       finished = 0

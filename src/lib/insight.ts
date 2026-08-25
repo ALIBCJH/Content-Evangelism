@@ -7,6 +7,7 @@ import {
   type ClickLabel,
   type DayTotals,
   type EventBatch,
+  screenField,
   type PageInsight,
 } from '@/lib/insight-shape'
 
@@ -102,6 +103,11 @@ const field = (p: string, name: string) => `${p}::${name}`
 function increments(batch: EventBatch): [string, number][] {
   const out: [string, number][] = []
   if (batch.views) out.push([field(batch.path, 'views'), batch.views])
+  /* Site-wide rather than per page: the question is which screen the
+     site is read on, and a counter per page per screen would double the
+     store to answer a question nobody asked of a single teaching. The
+     field carries no `::`, so `toPages` passes over it. */
+  if (batch.views && batch.screen) out.push([screenField(batch.screen), batch.views])
   if (batch.seconds) out.push([field(batch.path, 'seconds'), batch.seconds])
   if (batch.finished) out.push([field(batch.path, 'finished'), batch.finished])
   for (const label of batch.clicks ?? []) out.push([field(batch.path, `click:${label}`), 1])
@@ -303,12 +309,16 @@ export async function readInsightRange(
   const summed: Record<string, number> = {}
   const series: DayTotals[] = wanted.map((day, index) => {
     const held = counters[index] ?? {}
-    const totals: DayTotals = { day, views: 0, seconds: 0, finished: 0 }
+    const totals: DayTotals = { day, views: 0, seconds: 0, finished: 0, small: 0, large: 0 }
     for (const [name, value] of Object.entries(held)) {
       summed[name] = (summed[name] ?? 0) + value
       if (name.endsWith('::views')) totals.views += value
       else if (name.endsWith('::seconds')) totals.seconds += value
       else if (name.endsWith('::finished')) totals.finished += value
+      /* Flat fields, matched exactly rather than by suffix: they are
+         site-wide and belong to no page. */
+      else if (name === screenField('small')) totals.small += value
+      else if (name === screenField('large')) totals.large += value
     }
     return totals
   })

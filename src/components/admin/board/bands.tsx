@@ -218,7 +218,81 @@ export function StretchBand({
           </span>
         </div>
       </div>
+
+      <ScreenSplit summary={summary} />
     </section>
+  )
+}
+
+/**
+ * Which screen the site is being read on.
+ *
+ * A bar rather than two more tiles, because the useful fact is the
+ * proportion and a proportion is a length before it is a number. The
+ * counters are a class of screen, not a class of device: what is
+ * recorded is how wide the window was when the page opened, which is the
+ * thing the layout answers to. Nothing about the reader is stored — see
+ * the note at the head of insight.ts.
+ */
+function ScreenSplit({ summary }: { summary: WindowSummary }) {
+  const { counted, small, large, smallShare, unattributed } = summary.screens
+
+  if (counted === 0) {
+    return (
+      <p className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-4 font-sans text-sm leading-relaxed text-ink-muted">
+        No screens counted yet in this stretch. The split is recorded from the moment a page opens,
+        so it fills in as the site is read — visits counted before it shipped carry no screen.
+      </p>
+    )
+  }
+
+  return (
+    <div className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-4">
+      <span className="kicker block text-ink-subtle">Read on</span>
+
+      <div className="mt-3 flex items-baseline gap-6">
+        <span>
+          <span className="tabular font-display text-[2rem] leading-none text-ink-strong">
+            {percent(smallShare)}
+          </span>
+          <span className="ml-2 font-sans text-sm font-semibold text-ink-strong">on a phone</span>
+        </span>
+        <span>
+          <span className="tabular font-display text-[1.375rem] leading-none text-ink-muted">
+            {percent(1 - smallShare)}
+          </span>
+          <span className="ml-2 font-sans text-sm text-ink-muted">on a wide screen</span>
+        </span>
+      </div>
+
+      {/* One bar, two lengths. The gold is the phone because that is the
+          side most decisions about this site turn on. */}
+      <div
+        className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-chip"
+        role="img"
+        aria-label={`${percent(smallShare)} of counted visits opened on a narrow screen`}
+      >
+        <span className="bg-gold" style={{ width: `${smallShare * 100}%` }} />
+        <span className="flex-1 bg-plate-soft" />
+      </div>
+
+      <p className="mt-3 font-sans text-xs leading-relaxed text-ink-subtle">
+        {count(small)} narrow · {count(large)} wide, of {count(counted)} visits with a screen
+        recorded.
+        {unattributed > 0 && (
+          <>
+            {' '}
+            {count(unattributed)} earlier {unattributed === 1 ? 'visit is' : 'visits are'} not in
+            this split — they were counted before the screen was.
+          </>
+        )}
+      </p>
+
+      <p className="mt-2 font-sans text-xs leading-relaxed text-ink-subtle">
+        The width of the window when the page opened, not the make of the device. Nothing about a
+        reader is stored.
+      </p>
+    </div>
   )
 }
 
