@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authorizedForDesk, deskToken } from '@/lib/posted'
 import { cleanBatch, readInsight, record } from '@/lib/insight'
+import { addressOf } from '@/lib/client-address'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,11 +43,6 @@ function overLimit(address: string): boolean {
     })
   }
   return hits.length > PER_WINDOW
-}
-
-function addressOf(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for') ?? ''
-  return forwarded.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
 }
 
 export async function POST(request: Request) {

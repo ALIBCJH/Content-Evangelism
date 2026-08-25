@@ -110,6 +110,13 @@ const INLINE = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/
  * pasted `javascript:` URL can never become a live href.
  */
 function safeHref(href: string): string | null {
+  /* "//elsewhere.example" and "/\\elsewhere.example" are protocol-relative:
+     a browser reads both as another host, and both would pass a
+     startsWith('/') check without difficulty. `safeDeskReturn` refuses them
+     for the same reason. A link inside a teaching is trusted by a reader
+     the way the teaching is, and it should not be able to leave the site
+     while looking site-relative in the text somebody typed. */
+  if (href.startsWith('//') || href.startsWith('/\\')) return null
   if (href.startsWith('/') || href.startsWith('#')) return href
   return /^(https?:|mailto:)/i.test(href) ? href : null
 }

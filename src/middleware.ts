@@ -24,6 +24,17 @@ export const config = {
   matcher: ['/admin/:path*'],
 }
 
+/**
+ * The desks a posting key does not reach.
+ *
+ * /admin/review decides what is on the site. /admin/questions is the
+ * readers' own correspondence — names, email addresses, and whatever
+ * somebody in trouble decided to write — and it is senior work for the
+ * same reason a teaching's approval is: it is the ministry answering, and
+ * the people in it did not write to a contributor.
+ */
+const REVIEWER_ONLY = ['/admin/review', '/admin/questions']
+
 function toLogin(request: NextRequest, reason?: 'review'): NextResponse {
   const url = request.nextUrl.clone()
   url.pathname = '/admin/login'
@@ -48,7 +59,7 @@ export async function middleware(request: NextRequest) {
   /* The posting key writes; it does not decide what goes on the site.
      Sent back to the door rather than shown an empty page, because the
      useful thing to say is "that key posts but does not approve". */
-  if (pathname.startsWith('/admin/review') && session.role !== 'reviewer') {
+  if (REVIEWER_ONLY.some((desk) => pathname.startsWith(desk)) && session.role !== 'reviewer') {
     return toLogin(request, 'review')
   }
 

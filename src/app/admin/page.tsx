@@ -156,6 +156,12 @@ export default function AdminPage() {
     setTags(draft.tags)
     setHeld(null)
   }
+  /* Whether this desk may also approve. Two doors off this page lead to
+     desks a posting key does not reach, and offering a door that answers
+     by sending somebody back to the login screen is worse than not
+     offering it. Assumed false until /api/desk/me says otherwise, so the
+     links appear rather than flicker away. */
+  const [senior, setSenior] = React.useState(false)
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'done'>('idle')
   const [error, setError] = React.useState<string | null>(null)
   const [publishedUrl, setPublishedUrl] = React.useState<string | null>(null)
@@ -166,6 +172,7 @@ export default function AdminPage() {
       if (!res.ok) return
       const json = await res.json()
       setMe(json.writer ?? null)
+      setSenior(json.role === 'reviewer')
     } catch {
       /* Not knowing who you are costs the byline and the profile panel,
          not the ability to write. */
@@ -290,11 +297,13 @@ export default function AdminPage() {
             review desk approves it — so write freely, and send it when it is ready.
           </p>
 
-          <p className="mt-5 font-sans text-sm text-ink-muted">
-            <Link href="/admin/questions" className="transition-colors hover:text-gold">
-              Answer questions from readers →
-            </Link>
-          </p>
+          {senior && (
+            <p className="mt-5 font-sans text-sm text-ink-muted">
+              <Link href="/admin/questions" className="transition-colors hover:text-gold">
+                Answer questions from readers →
+              </Link>
+            </p>
+          )}
         </header>
 
         {me && (
@@ -446,12 +455,14 @@ export default function AdminPage() {
                   </Link>
                 )}
                 <Button variant="outline" onClick={clearForm}>Write another</Button>
-                <Link
-                  href="/admin/review"
-                  className="focus-ring font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
-                >
-                  The review desk →
-                </Link>
+                {senior && (
+                  <Link
+                    href="/admin/review"
+                    className="focus-ring font-sans text-xs font-bold uppercase tracking-kicker text-ink-muted transition-colors hover:text-gold"
+                  >
+                    The review desk →
+                  </Link>
+                )}
               </div>
             </div>
           ) : (

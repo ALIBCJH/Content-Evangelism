@@ -69,10 +69,28 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+/**
+ * Whether a page may be put in a cache at all.
+ *
+ * The same two tests the fetch handler applies, in a function, because the
+ * message handler needs them too and did not have them: a `keep` for
+ * /api/questions would have fetched the queue with the reader's cookies
+ * and written every reader's name and email address to disk, where it
+ * would outlive both the session and signing out.
+ */
+function isCacheable(href) {
+  try {
+    const url = new URL(href, self.location.origin)
+    return url.origin === self.location.origin && !isForbidden(url.pathname)
+  } catch {
+    return false
+  }
+}
+
 /** The pieces a reader put aside, fetched now so they are there later. */
 self.addEventListener('message', (event) => {
   const data = event.data || {}
-  if (data.type === 'keep' && typeof data.href === 'string') {
+  if (data.type === 'keep' && typeof data.href === 'string' && isCacheable(data.href)) {
     event.waitUntil(
       caches.open(SAVED).then((cache) =>
         /* no-store on the way in, so what is kept is the piece as it is

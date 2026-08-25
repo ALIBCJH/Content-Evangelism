@@ -72,7 +72,7 @@ describe('arriving with no session', () => {
 describe('arriving with a session', () => {
   it('lets a writer into the writing desks', async () => {
     const { ask } = await gate()
-    for (const path of ['/admin', '/admin/questions', '/admin/insight']) {
+    for (const path of ['/admin', '/admin/insight']) {
       expect((await ask(path, 'writer')).passed, path).toBe(true)
     }
   })
@@ -93,6 +93,19 @@ describe('arriving with a session', () => {
     expect(result.sentTo).toBe('/admin/login')
     expect(result.query?.get('need')).toBe('review')
     expect(result.query?.get('from')).toBe('/admin/review')
+  })
+
+  /* The readers' own correspondence — names, email addresses, and what
+     somebody in trouble decided to write. Senior work for the same reason
+     approving a teaching is: the people who wrote in wrote to the
+     ministry, not to whoever it has taken on this month. */
+  it('keeps a writer out of the question box too', async () => {
+    const { ask } = await gate()
+    const result = await ask('/admin/questions', 'writer')
+    expect(result.passed).toBe(false)
+    expect(result.sentTo).toBe('/admin/login')
+    expect(result.query?.get('need')).toBe('review')
+    expect(result.query?.get('from')).toBe('/admin/questions')
   })
 })
 

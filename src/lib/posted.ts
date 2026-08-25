@@ -521,10 +521,39 @@ export async function createPostedArticle(
   return { status: 201, article }
 }
 
+/**
+ * Change a teaching that is already written.
+ *
+ * Two rules live here that did not, and both are rules the rest of this
+ * module already keeps somewhere else.
+ *
+ * **A piece on the site does not change quietly.** `deletePostedArticle`
+ * has always held that taking a teaching off the site is deciding what is
+ * on the site, and so needs the review key. Replacing the whole body of
+ * one is the same decision wearing different clothes, and it was not
+ * checked at all: the posting key could file something plain, wait for a
+ * reviewer to approve it, and then swap the text for anything — live at
+ * once, still carrying the `verified` mark that says somebody read it
+ * against the ministry's teaching, still signed with the writer's name.
+ * So an edit by anybody who cannot approve sends the piece back to the
+ * queue and takes the mark off it. Not refused — a writer fixing their own
+ * sentence should not be turned away — but not published either, which is
+ * the whole of what #118 meant.
+ *
+ * **A writer edits their own work.** The read path is careful about this
+ * (`?mine=1` is narrowed on the server, so a desk is never sent somebody
+ * else's drafts) and the write path asked nothing, so a slug was enough to
+ * rewrite a colleague's draft — including one a reviewer had sent back
+ * with a note. `editor` is who the session says is at the desk, and it is
+ * absent for a Bearer token, which is the ministry rather than a person
+ * and keeps the blanket authority the public API was built on. A reviewer
+ * edits anybody's work; that is the job.
+ */
 export async function updatePostedArticle(
   slug: string,
   input: Partial<ArticleInput>,
-  token: string
+  token: string,
+  editor?: { id: string; name: string } | null
 ): Promise<WriteResult> {
   if (!authorized(token)) return { status: 401, error: 'Invalid posting key.' }
 
@@ -532,13 +561,35 @@ export async function updatePostedArticle(
   const index = articles.findIndex((a) => a.slug === slug)
   if (index === -1) return { status: 404, error: 'No article with that slug.' }
 
+  const standing = articles[index]
+  const senior = canReview(token)
+
+  /* 403 rather than 404: the piece exists and the key is genuine, and
+     pretending otherwise would leave a writer hunting for a typo in a slug
+     that is perfectly correct. */
+  if (editor && !senior && !wroteIt(standing, editor)) {
+    return { status: 403, error: 'That teaching belongs to another writer.' }
+  }
+
+  const now = new Date().toISOString()
   const article: PostedArticle = {
-    ...articles[index],
+    ...standing,
     ...input,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
   }
   // The body drives the reading time, so recompute it whenever it changes.
   if (input.body !== undefined) article.readMinutes = readMinutes(input.body)
+
+  /* Back to the queue. `verified` is a reviewer's statement that they read
+     this text, so it cannot outlive the text — and `review`, if a reviewer
+     had sent this back with a note, is answered by the rewrite and goes
+     with it. */
+  if (isLive(standing) && !senior) {
+    article.status = 'pending'
+    article.submittedAt = now
+    delete article.verified
+    delete article.review
+  }
 
   articles[index] = article
   if (!(await writeStore(articles))) {

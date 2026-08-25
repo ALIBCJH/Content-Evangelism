@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { publishedArticles } from '@/lib/api/service'
 import { allPassages, retrieve } from '@/lib/ask/passages'
 import { contextBlock, NOTHING_FOUND, SYSTEM } from '@/lib/ask/prompt'
+import { addressOf } from '@/lib/client-address'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,11 +46,6 @@ function overLimit(address: string): boolean {
     })
   }
   return hits.length > PER_WINDOW
-}
-
-function addressOf(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for') ?? ''
-  return forwarded.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
 }
 
 export async function POST(request: Request) {
