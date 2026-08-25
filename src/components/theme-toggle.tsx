@@ -5,56 +5,61 @@ import * as React from 'react'
 /**
  * Light or dark, and which one a reader gets on arrival.
  *
- * The rule is that the site follows the operating system until a reader
- * says otherwise, and remembers the saying. So there are three states,
- * not two: no stored choice, stored light, stored dark. The first one is
- * what most readers are in, and it is the one a plain boolean loses.
+ * The rule is that a reader arrives on the light setting and stays there
+ * until they say otherwise, and that the saying is remembered. It used to
+ * be that the site followed the operating system until a reader said
+ * otherwise — the usual advice, and the wrong answer for a publication.
+ * The reasoning is in the root layout, beside the script that does the
+ * stamping; the short of it is that a machine kept dark is not a request
+ * for a dark publication, and this site was reading it as one.
  *
- * The theme itself is applied before this component ever mounts — the
- * script in the root layout stamps `data-theme` on <html> in the head, so
- * a reader who prefers dark never sees a white page flash. All this
- * button does is change that attribute and write down the reason.
+ * So two states rather than three, and the third — "no stored choice" —
+ * now resolves to light before this component is ever asked. What follows
+ * from that is that nothing here watches the system any more: a reader
+ * who has expressed no preference is on light deliberately, and a change
+ * made in the OS while the page is open must not move them off it.
+ *
+ * The theme itself is applied before this component mounts — the script
+ * in the root layout stamps `data-theme` on <html> in the head — so a
+ * reader who has chosen dark never sees a white flash on a navigation.
+ * All this button does is change that attribute and write down the reason.
  *
  * It renders nothing on the server and nothing on the first client pass:
  * the true state is in localStorage, which the server cannot know, and a
- * button drawn from a guess would show a sun to half the readers holding
- * a moon. Reserving the space it will occupy keeps the masthead from
- * moving when it arrives.
+ * button drawn from a guess would show a sun to every reader holding a
+ * moon. Reserving the space it will occupy keeps the masthead from moving
+ * when it arrives.
  */
 
 const STORAGE_KEY = 'theme'
 
 type Theme = 'light' | 'dark'
 
-function systemTheme(): Theme {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+/** The browser chrome around the page, so it does not stay light behind a
+    reader who has chosen dark. The values are the two grounds. */
+const CHROME: Record<Theme, string> = { light: '#123B5D', dark: '#0A1A2F' }
+
+function paintChrome(theme: Theme): void {
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', CHROME[theme])
 }
 
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const [theme, setTheme] = React.useState<Theme | null>(null)
 
   React.useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-    setTheme(stored === 'light' || stored === 'dark' ? stored : systemTheme())
-
-    /* A reader who has expressed no preference here still follows the
-       system, so a change made in the OS while the page is open is
-       honoured rather than waiting for a reload. */
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => {
-      if (window.localStorage.getItem(STORAGE_KEY)) return
-      const next = systemTheme()
-      document.documentElement.dataset.theme = next
-      setTheme(next)
-    }
-    media.addEventListener('change', onChange)
-    return () => media.removeEventListener('change', onChange)
+    /* Anything that is not an explicit 'dark' is light — the same test the
+       stamping script makes, so the button and the page can never disagree
+       about what a reader is looking at. */
+    setTheme(window.localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light')
   }, [])
 
   const toggle = () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     document.documentElement.dataset.theme = next
     window.localStorage.setItem(STORAGE_KEY, next)
+    paintChrome(next)
     setTheme(next)
   }
 
