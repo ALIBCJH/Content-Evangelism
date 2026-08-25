@@ -102,7 +102,7 @@ export default function InsightPage() {
   )
 
   return (
-    <main className="shell pb-24 pt-10">
+    <main className="shell max-w-[64rem] pb-24 pt-10">
       <p className="kicker mb-4 text-ink-subtle">
         <Link href="/admin" className="hover:text-gold">
           The desk
@@ -153,7 +153,7 @@ export default function InsightPage() {
             ].map(([k, v, note]) => (
               <div key={k} className="rounded-panel border border-rule bg-card px-6 py-5">
                 <dt className="kicker mb-2 text-ink-subtle">{k}</dt>
-                <dd className="font-display text-[1.75rem] text-navy">{v}</dd>
+                <dd className="desk-figure text-[1.75rem]">{v}</dd>
                 <dd className="mt-1.5 text-[0.75rem] leading-[1.5] text-ink-subtle">{note}</dd>
               </div>
             ))}

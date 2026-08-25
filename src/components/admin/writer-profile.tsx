@@ -61,7 +61,7 @@ export function WriterProfile({ writer, onSaved }: { writer: MeWriter; onSaved: 
   }
 
   return (
-    <section className="rounded-2xl border border-hairline bg-surface p-5 sm:p-6">
+    <section className="desk-card p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="kicker text-ink-subtle">Your page</p>

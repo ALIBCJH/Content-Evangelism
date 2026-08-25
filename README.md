@@ -327,6 +327,24 @@ address per ten minutes.
 
 ## What a reader gets
 
+**The desks have a bar across the top.** They had none: each opened
+straight onto its own heading with a sign-out button floating above it,
+so no page said which part of the ministry's tooling you were in, there
+was no way between the desks but the back button, and the whole thing
+read as a page somebody had been sent rather than a place they worked.
+The bar carries the desks a key opens — a writer is not shown a link to
+the review desk the middleware would turn them away from a moment later
+— who is at the desk, and the way out.
+
+The board's panels were `bg-surface`, which is a 3.5% wash of navy on a
+page already tinted with it, so every card sat at almost exactly the
+ground's own value and the board had no hierarchy at all. They are the
+site's real card now — paper, ruled, lifted a little off the ground —
+which is what the reader-facing pages have always used. Figures are set
+in the UI face with tabular numerals rather than in the display serif,
+because Fraunces is drawn for headlines and a column of measurements is
+meant to be compared down the page rather than admired.
+
 **Which screen the site is read on.** The board shows the share of visits
 that opened on a narrow window and on a wide one, against the same
 breakpoint the layout changes at — so it answers the question a decision

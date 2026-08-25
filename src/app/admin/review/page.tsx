@@ -259,13 +259,13 @@ export default function ReviewPage() {
         </h2>
 
         {waiting.length === 0 ? (
-          <p className="rounded-2xl border border-hairline bg-surface px-5 py-6 font-sans text-sm text-ink-muted">
+          <p className="desk-card px-5 py-6 font-sans text-sm text-ink-muted">
             Nothing is waiting. Everything written has been dealt with.
           </p>
         ) : (
           <ul className="flex flex-col gap-4">
             {waiting.map((article) => (
-              <li key={article.slug} className="rounded-2xl border border-hairline bg-surface">
+              <li key={article.slug} className="desk-card">
                 <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4">
                   <div className="min-w-0">
                     <p className="font-sans text-[0.6875rem] uppercase tracking-kicker text-ink-subtle">

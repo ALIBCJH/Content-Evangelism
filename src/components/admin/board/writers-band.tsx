@@ -193,7 +193,7 @@ export function WritersBand() {
       )}
 
       {adding && (
-        <form onSubmit={add} className="mt-4 space-y-4 rounded-2xl border border-hairline bg-surface p-5 sm:p-6">
+        <form onSubmit={add} className="mt-4 space-y-4 desk-card p-5 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="w-name" className="kicker block text-ink-subtle">
@@ -303,13 +303,13 @@ export function WritersBand() {
           Reading the register…
         </p>
       ) : writers.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-6 font-sans text-sm leading-relaxed text-ink-muted">
+        <p className="mt-4 desk-card px-5 py-6 font-sans text-sm leading-relaxed text-ink-muted">
           Nobody has a desk of their own yet. Everything is written with the ministry&rsquo;s own
           keys, which means the archive cannot say who wrote what. Add a writer and they get a key,
           a byline and a page.
         </p>
       ) : (
-        <ul className="mt-4 divide-y divide-hairline rounded-2xl border border-hairline bg-surface">
+        <ul className="mt-4 divide-y divide-hairline desk-card">
           {writers.map((writer) => (
             <li key={writer.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4">
               <div className="min-w-0 flex-1">

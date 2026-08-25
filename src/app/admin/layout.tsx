@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DeskSignOut } from '@/components/admin/desk-sign-out'
+import { DeskHeader } from '@/components/admin/desk-header'
 
 /* robots.txt already disallows crawling /admin, but disallow alone cannot
    prevent indexing of a URL discovered through links — noindex can. */
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <DeskSignOut />
+      <DeskHeader />
       {children}
     </>
   )
