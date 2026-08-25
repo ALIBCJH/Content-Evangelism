@@ -12,7 +12,7 @@ import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
 import { InlineArticle } from '@/components/archive/inline-article'
 import { LeadCard } from '@/components/archive/lead-card'
-import { PieceCard } from '@/components/archive/piece-card'
+import { TeachingRow } from '@/components/archive/teaching-row'
 import { TopicsRail } from '@/components/archive/topics-rail'
 
 /**
@@ -321,18 +321,16 @@ export function ArchiveList({
         {rest.length > 0 && (
           <div className="order-2 min-w-0 lg:order-none">
             <h2 className="sr-only">The rest of the archive</h2>
-            {/* Two across between sm and xl, where this column runs the
-                width of the page; one in the narrow column beside the
-                lead, and one on a phone. */}
-            <ol className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-1">
+            {/* Ruled rather than carded, and one column on a phone.
+                These were cards two across: on a 390px screen that is a
+                border and padding on both edges of a column already too
+                narrow, spent on separating things a hairline separates
+                for one pixel. Two across returns from `sm`, where there
+                is width to spend. */}
+            <ol className="divide-y divide-rule-soft sm:grid sm:grid-cols-2 sm:gap-x-6 sm:divide-y-0 xl:grid-cols-1">
               {rest.map((item) => (
-                <li key={item.slug}>
-                  <PieceCard
-                    item={item}
-                    saved={ready && isSaved(item.slug)}
-                    ready={ready}
-                    onToggle={() => toggle(item.slug)}
-                  />
+                <li key={item.slug} className="sm:border-b sm:border-rule-soft">
+                  <TeachingRow item={item} />
                 </li>
               ))}
             </ol>

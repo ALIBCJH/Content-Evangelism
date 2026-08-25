@@ -399,6 +399,33 @@ missing rather than folding them into either side. A split that quietly
 counted the old visits as desktop would be a wrong answer wearing a
 confident face.
 
+**Every teaching in a listing carries a mark.** A column of headlines
+with nothing beside them is read by nobody: the eye has no place to stop,
+so five teachings become one grey block. The shape every news front page
+on a phone has settled on is a mark about a third of the width with the
+headline beside it, and that is what a listing row is now — ruled rather
+than carded, because a card costs a border and padding on both edges of a
+column already narrow, and a hairline does the same work for one pixel.
+
+Where a teaching has a photograph, the photograph is the mark. Where it
+has none — which is five of six — the mark is made of the teaching:
+`categoryArt` has named a palette for every section since the site was
+built and nothing ever drew one, so this is that field, carrying the
+passage the teaching opens on. It is deliberately typographic rather than
+iconographic. Sixteen hand-drawn marks is a large piece of design with a
+real risk of reading as clip-art beside the ministry's own artwork; a
+passage on a coloured field is the scripture plate's own language, it
+differs for every teaching without anybody drawing anything, and a short
+reference is legible at a hundred pixels where a headline is not — see
+`shortRef`, which is what makes "Matthew 3:2 and Matthew 4:17, KJV" fit
+in a square.
+
+On the lead, a picture stands where the plate would, and below the
+headline rather than above it — the order a publication uses when the
+words are the product: what it is, what it says, then what it looks like.
+Not both: the ministry's artwork sets the passage into the picture
+already.
+
 **A rest in a long scroll.** A teaching here runs eight to eleven
 minutes, and the longest stretches carry six and seven paragraphs with
 nothing to rest the eye on. Some passages are set on the plate the front

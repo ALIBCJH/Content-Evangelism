@@ -2,6 +2,7 @@ import { parseBody } from '@/lib/article-body'
 import { scriptureRefs } from '@/lib/scripture'
 import { dateline } from '@/lib/search-docs'
 import type { RealRow } from '@/lib/rows'
+import type { ArticleArt } from '@/lib/content'
 import type { Category } from '@/lib/content'
 
 /**
@@ -39,6 +40,12 @@ export interface ArchiveItem {
    * Scripture, and the plate is absent with it.
    */
   quote?: { text: string; cite?: string }
+  /**
+   * The section's palette and mark, from `categoryArt`. Carried so a
+   * listing can draw a teaching that has no photograph — see
+   * `TeachingArt`.
+   */
+  art: ArticleArt
   /** Lowercased title, standfirst, opening line and references. */
   haystack: string
   /**
@@ -113,6 +120,7 @@ export function toArchiveItems(
       dek: row.dek,
       category: row.category,
       authorName: row.authorName,
+      art: row.art,
       publishedAt: row.publishedAt,
       dated: dateline(row.publishedAt),
       readMinutes: row.readMinutes,
