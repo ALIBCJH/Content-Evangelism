@@ -327,6 +327,28 @@ address per ten minutes.
 
 ## What a reader gets
 
+**A teaching already on the site can be checked.** The verified mark was
+set by approving, and approving is the door onto the site — so every
+teaching published before there was a review desk to publish it through
+carried no mark, could not be given one, and sat there telling readers
+"Not verified". `verify` is that door for a piece already through the
+other one: review key only, refused for anything still in the queue
+(which has approval instead), and it touches nothing but the mark.
+
+Not `updatedAt`. That is the date the teaching was last changed and it is
+published to search engines as `dateModified`; a reviewer reading a piece
+from March has not rewritten it, and stamping today would tell every
+crawler the ministry had rewritten a dozen teachings in an afternoon.
+
+The board carries an **Unchecked** chip beside the sections, counting the
+live teachings nobody has read yet and narrowing to them — composed with
+the sections, so one part of the archive can be worked through at a time.
+It appears only when there is something on the list.
+
+There is deliberately no "check them all" button. The mark says a person
+read a teaching against the ministry's own published teaching, and a
+button that sets it a dozen at a time makes it say nothing.
+
 **The desks have a bar across the top.** They had none: each opened
 straight onto its own heading with a sign-out button floating above it,
 so no page said which part of the ministry's tooling you were in, there

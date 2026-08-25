@@ -609,7 +609,7 @@ export async function updatePostedArticle(
  */
 export async function reviewArticle(
   slug: string,
-  verdict: { action: 'approve' | 'send-back' | 'unpublish'; note?: string },
+  verdict: { action: 'approve' | 'send-back' | 'unpublish' | 'verify'; note?: string },
   token: string
 ): Promise<WriteResult> {
   if (!canReview(token)) return { status: 401, error: 'Invalid review key.' }
@@ -625,6 +625,21 @@ export async function reviewArticle(
   if (verdict.action === 'approve') {
     const { review: _sentBack, ...rest } = held
     article = { ...rest, status: 'published', verified: true, updatedAt: now }
+  } else if (verdict.action === 'verify') {
+    /* For the teachings that were already on the site before there was a
+       review desk to put them there. They cannot be approved — approving
+       is the door onto the site and they are through it — but somebody
+       still has to be able to say they have now read one against the
+       ministry's own teaching.
+       `updatedAt` is deliberately untouched. It is the date the teaching
+       was last changed, and it is published to search engines as
+       `dateModified`; a reviewer reading a piece from March does not
+       modify it, and stamping today's date would tell every crawler the
+       ministry had rewritten twelve teachings in an afternoon. */
+    if (!isLive(held)) {
+      return { status: 409, error: 'That teaching is not on the site. Approve it instead.' }
+    }
+    article = { ...held, verified: true }
   } else if (verdict.action === 'send-back') {
     const note = (verdict.note ?? '').trim()
     if (note.length < 3) return { status: 400, error: 'Say what needs changing.' }
