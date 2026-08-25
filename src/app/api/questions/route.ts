@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { deskToken } from '@/lib/posted'
 import { askQuestion, listQuestions, validateQuestion } from '@/lib/questions'
+import { addressOf } from '@/lib/client-address'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,11 +48,6 @@ function overLimit(address: string): boolean {
     })
   }
   return hits.length > PER_WINDOW
-}
-
-function addressOf(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for') ?? ''
-  return forwarded.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
 }
 
 /** POST /api/questions — a reader asking something. */

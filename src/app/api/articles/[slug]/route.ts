@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import {
+  deskSession,
   deskToken,
   deletePostedArticle,
   getPostedArticle,
@@ -7,6 +8,23 @@ import {
   validateInput,
 } from '@/lib/posted'
 import { revalidatePublished } from '@/lib/revalidate'
+import { listWriters } from '@/lib/writers'
+
+/**
+ * Who is making this edit, when the answer is a person.
+ *
+ * Null for a Bearer token — that is the ministry's own key rather than
+ * somebody at a desk, and the store gives it the blanket authority the
+ * public API was built on. Null too for a session bought with one of the
+ * ministry's env keys, which belongs to the ministry and not to anybody
+ * whose work could be "theirs".
+ */
+async function editorOf(request: Request): Promise<{ id: string; name: string } | null> {
+  const session = await deskSession(request)
+  if (!session?.writer) return null
+  const writer = (await listWriters()).find((held) => held.id === session.writer && held.active)
+  return writer ? { id: writer.id, name: writer.name } : null
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +47,12 @@ export async function GET(_request: Request, { params }: Params) {
  * teaching must not end up signing it, and a writer reworking their own
  * already carries their own name. The one way a piece is attributed is at
  * the moment it is created.
+ *
+ * Who may edit what is the store's rule rather than this route's — see
+ * `updatePostedArticle`. In short: a writer edits their own, a reviewer
+ * edits anybody's, and an edit to something already on the site by
+ * somebody who cannot approve sends it back to the queue rather than
+ * changing what readers are being shown.
  */
 export async function PUT(request: Request, { params }: Params) {
   let payload: Record<string, unknown>
@@ -46,7 +70,12 @@ export async function PUT(request: Request, { params }: Params) {
      invariant written down where an edit happens, so that a later field
      added to the input cannot quietly become a way to reassign a piece. */
   const { authorName: _byline, authorId: _wrote, ...withoutByline } = input
-  const result = await updatePostedArticle(params.slug, withoutByline, await deskToken(request))
+  const result = await updatePostedArticle(
+    params.slug,
+    withoutByline,
+    await deskToken(request),
+    await editorOf(request)
+  )
   if (!result.article) {
     const message =
       result.status === 401

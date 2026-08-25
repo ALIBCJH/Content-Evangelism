@@ -14,6 +14,52 @@ const imageHosts = (process.env.IMAGE_HOSTS ?? '')
   .map((host) => host.trim())
   .filter(Boolean)
 
+/**
+ * The content security policy.
+ *
+ * Written without a nonce, deliberately. The nonce-and-strict-dynamic
+ * recipe is the stronger one and it cannot work here: these pages are
+ * statically generated and served from a cache for the length of the
+ * revalidation window, so a nonce minted per request would not match the
+ * one baked into the HTML being handed out — every page would break, and
+ * break intermittently, which is worse than breaking outright.
+ *
+ * So `script-src` keeps 'unsafe-inline' for Next's own bootstrap, and this
+ * policy is honest about what it buys: not protection against an injected
+ * inline script, but a closed door on every other route out. No script may
+ * be *loaded* from a host that is not this one. `object-src 'none'` ends
+ * the plugin routes; `base-uri 'self'` stops an injected <base> from
+ * repointing every relative URL on the page; `form-action 'self'` stops a
+ * form from being made to post the desk's fields somewhere else. Those
+ * three are where a content injection on a page like this would actually
+ * go, and none of them needs a nonce.
+ *
+ * Everything the site loads is its own. Fonts come through next/font,
+ * which downloads them at build time and serves them from /_next, so there
+ * is no font host here. YouTube is the one external origin: the player is
+ * framed from youtube-nocookie.com, and poster frames come from i.ytimg.com
+ * through the image optimizer, which re-serves them from this origin —
+ * i.ytimg.com is listed anyway so that an unoptimised <img> in a teaching
+ * does not silently vanish.
+ */
+const csp = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: https://i.ytimg.com${imageHosts.map((host) => ` https://${host}`).join('')}`,
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "media-src 'self'",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  'frame-src https://www.youtube-nocookie.com https://www.youtube.com',
+  'upgrade-insecure-requests',
+].join('; ')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -58,13 +104,10 @@ const nextConfig = {
   async headers() {
     return [
       {
-        /* Sent on everything. None of these is a substitute for a content
-           security policy, which this site does not yet have and which is
-           the one remaining hole worth naming: it needs a pass over the
-           YouTube embeds and Next's inline runtime before it can be
-           written honestly rather than written permissively. */
+        /* Sent on everything. */
         source: '/:path*',
         headers: [
+          { key: 'Content-Security-Policy', value: csp },
           // A .txt served as HTML because a browser guessed is a way in.
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           // Nobody needs to frame a ministry's teachings but the ministry.

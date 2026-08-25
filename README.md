@@ -492,7 +492,8 @@ ministry does not own.
 | `SOCIAL_PROFILES` | Comma-separated official profile URLs (Facebook, X, Instagram…). They join YouTube and the radio station in the Organization `sameAs` set, which is what ties this domain to the ministry as an entity. |
 | `TWITTER_HANDLE` | Including the `@`. Fills `twitter:site` / `twitter:creator`. |
 | `CONTACT_EMAIL` | Published as the Organization `contactPoint`. |
-| `IMAGE_HOSTS` | Comma-separated hostnames the image optimizer may resize for (`cdn.example.com`, or `*.example.com`). Empty by default: every image the site ships is local, and an optimizer open to everything is a free resizing service for the whole internet. The posting desk rejects an unlisted host up front. |
+| `IMAGE_HOSTS` | Comma-separated hostnames the image optimizer may resize for (`cdn.example.com`, or `*.example.com`). Empty by default: every image the site ships is local, and an optimizer open to everything is a free resizing service for the whole internet. The posting desk rejects an unlisted host up front. **`*` and `**` are honoured and mean any host — do not use them.** They restore exactly the configuration that was removed for this reason, and the reason is written in a comment at the top of `next.config.js` that nobody editing an env var will be reading. Listed hosts are also added to the page's `img-src`. |
+| `TRUSTED_PROXY_HOPS` | How many proxies of the deployment's own sit in front of the app, for reading `X-Forwarded-For` when limiting by address. `0` (the default) is right on Vercel and on Heroku, which is every deployment this repository is shaped for — raise it only behind a proxy chain you put there yourself. See `src/lib/client-address.ts`. |
 
 Structured data lives in `src/app/layout.tsx` (Organization + WebSite),
 `src/components/breadcrumbs.tsx`, `src/components/archive/archive-view.tsx`

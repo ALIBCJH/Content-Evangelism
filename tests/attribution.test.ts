@@ -52,15 +52,17 @@ async function desk() {
 /** A writer on the register, and the cookie they would be carrying. */
 async function signedIn(
   d: Awaited<ReturnType<typeof desk>>,
-  name: string
+  name: string,
+  canReview = false
 ): Promise<{ id: string; cookie: string }> {
   const added = await d.writers.addWriter({
     name,
     role: 'Devotional Editor',
     bio: 'Writes the morning portion and the quiet columns on prayer and waiting.',
+    canReview,
   })
   const value = await d.session.mintSession(
-    { role: 'writer', writer: added!.writer.id },
+    { role: canReview ? 'reviewer' : 'writer', writer: added!.writer.id },
     Date.now()
   )
   return { id: added!.writer.id, cookie: `${d.session.DESK_COOKIE}=${value}` }
@@ -157,7 +159,45 @@ describe('filing a piece with the ministry’s key', () => {
 })
 
 describe('an edit', () => {
+  const editTo = (slug: string, cookie: string, claiming: { name: string; id: string }) =>
+    new Request(`https://read.repentanceonline.com/api/articles/${slug}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', 'sec-fetch-site': 'same-origin', cookie },
+      body: JSON.stringify({
+        ...PIECE,
+        body: 'The watchman waits, and the morning comes to those who kept the hours.',
+        authorName: claiming.name,
+        authorId: claiming.id,
+      }),
+    })
+
   it('cannot move a piece to somebody else', async () => {
+    /* The reviewer is the case that matters now, because a plain writer
+       cannot reach somebody else's piece at all (see below). A reviewer
+       must be able to fix a paragraph in anybody's teaching, and must not
+       end up signing it by doing so. */
+    const d = await desk()
+    const simon = await signedIn(d, 'Simon Juma')
+    const elizabeth = await signedIn(d, 'Rev. Elizabeth Omondi', true)
+
+    await d.articles.POST(filed(PIECE, { cookie: simon.cookie }))
+    const [before] = await d.posted.listPostedArticles({ includePending: true })
+
+    const response = await d.oneArticle.PUT(
+      editTo(before.slug, elizabeth.cookie, { name: 'Rev. Elizabeth Omondi', id: elizabeth.id }),
+      { params: { slug: before.slug } }
+    )
+    expect(response.status).toBe(200)
+
+    const [after] = await d.posted.listPostedArticles({ includePending: true })
+    expect(after.authorName).toBe('Simon Juma')
+    expect(after.authorId).toBe(simon.id)
+  })
+
+  it('is refused outright to a writer who is not the writer', async () => {
+    /* The stronger guarantee, added with the edit gate: a writer never
+       reaches another writer's piece, so the byline is not the only thing
+       standing between them and it. */
     const d = await desk()
     const simon = await signedIn(d, 'Simon Juma')
     const elizabeth = await signedIn(d, 'Rev. Elizabeth Omondi')
@@ -165,25 +205,28 @@ describe('an edit', () => {
     await d.articles.POST(filed(PIECE, { cookie: simon.cookie }))
     const [before] = await d.posted.listPostedArticles({ includePending: true })
 
-    const edit = new Request(`https://read.repentanceonline.com/api/articles/${before.slug}`, {
-      method: 'PUT',
-      headers: {
-        'content-type': 'application/json',
-        'sec-fetch-site': 'same-origin',
-        cookie: elizabeth.cookie,
-      },
-      body: JSON.stringify({
-        ...PIECE,
-        body: 'The watchman waits, and the morning comes to those who kept the hours.',
-        authorName: 'Rev. Elizabeth Omondi',
-        authorId: elizabeth.id,
-      }),
-    })
-    expect((await d.oneArticle.PUT(edit, { params: { slug: before.slug } })).status).toBe(200)
+    const response = await d.oneArticle.PUT(
+      editTo(before.slug, elizabeth.cookie, { name: 'Rev. Elizabeth Omondi', id: elizabeth.id }),
+      { params: { slug: before.slug } }
+    )
+    expect(response.status).toBe(403)
 
     const [after] = await d.posted.listPostedArticles({ includePending: true })
-    expect(after.authorName).toBe('Simon Juma')
-    expect(after.authorId).toBe(simon.id)
+    expect(after.body).toBe(PIECE.body)
+  })
+
+  it('lets a writer edit their own', async () => {
+    const d = await desk()
+    const simon = await signedIn(d, 'Simon Juma')
+
+    await d.articles.POST(filed(PIECE, { cookie: simon.cookie }))
+    const [before] = await d.posted.listPostedArticles({ includePending: true })
+
+    const response = await d.oneArticle.PUT(
+      editTo(before.slug, simon.cookie, { name: 'Simon Juma', id: simon.id }),
+      { params: { slug: before.slug } }
+    )
+    expect(response.status).toBe(200)
   })
 })
 

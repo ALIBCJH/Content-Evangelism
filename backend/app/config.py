@@ -61,7 +61,12 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str
-    admin_token: str = "change-me"
+    # Empty, never a usable default. An unset secret must mean "nobody may
+    # write", the way the Next.js store treats an unset ADMIN_TOKEN — a
+    # placeholder that authenticates is a deployment that shipped open and
+    # said nothing about it. `require_admin` refuses outright when it is
+    # blank, so a misconfigured service is shut rather than public.
+    admin_token: str = ""
     cors_origins: str = "http://localhost:3000"
 
     # Set by the platform, not by us: Heroku exports DYNO ("web.1") on every

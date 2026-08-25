@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { authorizedForDesk } from '@/lib/posted'
+import { authorizedForDesk, canReview } from '@/lib/posted'
 
 /**
  * The questions readers send in.
@@ -332,15 +332,31 @@ export async function answerBySlug(slug: string): Promise<PublishedAnswer | unde
  * and sometimes their email addresses.
  */
 /**
- * Either desk key opens the queue.
+ * The review key, and only the review key.
  *
- * It checked ADMIN_TOKEN alone, which was wrong in both directions once
- * the two keys were genuinely separate: a reviewer holding only the
- * review key was refused a queue they are senior enough to clear, and the
- * `===` behind it returned as soon as two bytes differed. The store's own
- * check is constant-time and knows about both keys, so defer to it.
+ * This asked for either desk key, which was right when a desk key meant
+ * the ministry and wrong the moment the register turned "whoever holds the
+ * key" into a list of people. A question carries a reader's name, their
+ * email address, and whatever they decided to write — and this box is
+ * where somebody in trouble writes. A ministry that takes on a dozen
+ * contributors should not thereby have handed a dozen people its readers'
+ * correspondence, and it should not do so as a side effect of a change
+ * nobody made on purpose.
+ *
+ * A deployment running the desk single-handed is unaffected: with no
+ * REVIEW_TOKEN set, `reviewKey()` falls back to the posting key and the
+ * one key the ministry has still opens the queue.
  */
 function authorized(token: string): boolean {
+  return canReview(token)
+}
+
+/**
+ * Moving a question along the queue — a status, a note to the desk — is
+ * ordinary desk work and does not need the senior key. Reading the queue
+ * and publishing out of it do; see `authorized` and `updateQuestion`.
+ */
+function atTheDesk(token: string): boolean {
   return authorizedForDesk(token)
 }
 
@@ -355,7 +371,16 @@ export async function updateQuestion(
   patch: { status?: QuestionStatus; note?: string; published?: PublishInput | null },
   token: string
 ): Promise<QuestionResult> {
-  if (!authorized(token)) return { status: 401, error: 'Invalid posting key.' }
+  if (!atTheDesk(token)) return { status: 401, error: 'Invalid posting key.' }
+
+  /* Publishing an answer puts words on the open site under the ministry's
+     name, and taking one down removes them from it. That is the same
+     decision the review desk makes about a teaching, made through a
+     different door, and it answers to the same key. A status or a note
+     changes nothing a reader can see and stays at the desk. */
+  if (patch.published !== undefined && !canReview(token)) {
+    return { status: 403, error: 'Answering in the open needs the review key.' }
+  }
 
   const questions = await readStore()
   const index = questions.findIndex((q) => q.id === id)
@@ -401,7 +426,17 @@ export async function updateQuestion(
   return { status: 200, question }
 }
 
-/** 204 deleted, 404 unknown, 401 bad key. */
+/**
+ * Remove a question for good.
+ *
+ * The review key, for the reason `deletePostedArticle` gives: removal is a
+ * decision, and this one cannot be undone by anybody. What is destroyed is
+ * a reader's own words — sometimes the only copy, sometimes written by
+ * somebody who is waiting for an answer — and the store keeps no history
+ * to restore them from.
+ *
+ * 204 deleted, 404 unknown, 401 bad key.
+ */
 export async function deleteQuestion(id: string, token: string): Promise<number> {
   if (!authorized(token)) return 401
   const questions = await readStore()
