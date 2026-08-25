@@ -36,9 +36,9 @@ export function TeachingRow({ item }: { item: ArchiveItem }) {
           className="relative aspect-[16/10] w-[7.5rem] shrink-0 overflow-hidden rounded-md sm:w-[9rem]"
           style={{ containerType: 'inline-size' }}
         >
-          {item.image ? (
+          {item.thumbnail ? (
             <Image
-              src={item.image.src}
+              src={item.thumbnail.src}
               alt=""
               fill
               sizes="(max-width: 640px) 120px, 144px"

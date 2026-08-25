@@ -27,6 +27,8 @@ export interface Draft {
   body: string
   authorName: string
   imageUrl: string
+  /** The wide listing crop; see PostedArticle.thumbnailUrl. */
+  thumbnailUrl?: string
   imageAlt: string
   tags: string
   at: number

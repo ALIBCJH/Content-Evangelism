@@ -420,6 +420,14 @@ reference is legible at a hundred pixels where a headline is not — see
 `shortRef`, which is what makes "Matthew 3:2 and Matthew 4:17, KJV" fit
 in a square.
 
+A teaching may carry two pictures. The ministry's own artwork is a
+portrait poster with the headline set into the picture — right at the
+head of a piece, and unusable in a listing row, where cropping it to a
+hundred-pixel band cuts the words out of the middle of the artwork.
+`thumbnailUrl` is the wide crop with no words in it. A listing takes the
+crop, then the poster, then the section's field; the head of a piece
+always takes the poster.
+
 On the lead, a picture stands where the plate would, and below the
 headline rather than above it — the order a publication uses when the
 words are the product: what it is, what it says, then what it looks like.

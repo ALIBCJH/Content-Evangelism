@@ -32,8 +32,14 @@ export interface ArchiveItem {
   refs: string[]
   /** How many more references the piece carries than the chips show. */
   moreRefs: number
-  /** The piece's own picture, where it has one — the thumbnail on a phone. */
+  /** The piece's own picture, where it has one — shown at the head. */
   image?: { src: string; alt: string }
+  /**
+   * What a listing row shows: the landscape crop where the teaching has
+   * one, the poster where it does not, and absent where it has neither —
+   * in which case the row draws the section's own field instead.
+   */
+  thumbnail?: { src: string; alt: string }
   /**
    * The passage the teaching leads with, set on the plate at the head of
    * the lead card. Absent on a piece that opens on prose rather than on
@@ -129,6 +135,14 @@ export function toArchiveItems(
       moreRefs: Math.max(0, all.length - refs.length),
       ...(row.imageUrl
         ? { image: { src: row.imageUrl, alt: row.imageAlt ?? '' } }
+        : {}),
+      /* The listing's own picture, where the teaching carries one. It
+         falls back to the poster rather than to nothing, because a
+         cropped poster is still better than an empty box — but see
+         PostedArticle.thumbnailUrl for why a crop is the worse of the
+         two on this ministry's artwork. */
+      ...(row.thumbnailUrl || row.imageUrl
+        ? { thumbnail: { src: (row.thumbnailUrl ?? row.imageUrl)!, alt: row.imageAlt ?? '' } }
         : {}),
       quote: leadQuote(row.body),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
