@@ -170,12 +170,13 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   colorScheme: 'light',
-  /* Two, so the browser chrome around the page is the page's own colour
-     in either theme rather than navy against a dark ground. */
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#123B5D' },
-    { media: '(prefers-color-scheme: dark)', color: '#0A1A2F' },
-  ],
+  /* One, and light, because that is what a reader is given on arrival
+     whatever their machine is set to. A pair keyed on the system
+     preference would put dark chrome around a light page on a machine kept
+     dark, which is the mismatch this used to avoid and would now cause.
+     The toggle updates this tag as it goes, so the chrome follows a reader
+     who chooses dark rather than following their operating system. */
+  themeColor: '#123B5D',
 }
 
 /* Site-wide knowledge graph, server-rendered so every crawler — including
@@ -253,17 +254,31 @@ const siteGraph = {
 /**
  * The theme, decided before the first paint.
  *
- * This runs in the head, synchronously, ahead of any stylesheet: a stored
- * choice wins, and with none stored the operating system decides. Done in
- * React instead, the page would paint light and then correct itself, and
- * a reader who keeps their machine dark would be shown a white flash on
- * every navigation — which is the one thing a dark theme must not do.
+ * This runs in the head, synchronously, ahead of any stylesheet, and it
+ * answers one question: has this reader chosen a theme here? A stored
+ * choice wins. Everything else is light.
  *
- * It is deliberately tiny and deliberately silent: any failure at all
- * (a browser with storage blocked) leaves the attribute unset, and the
- * media query in globals.css takes over.
+ * The site used to follow the operating system when nothing was stored,
+ * which is the usual advice and the wrong answer for this publication.
+ * The page a reader is given on arrival is the page the ministry is
+ * publishing, and it is set on white: this is a publication, read at
+ * length, and the light setting is the one the type, the plates and the
+ * photographs were composed against. A machine kept dark for a terminal
+ * at night is not a statement about how somebody wants to read a
+ * teaching, and it was being read as one — a reader who had never
+ * expressed a preference here was shown a version of the site they had
+ * not asked for, and had to find a control to see the one they had.
+ *
+ * The dark theme is not going anywhere. It is one press away, it is
+ * remembered for good once pressed, and a reader who has pressed it is
+ * never overruled by any of this. What changed is only which way the
+ * question falls when nobody has answered it.
+ *
+ * Still tiny and still silent: any failure at all — a browser with
+ * storage blocked — leaves the attribute unset, and unset is light,
+ * because light is what `:root` alone declares.
  */
-const themeScript = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=t==='light'||t==='dark'?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}`
+const themeScript = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light'}catch(e){}`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
