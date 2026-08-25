@@ -166,6 +166,33 @@ export function pieceRows(
  */
 export const ENOUGH_TO_JUDGE = 20
 
+/**
+ * How many visits a site-wide share needs behind it to be worth printing.
+ *
+ * Deliberately not `ENOUGH_TO_JUDGE`. That one is the floor for accusing
+ * a single teaching of losing its readers — twenty readings of one piece
+ * — and it is far too low for a proportion the whole board rests on. At
+ * twenty-four visits a finish rate of 38% is nine readers; one more moves
+ * it to 42%, and the true figure could reasonably be anywhere from about
+ * a fifth to about three fifths. A number that swings four points per
+ * reader is not a measurement, it is a mood.
+ *
+ * A hundred is where the swing per reader falls to about one point and
+ * the interval narrows to something a decision could stand on. It is a
+ * judgement rather than a law, and it is written here once so it can be
+ * argued with in one place.
+ */
+export const ENOUGH_TO_RATE = 100
+
+/**
+ * Whether a stretch has enough behind it to put a share on.
+ *
+ * Below the line the counts are still shown. They are the honest form of
+ * the same fact: nine of twenty-four says everything the percentage said
+ * and does not dress it as a finding.
+ */
+export const enoughToRate = (visits: number): boolean => visits >= ENOUGH_TO_RATE
+
 /** Opened often, finished rarely — something is wrong with the piece. */
 export const DEAD_END_RATE = 0.25
 
