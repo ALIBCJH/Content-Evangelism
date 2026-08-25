@@ -20,6 +20,7 @@ interface ManagedArticle {
   authorName: string
   body: string
   imageUrl?: string
+  thumbnailUrl?: string
   imageAlt?: string
   tags?: string[]
   status?: 'pending' | 'published'
@@ -96,6 +97,7 @@ export default function AdminPage() {
   const [body, setBody] = React.useState('')
   const [authorName, setAuthorName] = React.useState('')
   const [imageUrl, setImageUrl] = React.useState('')
+  const [thumbnailUrl, setThumbnailUrl] = React.useState('')
   const [imageAlt, setImageAlt] = React.useState('')
   const [tags, setTags] = React.useState('')
   /* A draft found in this browser from a previous sitting. Offered rather
@@ -134,6 +136,7 @@ export default function AdminPage() {
     body,
     authorName,
     imageUrl,
+    thumbnailUrl,
     imageAlt,
     tags,
   })
@@ -152,6 +155,7 @@ export default function AdminPage() {
     setBody(draft.body)
     setAuthorName(draft.authorName)
     setImageUrl(draft.imageUrl)
+    setThumbnailUrl(draft.thumbnailUrl ?? '')
     setImageAlt(draft.imageAlt)
     setTags(draft.tags)
     setHeld(null)
@@ -238,6 +242,7 @@ export default function AdminPage() {
     setBody(article.body)
     setAuthorName(article.authorName)
     setImageUrl(article.imageUrl ?? '')
+    setThumbnailUrl(article.thumbnailUrl ?? '')
     setImageAlt(article.imageAlt ?? '')
     setTags((article.tags ?? []).join(', '))
     setStatus('idle'); setError(null); setPublishedUrl(null)
@@ -255,7 +260,7 @@ export default function AdminPage() {
         /* No Authorization header. The browser carries the session set at
            the door, and the server turns it back into this desk's key. */
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, category, dek, body, authorName, imageUrl, imageAlt, tags }),
+        body: JSON.stringify({ title, category, dek, body, authorName, imageUrl, thumbnailUrl, imageAlt, tags }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -645,6 +650,27 @@ export default function AdminPage() {
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="https://… or /images/…" className="mt-2"
                   />
+                  <p className="mt-2 font-sans text-xs text-ink-subtle">
+                    Shown at the head of the teaching, whole and uncropped — a portrait poster is
+                    fine here.
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="a-thumb" className={fieldLabel}>
+                    Listing crop (optional)
+                  </label>
+                  <Input
+                    id="a-thumb" value={thumbnailUrl}
+                    onChange={(e) => setThumbnailUrl(e.target.value)}
+                    placeholder="/images/…-wide.jpg" className="mt-2"
+                  />
+                  {/* The poster is the wrong shape for a row and carries
+                      its headline inside it; cropped to a hundred-pixel
+                      band that becomes a smear of type. */}
+                  <p className="mt-2 font-sans text-xs text-ink-subtle">
+                    A wide crop with no words in it, for the archive rows. Left empty, the listing
+                    uses the image above, and failing that the section&apos;s own mark.
+                  </p>
                 </div>
                 <div>
                   <label htmlFor="a-image-alt" className={fieldLabel}>What the image shows</label>

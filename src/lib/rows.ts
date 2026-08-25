@@ -21,6 +21,8 @@ export interface RealRow {
   updatedAt?: string
   readMinutes: number
   imageUrl?: string
+  /** A landscape crop for listings; see PostedArticle.thumbnailUrl. */
+  thumbnailUrl?: string
   imageAlt?: string
   /** Normalised at the store; always an array here, empty if none. */
   tags: string[]
@@ -54,6 +56,7 @@ export async function listRealRows(): Promise<RealRow[]> {
     ...(a.updatedAt ? { updatedAt: a.updatedAt } : {}),
     readMinutes: a.readMinutes,
     imageUrl: a.imageUrl,
+    ...(a.thumbnailUrl ? { thumbnailUrl: a.thumbnailUrl } : {}),
     imageAlt: a.imageAlt,
     tags: a.tags ?? [],
     art: categoryArt[a.category],

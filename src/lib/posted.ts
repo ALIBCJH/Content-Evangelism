@@ -69,6 +69,21 @@ export interface PostedArticle {
   /** Plain text. Blank line = new paragraph; a line starting with "## " = subheading. */
   body: string
   imageUrl?: string
+  /**
+   * A landscape crop for listings, where one exists.
+   *
+   * The ministry's own artwork is a portrait poster with the headline
+   * set into the picture. That is right for the head of a piece and
+   * unusable in a listing row, where the mark is a hundred-odd pixels
+   * wide: cropping a portrait poster to a landscape band cuts the words
+   * out of the middle of the artwork and leaves a smear of type.
+   *
+   * So a teaching may carry two pictures — the poster, and a clean
+   * landscape crop with no words in it. Absent, a listing falls back to
+   * the poster and then to the section's own field; the head of a piece
+   * always shows the poster.
+   */
+  thumbnailUrl?: string
   /** What the image shows, for screen readers and image search. */
   imageAlt?: string
   /**
@@ -118,6 +133,7 @@ export interface ArticleInput {
   authorId?: string
   body: string
   imageUrl?: string
+  thumbnailUrl?: string
   imageAlt?: string
   tags?: string[]
 }
@@ -504,6 +520,7 @@ export async function createPostedArticle(
     ...(input.authorId ? { authorId: input.authorId } : {}),
     body: input.body,
     imageUrl: input.imageUrl,
+    ...(input.thumbnailUrl ? { thumbnailUrl: input.thumbnailUrl } : {}),
     imageAlt: input.imageAlt,
     ...(input.tags?.length ? { tags: input.tags } : {}),
     publishedAt: now,
@@ -770,6 +787,7 @@ export function validateInput(
   const authorName = String(payload.authorName ?? '').trim() || 'The Editorial Desk'
   const category = String(payload.category ?? '') as Category
   const imageUrl = String(payload.imageUrl ?? '').trim()
+  const thumbnailUrl = String(payload.thumbnailUrl ?? '').trim()
   const imageAlt = String(payload.imageAlt ?? '').trim()
   const tags = normaliseTags(payload.tags)
 
@@ -785,6 +803,7 @@ export function validateInput(
     return { error: `A byline may not exceed ${NAME_MAX} characters.` }
   }
   if (imageUrl.length > URL_MAX) return { error: 'That image URL is too long.' }
+  if (thumbnailUrl.length > URL_MAX) return { error: 'That thumbnail URL is too long.' }
   if (imageAlt.length > DEK_MAX) return { error: 'That image description is too long.' }
   if (!CATEGORIES.includes(category)) {
     return { error: `Category must be one of: ${CATEGORIES.join(', ')}.` }
@@ -807,6 +826,7 @@ export function validateInput(
     input: {
       title, dek, category, authorName, body,
       imageUrl: imageUrl || undefined,
+      thumbnailUrl: thumbnailUrl || undefined,
       imageAlt: imageAlt || undefined,
       ...(tags.length > 0 ? { tags } : {}),
     },
