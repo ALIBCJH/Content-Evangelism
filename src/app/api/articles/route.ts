@@ -6,12 +6,14 @@ import {
   createPostedArticle,
   listPostedArticles,
   validateInput,
+  wroteIt,
 } from '@/lib/posted'
 import { revalidatePublished } from '@/lib/revalidate'
 import { listWriters } from '@/lib/writers'
 
 /**
- * The byline a request may use.
+ * Who a request may file a piece under: the byline, and the identity
+ * behind it.
  *
  * A signed-in writer gets their own name, whatever the form sent — the
  * byline is who wrote it, and a field somebody types is a field somebody
@@ -21,13 +23,33 @@ import { listWriters } from '@/lib/writers'
  *
  * A Bearer token is the ministry rather than a person, and keeps the
  * byline it sent — the public API is a contract, and a script posting on
- * behalf of a named contributor must still be able to say so.
+ * behalf of a named contributor must still be able to say so. It still
+ * gets an id when that byline is exactly a registered writer's name: the
+ * ministry filing a piece for somebody on the register is attributing it
+ * to them, and the record should say so rather than leaving the link to
+ * be guessed from the spelling later.
+ *
+ * The id is never read from the request. A caller who could send one
+ * could send anybody's, which would put a writer's name on work they did
+ * not write — the same hole the stamped byline closed, one field along.
  */
-async function bylineFor(request: Request, asked: string): Promise<string> {
+async function attributionFor(
+  request: Request,
+  asked: string
+): Promise<{ authorName: string; authorId?: string }> {
+  const writers = await listWriters()
   const session = await deskSession(request)
-  if (!session?.writer) return asked
-  const writer = (await listWriters()).find((held) => held.id === session.writer && held.active)
-  return writer?.name ?? asked
+
+  if (session?.writer) {
+    const writer = writers.find((held) => held.id === session.writer && held.active)
+    if (writer) return { authorName: writer.name, authorId: writer.id }
+  }
+
+  /* An exact name, not a loose one. "simon juma" matching Simon Juma
+     would be the free-text byline deciding who somebody is all over
+     again, and the desk stamps the spelling anyway. */
+  const named = writers.find((held) => held.name === asked)
+  return named ? { authorName: asked, authorId: named.id } : { authorName: asked }
 }
 
 export const dynamic = 'force-dynamic'
@@ -57,7 +79,7 @@ export async function GET(request: Request) {
       : undefined
     /* A session that is not a person has no "own work", and is given the
        site rather than everybody's drafts. */
-    const mine = writer ? articles.filter((a) => a.authorName === writer.name) : []
+    const mine = writer ? articles.filter((a) => wroteIt(a, writer)) : []
     return NextResponse.json({ articles: mine, writer: writer?.name ?? null })
   }
 
@@ -80,8 +102,8 @@ export async function POST(request: Request) {
   const { error, input } = validateInput(payload)
   if (error || !input) return NextResponse.json({ error }, { status: 400 })
 
-  const authorName = await bylineFor(request, input.authorName)
-  const result = await createPostedArticle({ ...input, authorName }, await deskToken(request))
+  const attribution = await attributionFor(request, input.authorName)
+  const result = await createPostedArticle({ ...input, ...attribution }, await deskToken(request))
   if (!result.article) {
     const message = result.status === 401 ? 'Invalid posting key.' : result.error
     return NextResponse.json({ error: message }, { status: result.status })

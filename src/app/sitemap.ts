@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 import { altarEntries, altarPath } from '@/lib/altars'
 import { listAnswers } from '@/lib/questions'
 import { authorHref, siteUrl, topicHref } from '@/lib/content'
-import { authorDirectory, byName } from '@/lib/authors'
+import { authorDirectory, authorOfPiece } from '@/lib/authors'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import { listRealRows } from '@/lib/rows'
 import { absoluteUrl } from '@/lib/seo'
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const directory = await authorDirectory()
   const authorPages = new Map<string, string>()
   for (const row of rows) {
-    const author = byName(directory, row.authorName)
+    const author = authorOfPiece(directory, row)
     if (!author) continue
     const href = authorHref(author)
     if (!authorPages.has(href)) authorPages.set(href, row.publishedAt)

@@ -51,6 +51,21 @@ export interface PostedArticle {
   dek: string
   category: Category
   authorName: string
+  /**
+   * Who wrote it, as an entry in the writer registry — the identity
+   * behind the byline rather than the spelling of it.
+   *
+   * Absent for everything written before the site had people, and for
+   * anything the ministry's own keys post under a name that belongs to
+   * nobody on the register. Absent therefore means "resolve by name",
+   * which is what the whole site did until now; it does not mean
+   * unattributed. `wroteIt` is the one place that distinction lives.
+   *
+   * The point of holding an id beside the name is that a name is not an
+   * identity. Two writers may share one, and a writer whose name is
+   * corrected would otherwise be severed from everything they wrote.
+   */
+  authorId?: string
   /** Plain text. Blank line = new paragraph; a line starting with "## " = subheading. */
   body: string
   imageUrl?: string
@@ -94,6 +109,13 @@ export interface ArticleInput {
   dek: string
   category: Category
   authorName: string
+  /**
+   * Never taken from the request body — `validateInput` does not read
+   * it. It is stamped by the route from the session, for the same reason
+   * the byline is: an attribution a caller can type is an attribution a
+   * caller can put somebody else's name on.
+   */
+  authorId?: string
   body: string
   imageUrl?: string
   imageAlt?: string
@@ -442,6 +464,26 @@ export function isLive(article: Pick<PostedArticle, 'status'>): boolean {
   return article.status !== 'pending'
 }
 
+/**
+ * Whether a given writer wrote a given piece.
+ *
+ * Two rules, and the order matters. A piece that carries an `authorId`
+ * is answered by the id alone — if the id is somebody else's, a matching
+ * name is a coincidence and not authorship. Only a piece with no id
+ * falls back to the name, which is everything written before the site
+ * had people.
+ *
+ * Doing it the other way round would let a writer named the same as
+ * another see work that is not theirs, which is the exact failure the id
+ * was added to close.
+ */
+export function wroteIt(
+  article: Pick<PostedArticle, 'authorId' | 'authorName'>,
+  writer: { id: string; name: string }
+): boolean {
+  return article.authorId ? article.authorId === writer.id : article.authorName === writer.name
+}
+
 export async function createPostedArticle(
   input: ArticleInput,
   token: string
@@ -459,6 +501,7 @@ export async function createPostedArticle(
     dek: input.dek,
     category: input.category,
     authorName: input.authorName,
+    ...(input.authorId ? { authorId: input.authorId } : {}),
     body: input.body,
     imageUrl: input.imageUrl,
     imageAlt: input.imageAlt,

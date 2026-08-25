@@ -7,7 +7,7 @@ import {
   siteInfo,
   siteUrl,
 } from '@/lib/content'
-import { findAuthorByName } from '@/lib/authors'
+import { findAuthorOfPiece } from '@/lib/authors'
 import { getPostedArticle, listPostedArticles } from '@/lib/posted'
 import { listRealRows, relatedRows } from '@/lib/rows'
 import { bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const article = await getPostedArticle(params.slug)
   if (!article) return { title: 'Article not found', robots: { index: false, follow: false } }
 
-  const author = await findAuthorByName(article.authorName)
+  const author = await findAuthorOfPiece(article)
   return {
     title: article.title,
     description: article.dek,
@@ -91,7 +91,7 @@ export default async function PostedArticlePage({ params }: Params) {
   )
 
   const url = `${siteUrl}/articles/${article.slug}`
-  const author = await findAuthorByName(article.authorName)
+  const author = await findAuthorOfPiece(article)
   const image = article.imageUrl
     ? await schemaImage(article.imageUrl, article.imageAlt)
     : null

@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { Posted } from '@/components/posted'
 import Link from 'next/link'
 import type { ArchiveItem } from '@/lib/archive-items'
 
@@ -27,7 +28,7 @@ export function PieceCard({
   return (
     <article className="card card-interactive relative p-5">
       <p className="kicker text-ink-subtle">
-        <time dateTime={item.publishedAt}>{item.dated}</time> · {item.category} ·{' '}
+        <Posted iso={item.publishedAt} dated={item.dated} /> · {item.category} ·{' '}
         <span className="tabular">{item.readMinutes}</span> min
       </p>
 
