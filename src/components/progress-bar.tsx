@@ -41,6 +41,37 @@ export function progressThrough({
   return Math.min(1, Math.max(0, (scrollY - top) / run))
 }
 
+/**
+ * How much of a teaching is left, in minutes.
+ *
+ * The bar says how far a reader has come, which is the past and is not a
+ * thing anybody is deciding about. What they are deciding is whether to
+ * carry on, and that turns on what it costs — so the number to show is
+ * the one that answers it.
+ *
+ * Rounded up, and never to zero while there is anything left: "1 min
+ * left" on the last stretch is honest, and "0 min left" in front of three
+ * remaining paragraphs is the site telling a reader something they can
+ * see is untrue.
+ */
+export function minutesLeft(readMinutes: number, progress: number): number {
+  const left = readMinutes * (1 - Math.min(1, Math.max(0, progress)))
+  return Math.max(1, Math.ceil(left))
+}
+
+/**
+ * Whether the number is worth showing at all.
+ *
+ * Not at the top, where it would be the reading time the piece already
+ * prints under its own headline, said again in a floating label. Not at
+ * the end, where a reader a paragraph from finishing does not need to be
+ * told to keep going — and where a badge would sit over the last lines
+ * of the teaching. In between, where somebody is actually deciding.
+ */
+export function showsTimeLeft(progress: number): boolean {
+  return progress > 0.06 && progress < 0.93
+}
+
 export function ReadingProgress({
   piece,
   target,
@@ -134,12 +165,35 @@ export function ReadingProgress({
     }
   }, [piece])
 
+  const left = piece ? minutesLeft(piece.readMinutes, progress) : 0
+  const showing = Boolean(piece) && showsTimeLeft(progress)
+
   return (
-    <div aria-hidden className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-transparent">
-      <div
-        className="h-full bg-gold transition-[width] duration-100 ease-linear"
-        style={{ width: `${progress * 100}%` }}
-      />
-    </div>
+    <>
+      <div aria-hidden className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-transparent">
+        <div
+          className="h-full bg-gold transition-[width] duration-100 ease-linear"
+          style={{ width: `${progress * 100}%` }}
+        />
+      </div>
+
+      {/* Announced rather than drawn only: a reader who cannot see the
+          label is the reader most helped by knowing how much is left, and
+          `polite` means it waits for a gap rather than interrupting. It
+          changes at most once a minute of reading, so it does not chatter. */}
+      {piece && (
+        <p
+          /* Under the masthead, which is sticky and 72px tall, and behind
+             it in the stack — so if the two ever meet, the masthead
+             wins rather than being written over by a badge. */
+          className={`time-left fixed right-4 top-[5.25rem] z-40 rounded-chip border border-hairline bg-surface/92 px-2.5 py-1 font-apparatus text-[0.6875rem] font-semibold uppercase tracking-kicker text-ink-muted shadow-sm backdrop-blur transition-opacity duration-300 sm:right-6 ${
+            showing ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          aria-live="polite"
+        >
+          {showing ? `${left} min left` : ''}
+        </p>
+      )}
+    </>
   )
 }

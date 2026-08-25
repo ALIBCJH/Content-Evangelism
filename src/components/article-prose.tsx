@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { ArticleDiagram } from '@/components/article-diagram'
 import { SharePassage } from '@/components/share-passage'
+import { platedQuotes } from '@/lib/scripture-rhythm'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
 import { embedSrc, watchHref } from '@/lib/youtube'
 
@@ -118,6 +119,9 @@ export function ArticleProse({
   links?: Record<string, ProseLink>
 }) {
   const blocks = parseBody(body)
+  /* Computed once for the piece rather than per block: the rule is about
+     the distance between passages, so it needs the whole of it in hand. */
+  const plated = platedQuotes(blocks)
   let firstParagraphSeen = false
 
   return (
@@ -143,10 +147,32 @@ export function ArticleProse({
               </h2>
             )
 
-          case 'quote':
+          case 'quote': {
             /* Scripture is set apart on the page, not merely indented:
                a cream figure ruled in gold, with the citation beneath it
-               in the mono face every reference on this site is set in. */
+               in the mono face every reference on this site is set in.
+
+               Some passages are set on the plate instead — the navy
+               field the front page's lead card opens on. Which ones is
+               `platedQuotes`, and the whole of the reasoning is there:
+               they are the rest points in a long scroll, spaced far
+               enough apart to stay rests. */
+            if (plated.has(index)) {
+              return (
+                <figure key={index} className="scripture-plate plate-bleed my-10">
+                  <span aria-hidden className="plate-rule" />
+                  <span aria-hidden className="plate-mark">&ldquo;</span>
+                  <blockquote className="relative font-reading text-[1.25rem] font-normal italic leading-[1.5] sm:text-[1.4375rem]">
+                    <Inlines inlines={block.inlines} />
+                  </blockquote>
+                  {block.cite && (
+                    <figcaption className="plate-cite relative mt-4 font-apparatus text-[0.6875rem] font-medium uppercase tracking-[0.15em]">
+                      {block.cite}
+                    </figcaption>
+                  )}
+                </figure>
+              )
+            }
             return (
               <figure key={index} className="scripture my-9">
                 <blockquote className="mb-3.5 font-reading text-[1.1875rem] font-normal leading-[1.6] text-navy sm:text-[1.375rem]">
@@ -159,6 +185,7 @@ export function ArticleProse({
                 )}
               </figure>
             )
+          }
 
           case 'callout': {
             const tone = CALLOUT[block.tone]
