@@ -363,6 +363,53 @@ option {
   .shell { padding-inline: 20px; }
 }
 
+/* ── The desk ──────────────────────────────────────────────────────
+   The board's panels were `bg-surface`, which is a 3.5% wash of navy —
+   a tint of the same colour as the page, on a page already tinted with
+   it. Every panel therefore sat at almost exactly the ground's value,
+   and a board with no separation between a card and the paper under it
+   has no hierarchy at all: the numbers, the tables and the page were one
+   flat field. This is the site's actual card — real paper, ruled, lifted
+   off the ground a little — which is what the reader-facing pages have
+   used all along. */
+.desk-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.04), 0 8px 20px -16px rgb(var(--shadow-rgb) / 0.28);
+}
+
+/* A figure on the board. Set in the UI face rather than the display
+   serif: Fraunces is drawn for headlines and its numerals are
+   proportional and full of personality, which is the wrong quality for
+   a column of measurements that a reader is meant to compare down the
+   page rather than admire. Tabular, so digits line up between cards. */
+.desk-figure {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink-strong);
+}
+
+/* One chip for every state a piece can be in, so the board reads as one
+   system rather than three treatments that happen to share a row. */
+.desk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-family: var(--font-plex), system-ui, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 /* A card: the raised paper every panel on the site is cut from. */
 .cloth,
 .card {

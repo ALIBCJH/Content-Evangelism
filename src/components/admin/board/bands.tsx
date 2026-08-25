@@ -55,7 +55,7 @@ export function NeedsBand({ needs }: { needs: DeskNeeds }) {
           const body = (
             <>
               <span
-                className={`tabular block font-display text-[2rem] leading-none ${
+                className={`desk-figure block text-[2rem] ${
                   item.urgent ? 'text-gold' : 'text-ink-subtle'
                 }`}
               >
@@ -74,12 +74,12 @@ export function NeedsBand({ needs }: { needs: DeskNeeds }) {
               {item.href ? (
                 <Link
                   href={item.href}
-                  className="focus-ring block h-full rounded-2xl border border-hairline bg-surface px-5 py-4 transition-colors hover:border-gold/60"
+                  className="focus-ring block h-full desk-card px-5 py-4 transition-colors hover:border-gold/60"
                 >
                   {body}
                 </Link>
               ) : (
-                <div className="h-full rounded-2xl border border-hairline bg-surface px-5 py-4">
+                <div className="h-full desk-card px-5 py-4">
                   {body}
                 </div>
               )}
@@ -124,30 +124,56 @@ function Sparkline({ series }: { series: DayTotals[] }) {
   const width = 100
   const height = 28
 
-  const points = values
-    .map((value, index) => {
-      const x = values.length > 1 ? (index / (values.length - 1)) * width : width / 2
-      return `${x.toFixed(2)},${(height - (value / highest) * height).toFixed(2)}`
-    })
-    .join(' ')
+  const at = (index: number) =>
+    values.length > 1 ? (index / (values.length - 1)) * width : width / 2
+  /* One unit of headroom at each end, so the highest day is not clipped
+     by the stroke's own width and the lowest is not sitting on the axis. */
+  const upto = (value: number) => height - 1 - (value / highest) * (height - 2)
+
+  const points = values.map((value, index) => `${at(index).toFixed(2)},${upto(value).toFixed(2)}`).join(' ')
+  /* The same line closed down to the baseline. A bare stroke across a
+     card reads as a stray mark; the fill under it is what makes it a
+     chart, and it costs one path. */
+  const area = `${points} ${width},${height} 0,${height}`
+  const lastValue = values[values.length - 1] ?? 0
 
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="none"
-      className="mt-3 h-8 w-full"
-      role="img"
-      aria-label={`Visits over the last ${series.length} days, highest ${count(highest)} in a day`}
-    >
-      <polyline
-        points={points}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        vectorEffect="non-scaling-stroke"
-        className="text-gold"
+    /* The chart is drawn stretched — `preserveAspectRatio="none"`, so the
+       line spans the card whatever width it is given — and the marker for
+       the last day is therefore laid over it in HTML rather than drawn
+       inside it. A circle in a stretched viewBox is an ellipse, and a
+       teaching-desk chart with a squashed dot on the end of it is exactly
+       the kind of detail that makes a board look unfinished. */
+    <div className="relative mt-3 h-8 w-full">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+        className="h-full w-full text-gold"
+        role="img"
+        aria-label={`Visits over the last ${series.length} days, highest ${count(highest)} in a day`}
+      >
+        {/* `currentColor` at an opacity, rather than a fill utility: the
+            fill is the same gold as the line and must not drift from it. */}
+        <polygon points={area} fill="currentColor" opacity="0.14" />
+        <polyline
+          points={points}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {/* Where the line ended, which is what a reader of this card is
+          actually asking. Always the right-hand edge, so only the height
+          has to be worked out. */}
+      <span
+        aria-hidden
+        className="absolute right-0 h-[7px] w-[7px] -translate-y-1/2 translate-x-1/2 rounded-full bg-gold ring-2 ring-card"
+        style={{ top: `${(upto(lastValue) / height) * 100}%` }}
       />
-    </svg>
+    </div>
   )
 }
 
@@ -175,9 +201,9 @@ export function StretchBand({
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-hairline bg-surface px-5 py-4">
+        <div className="desk-card px-5 py-4">
           <span className="kicker block text-ink-subtle">Visits</span>
-          <span className="tabular mt-2 block font-display text-[2rem] leading-none text-ink-strong">
+          <span className="desk-figure mt-2 block text-[2rem]">
             {count(summary.visits)}
           </span>
           <span className="mt-2 block">
@@ -187,9 +213,9 @@ export function StretchBand({
           <Sparkline series={series} />
         </div>
 
-        <div className="rounded-2xl border border-hairline bg-surface px-5 py-4">
+        <div className="desk-card px-5 py-4">
           <span className="kicker block text-ink-subtle">Time spent reading</span>
-          <span className="tabular mt-2 block font-display text-[2rem] leading-none text-ink-strong">
+          <span className="desk-figure mt-2 block text-[2rem]">
             {duration(summary.seconds)}
           </span>
           <span className="mt-2 block">
@@ -198,9 +224,9 @@ export function StretchBand({
           </span>
         </div>
 
-        <div className="rounded-2xl border border-hairline bg-surface px-5 py-4">
+        <div className="desk-card px-5 py-4">
           <span className="kicker block text-ink-subtle">Read to the end</span>
-          <span className="tabular mt-2 block font-display text-[2rem] leading-none text-ink-strong">
+          <span className="desk-figure mt-2 block text-[2rem]">
             {percent(summary.finishRate)}
           </span>
           <span className="mt-2 block font-sans text-xs leading-relaxed text-ink-subtle">
@@ -208,9 +234,9 @@ export function StretchBand({
           </span>
         </div>
 
-        <div className="rounded-2xl border border-hairline bg-surface px-5 py-4">
+        <div className="desk-card px-5 py-4">
           <span className="kicker block text-ink-subtle">Average sitting</span>
-          <span className="tabular mt-2 block font-display text-[2rem] leading-none text-ink-strong">
+          <span className="desk-figure mt-2 block text-[2rem]">
             {summary.visits > 0 ? duration(summary.seconds / summary.visits) : '—'}
           </span>
           <span className="mt-2 block font-sans text-xs leading-relaxed text-ink-subtle">
@@ -239,7 +265,7 @@ function ScreenSplit({ summary }: { summary: WindowSummary }) {
 
   if (counted === 0) {
     return (
-      <p className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-4 font-sans text-sm leading-relaxed text-ink-muted">
+      <p className="mt-4 desk-card px-5 py-4 font-sans text-sm leading-relaxed text-ink-muted">
         No screens counted yet in this stretch. The split is recorded from the moment a page opens,
         so it fills in as the site is read — visits counted before it shipped carry no screen.
       </p>
@@ -247,18 +273,18 @@ function ScreenSplit({ summary }: { summary: WindowSummary }) {
   }
 
   return (
-    <div className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-4">
+    <div className="mt-4 desk-card px-5 py-4">
       <span className="kicker block text-ink-subtle">Read on</span>
 
       <div className="mt-3 flex items-baseline gap-6">
         <span>
-          <span className="tabular font-display text-[2rem] leading-none text-ink-strong">
+          <span className="desk-figure text-[2rem]">
             {percent(smallShare)}
           </span>
           <span className="ml-2 font-sans text-sm font-semibold text-ink-strong">on a phone</span>
         </span>
         <span>
-          <span className="tabular font-display text-[1.375rem] leading-none text-ink-muted">
+          <span className="desk-figure text-[1.375rem] !text-ink-muted">
             {percent(1 - smallShare)}
           </span>
           <span className="ml-2 font-sans text-sm text-ink-muted">on a wide screen</span>
@@ -273,6 +299,10 @@ function ScreenSplit({ summary }: { summary: WindowSummary }) {
         aria-label={`${percent(smallShare)} of counted visits opened on a narrow screen`}
       >
         <span className="bg-gold" style={{ width: `${smallShare * 100}%` }} />
+        {/* Two fills meeting edge to edge read as one bar changing
+            colour. A sliver of the surface between them is what makes
+            them two. */}
+        <span className="w-[2px] shrink-0 bg-card" />
         <span className="flex-1 bg-plate-soft" />
       </div>
 
@@ -317,7 +347,7 @@ export function PartsBand({
           glanced at and left.
         </p>
         {parts.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-4 font-sans text-sm text-ink-muted">
+          <p className="mt-4 desk-card px-5 py-4 font-sans text-sm text-ink-muted">
             Nothing counted in this stretch yet.
           </p>
         ) : (
@@ -354,11 +384,11 @@ export function PartsBand({
           The invitations on the page, and how often each was taken.
         </p>
         {clicks.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-hairline bg-surface px-5 py-4 font-sans text-sm text-ink-muted">
+          <p className="mt-4 desk-card px-5 py-4 font-sans text-sm text-ink-muted">
             Nothing counted in this stretch yet.
           </p>
         ) : (
-          <ul className="mt-4 divide-y divide-hairline rounded-2xl border border-hairline bg-surface">
+          <ul className="mt-4 divide-y divide-hairline desk-card">
             {clicks.map((click) => (
               <li
                 key={click.label}
@@ -389,7 +419,7 @@ export function HealthBand({
       <h2 id="band-health" className="font-display text-xl text-ink-strong">
         The machinery
       </h2>
-      <ul className="mt-4 divide-y divide-hairline rounded-2xl border border-hairline bg-surface">
+      <ul className="mt-4 divide-y divide-hairline desk-card">
         {notes.map((note) => (
           <li key={note.note} className="flex items-start gap-3 px-5 py-3">
             <span

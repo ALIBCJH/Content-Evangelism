@@ -233,7 +233,7 @@ export default function QuestionsPage() {
   const count = (status: QuestionStatus) => all.filter((q) => q.status === status).length
 
   return (
-    <main className="shell pb-24 pt-10">
+    <main className="shell max-w-[64rem] pb-24 pt-10">
       <p className="kicker mb-4 text-ink-subtle">
         <Link href="/admin" className="hover:text-gold">
           The desk

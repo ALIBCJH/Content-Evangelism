@@ -58,21 +58,43 @@ function sorted(rows: PieceRow[], key: SortKey, ascending: boolean): PieceRow[] 
   return copy
 }
 
+/**
+ * Where a piece stands, as one chip.
+ *
+ * These were three different treatments: a gold pill for waiting, and
+ * bare coloured words for verified and unverified. Three states of one
+ * thing, drawn three ways, read as three unrelated notes rather than as
+ * one column a reviewer can run their eye down — so they are one chip
+ * now, and only the colour changes.
+ *
+ * The dot carries the state as well as the colour does, which is what
+ * keeps the column readable to somebody who cannot separate the green
+ * from the amber.
+ */
 function Status({ row }: { row: PieceRow }) {
-  if (row.status === 'pending') {
-    return (
-      <span className="rounded-chip bg-gold/15 px-2 py-0.5 font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-gold">
-        {row.review ? 'Sent back' : 'Waiting'}
-      </span>
-    )
-  }
-  return row.verified ? (
-    <span className="font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-success">
-      Verified
-    </span>
-  ) : (
-    <span className="font-sans text-[0.6875rem] font-bold uppercase tracking-kicker text-status-warning">
-      Unverified
+  const state =
+    row.status === 'pending'
+      ? {
+          label: row.review ? 'Sent back' : 'Waiting',
+          chip: 'border-gold/35 bg-gold/12 text-gold-ink',
+          dot: 'bg-gold',
+        }
+      : row.verified
+        ? {
+            label: 'Verified',
+            chip: 'border-status-success/30 bg-status-success/10 text-status-success',
+            dot: 'bg-status-success',
+          }
+        : {
+            label: 'Unverified',
+            chip: 'border-status-warning/30 bg-status-warning/10 text-status-warning',
+            dot: 'bg-status-warning',
+          }
+
+  return (
+    <span className={`desk-chip ${state.chip}`}>
+      <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${state.dot}`} />
+      {state.label}
     </span>
   )
 }
@@ -194,7 +216,7 @@ export function PiecesTable({
 
       {/* The table scrolls inside its own box rather than pushing the page
           sideways — at 390px five columns do not fit and never will. */}
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-hairline bg-surface">
+      <div className="mt-4 overflow-x-auto desk-card">
         <table className="w-full min-w-[46rem] border-collapse">
           <thead>
             <tr className="border-b border-hairline">{COLUMNS.map(head)}</tr>
@@ -331,7 +353,7 @@ function SectionBreakdown({ row, actions }: { row: PieceRow; actions?: React.Rea
       )}
 
       {row.review && (
-        <p className="mt-4 rounded-2xl border border-hairline bg-surface px-4 py-3 font-sans text-sm text-ink-muted">
+        <p className="mt-4 desk-card px-4 py-3 font-sans text-sm text-ink-muted">
           <span className="kicker mb-1 block text-ink-subtle">Sent back</span>
           {row.review.note}
         </p>

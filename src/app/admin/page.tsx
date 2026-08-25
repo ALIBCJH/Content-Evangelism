@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Check, Eye, EyeOff, Feather, LoaderCircle, Pencil, UserRound, X } from 'lucide-react'
+import { ArrowRight, Check, Eye, EyeOff, LoaderCircle, Pencil, UserRound, X } from 'lucide-react'
 import { CATEGORIES } from '@/lib/content'
 import { postedWhen } from '@/lib/when'
 import { ArticleProse } from '@/components/article-prose'
@@ -58,9 +58,9 @@ function StandingTile({
   urgent: boolean
 }) {
   return (
-    <div className="rounded-2xl border border-hairline bg-surface px-5 py-4">
+    <div className="desk-card px-5 py-4">
       <p
-        className={`tabular font-display text-[1.75rem] leading-none ${
+        className={`desk-figure text-[1.75rem] ${
           urgent ? 'text-gold' : 'text-ink-strong'
         }`}
       >
@@ -283,22 +283,26 @@ export default function AdminPage() {
      draft they were holding is only saved because something else saves
      it. What is left above the writing is the way out of the desk. */
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
-        {/* ── Desk header ─────────────────────────────────────── */}
-        <header className="flex flex-col items-center text-center">
-          <span className="grid h-12 w-12 place-items-center rounded-full border border-gold/40 bg-gold/10">
-            <Feather className="h-5 w-5 text-gold" strokeWidth={1.5} />
-          </span>
-          <h1 className="mt-4 font-display text-3xl font-semibold text-ink-strong md:text-4xl">
-            The Posting Desk
-          </h1>
-          <p className="mt-3 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
-            {me ? `${me.name}'s desk. ` : ''}Nothing sent from here reaches a reader until the
-            review desk approves it — so write freely, and send it when it is ready.
-          </p>
+    <main className="shell max-w-[64rem] pb-24 pt-10">
+        {/* ── Desk header ─────────────────────────────────────────
+            The same shape as the review desk's: title left, standfirst
+            under it, anything else on the right of the same line. It was
+            centred, under a feather medallion, which made two pages of
+            one application look like two applications — and the bar
+            above now carries the identity the medallion was carrying. */}
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl font-semibold text-ink-strong md:text-4xl">
+              The posting desk
+            </h1>
+            <p className="mt-3 max-w-prose font-sans text-sm leading-relaxed text-ink-muted">
+              {me ? `${me.name}'s desk. ` : ''}Nothing sent from here reaches a reader until the
+              review desk approves it — so write freely, and send it when it is ready.
+            </p>
+          </div>
 
           {senior && (
-            <p className="mt-5 font-sans text-sm text-ink-muted">
+            <p className="font-sans text-sm text-ink-muted">
               <Link href="/admin/questions" className="transition-colors hover:text-gold">
                 Answer questions from readers →
               </Link>
