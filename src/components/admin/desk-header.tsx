@@ -50,7 +50,15 @@ export function DeskHeader() {
   const [who, setWho] = React.useState<string | null>(null)
   const [busy, setBusy] = React.useState(false)
 
+  /* The bar draws nothing at the door, and must not ask who is there
+     either: the effect runs before the early return below can stop it,
+     so without this every visit to the login page fires a request that
+     is answered 401 by design and logs an error in the console of
+     anybody who opens one. */
+  const atTheDoor = pathname === '/admin/login'
+
   React.useEffect(() => {
+    if (atTheDoor) return
     let alive = true
     void (async () => {
       try {
@@ -71,7 +79,7 @@ export function DeskHeader() {
     return () => {
       alive = false
     }
-  }, [])
+  }, [atTheDoor])
 
   const signOut = async () => {
     setBusy(true)
@@ -85,7 +93,7 @@ export function DeskHeader() {
   }
 
   /* Nothing to navigate, and nothing to sign out of, at the door. */
-  if (pathname === '/admin/login') return null
+  if (atTheDoor) return null
 
   const open = DESKS.filter((desk) => !desk.review || role === 'reviewer')
 
@@ -129,7 +137,11 @@ export function DeskHeader() {
                 )}
               >
                 <Icon aria-hidden className="h-[0.9375rem] w-[0.9375rem]" strokeWidth={1.9} />
-                <span className="hidden sm:inline">{desk.label}</span>
+                {/* Hidden to the eye on a narrow bar, never to a screen
+                    reader: `hidden` is `display:none`, which takes the
+                    label out of the accessibility tree and leaves the
+                    link with no name at all beside an aria-hidden icon. */}
+                <span className="sr-only sm:not-sr-only">{desk.label}</span>
               </Link>
             )
           })}
@@ -159,7 +171,7 @@ export function DeskHeader() {
           className="focus-ring icon-only inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 font-sans text-xs font-bold uppercase tracking-kicker text-ink-subtle transition-colors hover:text-gold disabled:opacity-50"
         >
           <LogOut aria-hidden className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Sign out</span>
+          <span className="sr-only sm:not-sr-only">Sign out</span>
         </button>
       </div>
     </header>
