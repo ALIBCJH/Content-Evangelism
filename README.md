@@ -327,6 +327,21 @@ address per ten minutes.
 
 ## What a reader gets
 
+**The board does not print a share it cannot support.** It already
+refused to accuse a single teaching of losing readers on fewer than
+twenty readings, and then printed a site-wide finish rate off twenty-four
+visits — 38%, which is nine readers, and 42% if one more reaches the foot
+of a page. A standard of evidence held to a teaching and not to the board
+itself is not a standard.
+
+`ENOUGH_TO_RATE` is the floor for a share, and it is deliberately not
+`ENOUGH_TO_JUDGE`: twenty readings is the bar for one piece, and far too
+low for a proportion the whole board rests on. Below it the counts are
+shown instead — "9 of 24" says everything the percentage said without
+dressing it as a finding. The screen split is held to the same line,
+which it was not: one visit drew a confident "0% on a phone" with the
+correction in grey underneath.
+
 **A teaching already on the site can be checked.** The verified mark was
 set by approving, and approving is the door onto the site — so every
 teaching published before there was a review desk to publish it through

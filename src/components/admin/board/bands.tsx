@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react'
 import type { DayTotals } from '@/lib/insight-shape'
-import type { DeskNeeds, PartRow, WindowSummary } from '@/lib/desk-overview'
+import { enoughToRate, type DeskNeeds, type PartRow, type WindowSummary } from '@/lib/desk-overview'
 import { CLICK_WORDS, change, count, duration, percent } from './format'
 
 /* ── Band 1 · What needs you now ──────────────────────────────────── */
@@ -226,12 +226,33 @@ export function StretchBand({
 
         <div className="desk-card px-5 py-4">
           <span className="kicker block text-ink-subtle">Read to the end</span>
-          <span className="desk-figure mt-2 block text-[2rem]">
-            {percent(summary.finishRate)}
-          </span>
-          <span className="mt-2 block font-sans text-xs leading-relaxed text-ink-subtle">
-            {count(summary.finished)} of {count(summary.visits)} visits reached the foot of the page.
-          </span>
+          {/* A rate only where there is enough behind it to mean one. The
+              board refuses to judge a single teaching on fewer than
+              ENOUGH_TO_JUDGE readings; the same standard applies to the
+              whole site, or it is not a standard. Below the line the
+              counts say everything the percentage said, without dressing
+              it as a finding. */}
+          {enoughToRate(summary.visits) ? (
+            <>
+              <span className="desk-figure mt-2 block text-[2rem]">
+                {percent(summary.finishRate)}
+              </span>
+              <span className="mt-2 block font-sans text-xs leading-relaxed text-ink-subtle">
+                {count(summary.finished)} of {count(summary.visits)} visits reached the foot of the
+                page.
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="desk-figure mt-2 block text-[1.5rem]">
+                {count(summary.finished)} of {count(summary.visits)}
+              </span>
+              <span className="mt-2 block font-sans text-xs leading-relaxed text-ink-subtle">
+                Visits that reached the foot of the page. Too few yet to put a rate on — one more
+                reader would move it several points.
+              </span>
+            </>
+          )}
         </div>
 
         <div className="desk-card px-5 py-4">
@@ -263,11 +284,18 @@ export function StretchBand({
 function ScreenSplit({ summary }: { summary: WindowSummary }) {
   const { counted, small, large, smallShare, unattributed } = summary.screens
 
-  if (counted === 0) {
+  /* A share needs enough behind it to be a share. One visit drew a
+     confident "0% on a phone" with the correction in grey underneath —
+     the same fault the finish rate had, in the same band. */
+  if (!enoughToRate(counted)) {
     return (
-      <p className="mt-4 desk-card px-5 py-4 font-sans text-sm leading-relaxed text-ink-muted">
-        No screens counted yet in this stretch. The split is recorded from the moment a page opens,
-        so it fills in as the site is read — visits counted before it shipped carry no screen.
+      <p className="desk-card mt-4 px-5 py-4 font-sans text-sm leading-relaxed text-ink-muted">
+        {counted === 0
+          ? 'No screens counted yet in this stretch.'
+          : `Only ${count(counted)} ${counted === 1 ? 'visit has' : 'visits have'} a screen recorded so far — too few to put a share on.`}{' '}
+        The split is recorded from the moment a page opens, so it fills in as the site is read;
+        visits counted before it shipped carry no screen.
+        {unattributed > 0 && ` ${count(unattributed)} here ${unattributed === 1 ? 'is' : 'are'} from before.`}
       </p>
     )
   }

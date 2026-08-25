@@ -118,7 +118,7 @@ describe('what the board draws', () => {
     )
 
   it('shows the share, and both counts behind it', () => {
-    const html = band([day({ views: 10, small: 8, large: 2 })])
+    const html = band([day({ views: 200, small: 160, large: 40 })])
     expect(html).toContain('80%')
     expect(html).toContain('on a phone')
     expect(html).toContain('on a wide screen')
@@ -128,7 +128,7 @@ describe('what the board draws', () => {
      should not have to work out why the split does not add up to the
      visits above it. */
   it('says how many visits predate the split rather than hiding them', () => {
-    const html = band([day({ views: 60, small: 8, large: 2 })])
+    const html = band([day({ views: 200, small: 100, large: 50 })])
     expect(html).toContain('50')
     expect(html).toMatch(/not in\s+this split/)
   })
@@ -137,5 +137,42 @@ describe('what the board draws', () => {
     const html = band([day({ views: 40 })])
     expect(html).toContain('No screens counted yet')
     expect(html).not.toContain('on a phone')
+  })
+})
+
+describe('a share needs enough behind it', () => {
+  const band = (series: DayTotals[]) =>
+    renderToStaticMarkup(
+      <StretchBand summary={summarise(series, [])} series={series} days={30} />
+    )
+
+  /* The board refuses to judge one teaching on fewer than ENOUGH_TO_JUDGE
+     readings. It printed a site-wide finish rate off twenty-four visits
+     all the same — a standard held to a teaching and not to itself. */
+  it('gives counts rather than a finish rate below the line', () => {
+    const html = band([day({ views: 24, finished: 9, small: 24 })])
+    expect(html).toContain('9 of 24')
+    expect(html).not.toContain('38%')
+    expect(html).toMatch(/Too few yet to put a rate on/)
+  })
+
+  it('gives the rate once there is enough', () => {
+    const html = band([day({ views: 200, finished: 76, small: 200 })])
+    expect(html).toContain('38%')
+    expect(html).not.toMatch(/Too few yet to put a rate on/)
+  })
+
+  /* One visit drew a confident "0% on a phone" with the correction in
+     grey underneath — the same fault, in the same band. */
+  it('holds the screen split on a handful of visits', () => {
+    const html = band([day({ views: 24, small: 0, large: 1 })])
+    expect(html).not.toContain('on a phone')
+    expect(html).toMatch(/too few to put a share on/)
+  })
+
+  it('draws the split once enough screens are counted', () => {
+    const html = band([day({ views: 200, small: 150, large: 50 })])
+    expect(html).toContain('on a phone')
+    expect(html).toContain('75%')
   })
 })
