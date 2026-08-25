@@ -4,7 +4,13 @@ import * as React from 'react'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp, ExternalLink, Search } from 'lucide-react'
 import type { PieceRow } from '@/lib/desk-overview'
-import { ENOUGH_TO_JUDGE, EVERY_SECTION, narrow, sectionCounts } from '@/lib/desk-overview'
+import {
+  ENOUGH_TO_JUDGE,
+  EVERY_SECTION,
+  narrow,
+  sectionCounts,
+  uncheckedCount,
+} from '@/lib/desk-overview'
 import { count, dated, duration, headingWords, percent } from './format'
 
 /**
@@ -118,6 +124,7 @@ export function PiecesTable({
   const [open, setOpen] = React.useState<string | null>(null)
   const [needle, setNeedle] = React.useState('')
   const [section, setSection] = React.useState<string>(EVERY_SECTION)
+  const [onlyUnchecked, setOnlyUnchecked] = React.useState(false)
 
   /* The counts are the filter and the balance at once. The posting desk
      drew a bar chart of section counts on one tab and offered a section
@@ -125,10 +132,11 @@ export function PiecesTable({
      it. A row of counts you can press answers "is the archive lopsided"
      and "show me the lopsided part" with one control. */
   const sections = React.useMemo(() => sectionCounts(rows), [rows])
+  const unchecked = React.useMemo(() => uncheckedCount(rows), [rows])
 
   const shown = React.useMemo(
-    () => sorted(narrow(rows, needle, section), key, ascending),
-    [rows, key, ascending, needle, section]
+    () => sorted(narrow(rows, needle, section, onlyUnchecked), key, ascending),
+    [rows, key, ascending, needle, section, onlyUnchecked]
   )
 
   const head = (column: (typeof COLUMNS)[number]) => {
@@ -211,6 +219,20 @@ export function PiecesTable({
               onPress={() => setSection(section === entry.name ? EVERY_SECTION : entry.name)}
             />
           ))}
+
+          {/* The working list. Offered only when there is something on it,
+              because a chip reading "Unchecked 0" is a job advertised to
+              somebody who has already finished it. It composes with the
+              sections rather than replacing them, so a reviewer can work
+              through one part of the archive at a time. */}
+          {unchecked > 0 && (
+            <SectionChip
+              label="Unchecked"
+              n={unchecked}
+              active={onlyUnchecked}
+              onPress={() => setOnlyUnchecked((was) => !was)}
+            />
+          )}
         </div>
       </div>
 

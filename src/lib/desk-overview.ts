@@ -201,14 +201,32 @@ export const EVERY_SECTION = '\u0000all'
  * find it by either half, and a desk that makes you pick which field you
  * are searching is one you search twice.
  */
-export function narrow(rows: PieceRow[], needle: string, section: string): PieceRow[] {
+export function narrow(
+  rows: PieceRow[],
+  needle: string,
+  section: string,
+  /**
+   * Only the teachings on the site that nobody has checked yet.
+   *
+   * Composed with the other two rather than replacing them, so a
+   * reviewer can work through the unchecked pieces of one section. It is
+   * the working list for an archive that was published before there was
+   * a review desk to publish it through.
+   */
+  onlyUnchecked = false
+): PieceRow[] {
   const wanted = needle.trim().toLowerCase()
   return rows.filter((row) => {
+    if (onlyUnchecked && (row.status === 'pending' || row.verified)) return false
     if (section !== EVERY_SECTION && row.category !== section) return false
     if (!wanted) return true
     return `${row.title}\n${row.authorName}\n${row.category}`.toLowerCase().includes(wanted)
   })
 }
+
+/** How many live teachings nobody has checked yet. */
+export const uncheckedCount = (rows: PieceRow[]): number =>
+  rows.filter((row) => row.status !== 'pending' && !row.verified).length
 
 /** How many pieces sit in each section, largest first. */
 export function sectionCounts(rows: PieceRow[]): { name: string; n: number }[] {

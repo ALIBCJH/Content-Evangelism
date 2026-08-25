@@ -143,7 +143,7 @@ export default function ReviewPage() {
 
   const decide = async (
     slug: string,
-    action: 'approve' | 'send-back' | 'unpublish',
+    action: 'approve' | 'send-back' | 'unpublish' | 'verify',
     note?: string
   ) => {
     setBusy(slug)
@@ -380,6 +380,34 @@ export default function ReviewPage() {
                 >
                   Edit at the posting desk
                 </Link>
+
+                {row.status !== 'pending' && !row.verified && (
+                  <>
+                    {/* For the teachings that were on the site before
+                        there was a review desk to put them there. They
+                        cannot be approved — approving is the door onto the
+                        site, and they are already through it — so this is
+                        the only way somebody can say they have now read
+                        one against the ministry's own teaching. */}
+                    <button
+                      type="button"
+                      onClick={() => decide(row.slug, 'verify')}
+                      disabled={busy === row.slug}
+                      className="focus-ring inline-flex items-center gap-1.5 rounded-chip border border-status-success/40 px-3.5 py-2 font-sans text-xs font-bold uppercase tracking-kicker text-status-success transition-colors hover:bg-status-success/10 disabled:opacity-40"
+                    >
+                      {busy === row.slug ? (
+                        <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <CheckCircle2 aria-hidden className="h-3.5 w-3.5" />
+                      )}
+                      I have checked this
+                    </button>
+                    <span className="font-sans text-xs text-ink-subtle">
+                      Marks it checked against the ministry&apos;s own teaching. The teaching itself
+                      is not touched, and its date does not change.
+                    </span>
+                  </>
+                )}
 
                 {row.status !== 'pending' && (
                   <>

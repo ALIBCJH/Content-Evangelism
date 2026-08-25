@@ -21,9 +21,14 @@ export async function POST(request: Request, { params }: { params: { slug: strin
   }
 
   const action = String(payload.action ?? '')
-  if (action !== 'approve' && action !== 'send-back' && action !== 'unpublish') {
+  if (
+    action !== 'approve' &&
+    action !== 'send-back' &&
+    action !== 'unpublish' &&
+    action !== 'verify'
+  ) {
     return NextResponse.json(
-      { error: 'Action must be approve, send-back or unpublish.' },
+      { error: 'Action must be approve, verify, send-back or unpublish.' },
       { status: 400 }
     )
   }
