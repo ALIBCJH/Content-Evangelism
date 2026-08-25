@@ -179,7 +179,19 @@ export default async function PostedArticlePage({ params }: Params) {
         readMinutes={article.readMinutes}
         verified={article.verified}
         {...(article.imageUrl
-          ? { hero: { src: article.imageUrl, alt: article.imageAlt ?? '' } }
+          ? {
+              hero: {
+                src: article.imageUrl,
+                alt: article.imageAlt ?? '',
+                /* The page already measures the file for its structured
+                   data — see `schemaImage`. Handing the same numbers to
+                   the layout is what lets a portrait poster keep its
+                   shape instead of being cropped to a landscape band. */
+                ...(image?.width && image?.height
+                  ? { width: image.width, height: image.height }
+                  : {}),
+              },
+            }
           : {})}
         headings={headings}
         verses={verses}

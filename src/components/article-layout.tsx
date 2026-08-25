@@ -60,7 +60,7 @@ export interface ArticleLayoutProps {
    * silence on every other page means.
    */
   verified?: boolean
-  hero?: { src: string; alt: string; caption?: string }
+  hero?: { src: string; alt: string; caption?: string; width?: number; height?: number }
   /** Chapters, for the rail and the in-flow contents list. */
   headings: Heading[]
   /** What to read next — see `relatedRows`. */
@@ -150,6 +150,11 @@ const READING_TARGET = 'the-teaching'
 
 const TRACKS =
   'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14'
+
+/** Taller than it is wide, and measured rather than assumed. */
+function isPortrait(hero: { width?: number; height?: number }): boolean {
+  return Boolean(hero.width && hero.height && hero.height > hero.width)
+}
 
 export function ArticleLayout({
   slug,
@@ -268,20 +273,41 @@ export function ArticleLayout({
 
                 {hero && (
                   <figure className="m-0">
-                    <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
+                    {/* A photograph is cropped to a consistent 3:2, which
+                        is what gives every teaching's head the same
+                        rhythm. A portrait picture is not: the ministry's
+                        artwork is a poster with the headline set into it,
+                        and forcing that into a landscape band cuts the
+                        words out of the middle of the picture. The page
+                        already knows which it is — it measures the file
+                        for the structured data — so it can simply not do
+                        that. */}
+                    {isPortrait(hero) ? (
                       <Image
                         src={hero.src}
-                        /* What the photograph shows — not the headline
-                           again, which tells a screen reader and image
-                           search nothing the h1 above has not already
-                           said. */
                         alt={hero.alt}
-                        fill
+                        width={hero.width!}
+                        height={hero.height!}
                         priority
                         sizes="(min-width: 1024px) 42vw, 100vw"
-                        className="object-cover"
+                        className="h-auto w-full rounded-panel bg-navy-deep"
                       />
-                    </div>
+                    ) : (
+                      <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
+                        <Image
+                          src={hero.src}
+                          /* What the photograph shows — not the headline
+                             again, which tells a screen reader and image
+                             search nothing the h1 above has not already
+                             said. */
+                          alt={hero.alt}
+                          fill
+                          priority
+                          sizes="(min-width: 1024px) 42vw, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
                     {hero.caption && (
                       <figcaption className="mt-3 text-xs leading-snug text-ink-subtle">
                         {hero.caption}
