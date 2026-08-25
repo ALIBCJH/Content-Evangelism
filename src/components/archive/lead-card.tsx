@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Bookmark, ChevronDown, Volume2 } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
@@ -55,7 +56,14 @@ export function LeadCard({
 }) {
   return (
     <article className="card card-glow card-glow-lead relative overflow-hidden">
-      {item.quote && (
+      {/* The plate is what a teaching shows when it has no picture of its
+          own. A piece with artwork shows the artwork — and shows it below
+          the headline rather than above it, which is the order a
+          publication uses when the words are the product: what it is,
+          what it says, then what it looks like. Both at once would be two
+          large visuals stacked, and on this ministry's artwork the
+          passage is usually set into the picture already. */}
+      {!item.image && item.quote && (
         <div className="scripture-plate px-6 py-7 sm:px-8 sm:py-9">
           {/* Ruled on its opening edge, as the scripture figures inside
               the teachings themselves are ruled. */}
@@ -107,6 +115,24 @@ export function LeadCard({
           <span className="headline-link">{item.title}</span>
         </Link>
       </h2>
+
+      {item.image && (
+        <figure className="relative mt-5 overflow-hidden rounded-xl">
+          {/* No fixed ratio: the ministry's own artwork is portrait and
+              carries its headline inside it, and cropping that to a
+              landscape band would cut the words out of the picture. The
+              lead has the room to show it whole. */}
+          <Image
+            src={item.image.src}
+            alt={item.image.alt}
+            width={1024}
+            height={1536}
+            sizes="(max-width: 640px) 100vw, 640px"
+            className="h-auto w-full"
+            priority
+          />
+        </figure>
+      )}
 
       <p className="mt-4 max-w-[38rem] text-pretty text-[1.125rem] leading-[1.6] text-ink-700">
         {item.dek}

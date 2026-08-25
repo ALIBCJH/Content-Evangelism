@@ -363,6 +363,53 @@ option {
   .shell { padding-inline: 20px; }
 }
 
+/* ── The art a teaching carries ────────────────────────────────────
+   `categoryArt` in content.ts has named a palette and an icon for every
+   section since the site was built, and nothing has ever drawn either:
+   of the seven palettes only orchid had a colour, and all sixteen icons
+   — shepherd, well, vine — were names with no drawing behind them.
+
+   These are the seven fields, and the art is typographic rather than
+   iconographic. That is a decision, not a shortcut. Sixteen hand-drawn
+   marks is a large piece of design with a real risk of reading as
+   clip-art beside the ministry's own artwork; a passage set on a
+   coloured field is the device this site already owns, it differs for
+   every teaching without anybody drawing anything, and a short reference
+   is legible at a hundred pixels where a headline is not.
+
+   Each is a field with a little depth in it rather than a flat colour,
+   so a row of them reads as a set of plates rather than a row of
+   swatches. */
+/* No `position` here on purpose. This class is written in the same layer
+   as Tailwind's utilities and lands after them, so a `position: relative`
+   would quietly beat the `absolute` the component sets — which it did:
+   the field stopped filling its box and collapsed to the height of the
+   reference inside it. The component positions; this only paints. */
+.art-field {
+  overflow: hidden;
+  background: linear-gradient(150deg, var(--art-from) 0%, var(--art-to) 100%);
+  color: var(--art-ink);
+}
+.art-dawn     { --art-from: #1B4F7E; --art-to: #0E2C4A; --art-ink: #D9E6F2; }
+.art-flame    { --art-from: #9A6318; --art-to: #4A2A08; --art-ink: #F5E3C2; }
+.art-olive    { --art-from: #3D5A34; --art-to: #1C2E18; --art-ink: #DCE8D6; }
+.art-wine     { --art-from: #6B2233; --art-to: #33101A; --art-ink: #F0D9DE; }
+.art-orchid   { --art-from: #4E2A86; --art-to: #241242; --art-ink: #E4D8F5; }
+.art-midnight { --art-from: #17324F; --art-to: #0A1A2C; --art-ink: #CBDAEA; }
+.art-harvest  { --art-from: #7A5A1E; --art-to: #3A2A0A; --art-ink: #F2E4C4; }
+
+/* The gold rule the scripture plate is ruled with, at the art's own
+   scale, so the two read as the same family. */
+.art-rule {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 18%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--gold-pale);
+  opacity: 0.85;
+}
+
 /* ── The desk ──────────────────────────────────────────────────────
    The board's panels were `bg-surface`, which is a 3.5% wash of navy —
    a tint of the same colour as the page, on a page already tinted with
