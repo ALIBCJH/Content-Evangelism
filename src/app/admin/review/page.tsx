@@ -11,6 +11,7 @@ import { FindingsBand } from '@/components/admin/board/findings'
 import { HealthBand, NeedsBand, PartsBand, StretchBand } from '@/components/admin/board/bands'
 import { PiecesTable } from '@/components/admin/board/pieces-table'
 import { WritersBand } from '@/components/admin/board/writers-band'
+import { dated as boardDated } from '@/components/admin/board/format'
 
 /**
  * The review desk.
@@ -79,10 +80,13 @@ interface Board {
  */
 const WINDOWS = [7, 30, 90]
 
-const dated = (iso?: string) =>
-  iso
-    ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
-    : ''
+/**
+ * The board's own, which keeps the desk to one rule — recency for the
+ * first day, then a date. Absent stays blank here rather than the board's
+ * em-dash: these read as "Sent back {date}" in a sentence, and a dash
+ * mid-sentence is worse than nothing.
+ */
+const dated = (iso?: string) => (iso ? boardDated(iso) : '')
 
 export default function ReviewPage() {
   const [articles, setArticles] = React.useState<Article[] | null>(null)

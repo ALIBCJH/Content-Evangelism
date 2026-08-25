@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { authorHref, siteInfo, siteUrl, type Author } from '@/lib/content'
 import { authorDirectory, byId } from '@/lib/authors'
 import { listRealRows } from '@/lib/rows'
+import { wroteIt } from '@/lib/posted'
 import { rssAlternate } from '@/lib/seo'
 import { ArchiveView } from '@/components/archive/archive-view'
 import { JsonLd } from '@/components/json-ld'
@@ -33,15 +34,18 @@ interface Params {
 async function authorWithWork(id: string): Promise<{ author: Author; count: number } | null> {
   const author = byId(await authorDirectory(), id)
   if (!author) return null
-  const count = (await listRealRows()).filter((row) => row.authorName === author.name).length
+  const count = (await listRealRows()).filter((row) => wroteIt(row, author)).length
   return count > 0 ? { author, count } : null
 }
 
 export async function generateStaticParams() {
   const rows = await listRealRows()
-  const bylines = new Set(rows.map((row) => row.authorName))
   const directory = await authorDirectory()
-  return directory.filter((author) => bylines.has(author.name)).map((author) => ({ id: author.id }))
+  /* By the same rule the page itself uses. A set of bylines would miss an
+     author whose pieces carry their id and somebody else's spelling. */
+  return directory
+    .filter((author) => rows.some((row) => wroteIt(row, author)))
+    .map((author) => ({ id: author.id }))
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -105,7 +109,7 @@ export default async function AuthorPage({ params }: Params) {
         title={author.name}
         purpose={author.bio}
         emptyMessage="Nothing published here yet."
-        filter={(row) => row.authorName === author.name}
+        filter={(row) => wroteIt(row, author)}
         crumbs={[
           { name: 'Articles', href: '/' },
           { name: `${author.name} · ${count} ${count === 1 ? 'piece' : 'pieces'}` },

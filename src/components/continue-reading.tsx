@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
+import { Posted } from '@/components/posted'
 import { ArrowRight } from 'lucide-react'
 import { categoryBlurb, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
@@ -76,9 +77,10 @@ export function ContinueReading({
                   >
                     <span className="text-gold">{row.category}</span>
                     <span aria-hidden className="mx-2">·</span>
-                    <time dateTime={row.publishedAt}>
-                      {format(parseISO(row.publishedAt), 'd MMM yyyy')}
-                    </time>
+                    <Posted
+                      iso={row.publishedAt}
+                      dated={format(parseISO(row.publishedAt), 'd MMM yyyy')}
+                    />
                     <span aria-hidden className="mx-2">·</span>
                     <span className="tabular">{row.readMinutes} min read</span>
                   </span>

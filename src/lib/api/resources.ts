@@ -1,6 +1,6 @@
 import { bodyToHtml, bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
 import { authorHref, categorySlug, siteUrl, topicHref, type Category, type Author } from '@/lib/content'
-import { byName } from '@/lib/authors'
+import { authorOfPiece } from '@/lib/authors'
 import { recordHref, type ProphecyRecord } from '@/lib/prophecies'
 import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
@@ -43,8 +43,9 @@ function categoryOf(category: Category) {
   }
 }
 
-function authorOf(name: string, directory: Author[]) {
-  const author = byName(directory, name)
+function authorOf(piece: { authorId?: string; authorName: string }, directory: Author[]) {
+  const name = piece.authorName
+  const author = authorOfPiece(directory, piece)
   return {
     name,
     ...(author
@@ -67,7 +68,7 @@ export function articleSummary(row: RealRow, directory: Author[]) {
     slug: row.slug,
     title: row.title,
     summary: row.dek,
-    author: authorOf(row.authorName, directory),
+    author: authorOf(row, directory),
     category: categoryOf(row.category),
     tags: row.tags,
     publishedAt: row.publishedAt,

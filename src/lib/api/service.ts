@@ -1,5 +1,5 @@
 import { CATEGORIES, authorHref, categoryBlurb, categorySlug, siteUrl, topicHref, type Author, type Category } from '@/lib/content'
-import { byName } from '@/lib/authors'
+import { authorOfPiece } from '@/lib/authors'
 import { prophecyRecords, recordHref, type ProphecyRecord } from '@/lib/prophecies'
 import { listRealRows, relatedRows, type RealRow } from '@/lib/rows'
 import { explain } from '@/lib/search-docs'
@@ -97,12 +97,24 @@ export function tagsWithCounts(rows: RealRow[]) {
     .sort((a, b) => b.articleCount - a.articleCount || a.tag.localeCompare(b.tag))
 }
 
-/** Bylines that have published, with a profile when the site holds one. */
+/**
+ * Bylines that have published, with a profile when the site holds one.
+ *
+ * Counted per person rather than per spelling. The key is the writer's
+ * id where a piece carries one and the byline where it does not, so two
+ * writers who share a name are two entries, and one writer's pieces do
+ * not split into two entries because an older one predates their id.
+ */
 export function authorsWithCounts(rows: RealRow[], directory: Author[]) {
-  const counts = new Map<string, number>()
-  for (const row of rows) counts.set(row.authorName, (counts.get(row.authorName) ?? 0) + 1)
-  return Array.from(counts, ([name, articleCount]) => {
-    const author = byName(directory, name)
+  const counts = new Map<string, { name: string; author?: Author; articleCount: number }>()
+  for (const row of rows) {
+    const author = authorOfPiece(directory, row)
+    const key = author?.id ?? `name:${row.authorName}`
+    const held = counts.get(key)
+    if (held) held.articleCount += 1
+    else counts.set(key, { name: author?.name ?? row.authorName, author, articleCount: 1 })
+  }
+  return Array.from(counts.values(), ({ name, author, articleCount }) => {
     return {
       name,
       articleCount,

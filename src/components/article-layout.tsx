@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { format, parseISO } from 'date-fns'
+import { Posted } from '@/components/posted'
 import { ArrowLeft, BadgeCheck, CircleDashed } from 'lucide-react'
 import { siteUrl, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
@@ -351,7 +351,7 @@ export function ArticleLayout({
                   <span>{author.name}</span>
                 )}
                 <span aria-hidden className="mx-2">·</span>
-                <time dateTime={publishedAt}>{format(parseISO(publishedAt), 'd MMMM yyyy')}</time>
+                <Posted iso={publishedAt} />
                 <span aria-hidden className="mx-2">·</span>
                 <span className="tabular">{readMinutes} MIN READ</span>
               </p>

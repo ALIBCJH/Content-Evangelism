@@ -4,6 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { Bookmark, ChevronDown, Volume2 } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
+import { Posted } from '@/components/posted'
 
 /**
  * The piece at the head of the archive, given the room to be one.
@@ -89,7 +90,12 @@ export function LeadCard({
           ·
         </span>
         <span className="kicker text-ink-subtle">
-          {item.dated} · <span className="tabular">{item.readMinutes}</span> min
+          {/* The head of the archive is where a piece posted this morning
+              is most likely to be seen, so it is the one place the
+              recency is worth most. It was a bare span before, which also
+              gave a crawler nothing machine-readable. */}
+          <Posted iso={item.publishedAt} dated={item.dated} /> ·{' '}
+          <span className="tabular">{item.readMinutes}</span> min
         </span>
       </p>
 

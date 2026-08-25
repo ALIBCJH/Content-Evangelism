@@ -24,10 +24,11 @@ export async function GET(_request: Request, { params }: Params) {
 /**
  * PUT /api/articles/[slug] — update an article in place.
  *
- * The byline is not touched. An edit is not a change of authorship: a
- * reviewer fixing a paragraph in somebody's teaching must not end up
- * signing it, and a writer reworking their own already carries their own
- * name. The one way a byline is set is at the moment a piece is created.
+ * The byline is not touched, and neither is the id behind it. An edit is
+ * not a change of authorship: a reviewer fixing a paragraph in somebody's
+ * teaching must not end up signing it, and a writer reworking their own
+ * already carries their own name. The one way a piece is attributed is at
+ * the moment it is created.
  */
 export async function PUT(request: Request, { params }: Params) {
   let payload: Record<string, unknown>
@@ -40,7 +41,11 @@ export async function PUT(request: Request, { params }: Params) {
   const { error, input } = validateInput(payload)
   if (error || !input) return NextResponse.json({ error }, { status: 400 })
 
-  const { authorName: _byline, ...withoutByline } = input
+  /* Dropped rather than trusted. `validateInput` reads neither from the
+     body, so neither should be here at all — stripping them is the
+     invariant written down where an edit happens, so that a later field
+     added to the input cannot quietly become a way to reassign a piece. */
+  const { authorName: _byline, authorId: _wrote, ...withoutByline } = input
   const result = await updatePostedArticle(params.slug, withoutByline, await deskToken(request))
   if (!result.article) {
     const message =

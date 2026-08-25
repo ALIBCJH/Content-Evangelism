@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import type { RealRow } from '@/lib/rows'
+import { Posted } from '@/components/posted'
 
 /**
  * The rail beside a teaching: more of the writing.
@@ -59,7 +60,7 @@ export function MoreArticles({ rows }: { rows: RealRow[] }) {
                   <span aria-hidden className="mx-1.5">
                     ·
                   </span>
-                  {format(parseISO(row.publishedAt), 'd MMM yyyy')}
+                  <Posted iso={row.publishedAt} dated={format(parseISO(row.publishedAt), 'd MMM yyyy')} />
                   <span aria-hidden className="mx-1.5">
                     ·
                   </span>

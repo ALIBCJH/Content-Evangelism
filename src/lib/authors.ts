@@ -44,7 +44,42 @@ export function byId(directory: Author[], id: string): Author | undefined {
   return directory.find((author) => author.id === id)
 }
 
+/**
+ * The profile behind a piece — by id where the piece carries one, by name
+ * where it does not.
+ *
+ * This is the lookup every reader-facing surface should use, and the
+ * reason the id was put on the record. A name resolves to whoever in the
+ * directory happens to spell theirs the same way, which is fine until two
+ * writers do; an id resolves to a person.
+ *
+ * The fallback is not a lesser answer, it is the older one: everything
+ * written before the site had people carries no id, and matching those by
+ * byline is exactly what the site has always done. What it stops doing is
+ * guessing when it has been told.
+ */
+export function authorOfPiece(
+  directory: Author[],
+  piece: { authorId?: string; authorName: string }
+): Author | undefined {
+  if (piece.authorId) {
+    const held = byId(directory, piece.authorId)
+    /* An id naming somebody the directory has lost is still a better
+       reason to fall back than to show nobody. */
+    if (held) return held
+  }
+  return byName(directory, piece.authorName)
+}
+
 /** The common case: one byline, one lookup. */
 export async function findAuthorByName(name: string): Promise<Author | undefined> {
   return byName(await authorDirectory(), name)
+}
+
+/** `authorOfPiece` for a single piece, when no directory is in hand. */
+export async function findAuthorOfPiece(piece: {
+  authorId?: string
+  authorName: string
+}): Promise<Author | undefined> {
+  return authorOfPiece(await authorDirectory(), piece)
 }

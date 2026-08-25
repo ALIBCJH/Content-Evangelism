@@ -2,9 +2,9 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { formatDistanceToNowStrict, parseISO } from 'date-fns'
 import { ArrowRight, Check, Eye, EyeOff, Feather, LoaderCircle, Pencil, UserRound, X } from 'lucide-react'
 import { CATEGORIES } from '@/lib/content'
+import { postedWhen } from '@/lib/when'
 import { ArticleProse } from '@/components/article-prose'
 import { Button } from '@/components/ui/button'
 import { BodyEditor } from '@/components/admin/body-editor'
@@ -32,8 +32,17 @@ const fieldLabel = 'kicker block text-ink-subtle'
 const textareaClass =
   'focus-ring mt-2 w-full rounded-2xl border border-hairline-strong bg-surface px-5 py-4 font-serif text-base leading-relaxed text-ink placeholder:text-ink-subtle transition-colors focus:border-gold/60'
 
+/**
+ * When something happened, as the desk reads it.
+ *
+ * This said "3 months ago" indefinitely, which is a number a person has
+ * to convert back into a date every time they want to know which
+ * Tuesday. Recency is the useful answer for a day and the useless one
+ * after that, so it stops at a day. The desk renders in the browser, so
+ * the clock here is the reader's own.
+ */
 function ago(iso: string): string {
-  return formatDistanceToNowStrict(parseISO(iso), { addSuffix: true })
+  return postedWhen(iso, Date.now())
 }
 
 /** One of the three places a writer's piece can be. */

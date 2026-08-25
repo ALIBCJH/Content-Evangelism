@@ -14,6 +14,8 @@ export interface RealRow {
   dek: string
   category: Category
   authorName: string
+  /** The registry id behind the byline; absent means resolve by name. */
+  authorId?: string
   publishedAt: string
   /** Set on every edit at the desk; absent on pieces never edited. */
   updatedAt?: string
@@ -47,6 +49,7 @@ export async function listRealRows(): Promise<RealRow[]> {
     dek: a.dek,
     category: a.category,
     authorName: a.authorName,
+    ...(a.authorId ? { authorId: a.authorId } : {}),
     publishedAt: a.publishedAt,
     ...(a.updatedAt ? { updatedAt: a.updatedAt } : {}),
     readMinutes: a.readMinutes,

@@ -145,6 +145,24 @@ can type anybody's name into. It also ended a quieter problem — "Simon
 Juma", "simon juma" and "SIMON JUMA" were three authors to the archive,
 none of whom had a page.
 
+**A piece carries who wrote it, not only how their name is spelled.** The
+byline was already trustworthy — it is stamped from the session — but a
+spelling is not an identity: the site found an author by looking for
+whoever spelled theirs the same way, which is fine until two writers do,
+and quietly wrong the day somebody's name is corrected and every piece
+they ever wrote stops being theirs. So the record carries `authorId`
+beside `authorName`, stamped the same way and never read from the request
+— an id a caller could send is an id a caller could put on somebody
+else's work.
+
+A piece with an id is matched by the id alone; a matching name against a
+different id is a coincidence, not authorship. Absent means resolve by
+name, which is what the site always did and is still right for everything
+written before there were people. That rule lives in one place,
+`wroteIt`, and the author-page lookup that goes with it in
+`authorOfPiece`. An edit changes neither field: attribution is set once,
+when a piece is created.
+
 They can rewrite what the site says about them, and it goes on their page
 the way a teaching goes on the site: after the review desk approves it.
 Their name is not among the fields, being who they are rather than what
@@ -308,6 +326,28 @@ passages of 1400 characters as context, 700 tokens out, eight questions per
 address per ten minutes.
 
 ## What a reader gets
+
+**When a piece went up.** For its first day a teaching says how long ago
+it went up — "3 hours ago" — and after that it says the date. A date is
+the right answer for almost everything here, and the wrong one on the
+morning something is published: "25 August 2026" on the twenty-fifth of
+August answers nothing. The desk had the opposite fault, saying "3 months
+ago" indefinitely, which is a number somebody has to convert back into a
+date. One rule now, in `src/lib/when.ts`, and one cutover at a day.
+
+The decision cannot be made on the server. These pages are generated and
+then served from a cache for the length of the revalidation window, so
+"moments ago" would be baked into HTML still being handed out hours
+later — and the server's answer and the browser's first render would
+differ, which is a hydration mismatch. So `<Posted>` renders the date on
+the server *and* on the browser's first pass, and only then, in an
+effect, does a fresh piece become "3 hours ago". A reader with no
+JavaScript keeps the date, which is correct rather than degraded, and the
+`datetime` attribute carries the full timestamp throughout, so what a
+crawler or a screen reader is given never depends on any of this. Each
+surface keeps writing the date its own way — "24 Aug 2026" in a dense
+list, "AUG 12, 2026" in the archive — because the component owns which
+form to show, not what a date looks like.
 
 **Offline.** A service worker (`public/sw.js`, hand-written, no build step)
 keeps three things: the build's own files, the pages a reader has opened,

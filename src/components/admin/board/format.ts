@@ -1,3 +1,5 @@
+import { isFresh, postedAgo } from '@/lib/when'
+
 /**
  * How numbers are printed on the board.
  *
@@ -41,15 +43,30 @@ export function change(rate: number | null): { text: string; direction: 'up' | '
   }
 }
 
-/** A stored date as the desk reads it. */
-export const dated = (iso?: string): string =>
-  iso
-    ? new Date(iso).toLocaleDateString(undefined, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    : '—'
+/**
+ * A stored date as the desk reads it: recency for the first day, a date
+ * after that.
+ *
+ * The date stays the board's own short form rather than `when.ts`'s
+ * "24 August 2026" — these are dense tables, and a long month name
+ * widens a column to say nothing more.
+ *
+ * The whole board renders in the browser, so the rule may be applied
+ * directly here: the clock is the reader's own, and there is no
+ * server-rendered HTML for it to disagree with.
+ */
+export const dated = (iso?: string): string => {
+  if (!iso) return '—'
+  const now = Date.now()
+  if (isFresh(iso, now)) return postedAgo(iso, now)
+  const parsed = new Date(iso)
+  if (Number.isNaN(parsed.getTime())) return iso
+  return parsed.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
 
 /**
  * A heading anchor as words.
