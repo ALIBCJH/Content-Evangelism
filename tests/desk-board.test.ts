@@ -273,6 +273,8 @@ describe('the stretch, against the one before it', () => {
     values.map((views, index) => ({
       day: `2026-08-${String(index + 1).padStart(2, '0')}`,
       views,
+      small: Math.round(views * 0.7),
+      large: views - Math.round(views * 0.7),
       seconds: views * 60,
       finished: Math.floor(views / 2),
     }))

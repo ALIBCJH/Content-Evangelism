@@ -27,6 +27,35 @@ export const CLICK_LABELS = [
 ] as const
 export type ClickLabel = (typeof CLICK_LABELS)[number]
 
+/**
+ * The two screens the site is read on.
+ *
+ * A class of screen, not a class of device: what is recorded is how wide
+ * the window was when the page opened, which is the thing the layout
+ * actually answers to and the thing a decision about the layout needs.
+ * A phone held sideways is counted as the wide screen it is at that
+ * moment, and a narrow window on a desktop is counted as narrow, because
+ * in both cases that is the page the reader was given.
+ *
+ * It is a counter and nothing else — no user agent is read, no device is
+ * identified, nothing is stored per reader. Two people on phones are
+ * indistinguishable from one person on a phone twice, exactly as
+ * everything else here is. See the note at the head of `insight.ts`.
+ *
+ * The boundary is the same `lg` the site changes layout at, so the split
+ * answers the question the desk is really asking: how many readers got
+ * the phone layout, and how many got the wide one.
+ */
+export const SCREENS = ['small', 'large'] as const
+export type Screen = (typeof SCREENS)[number]
+
+/** The width the site itself changes layout at — Tailwind's `lg`. */
+export const WIDE_FROM_PX = 1024
+
+/** Field names for the two counters. Flat, with no `::`, so the
+ *  per-page reader passes over them and they stay site-wide. */
+export const screenField = (screen: Screen) => `screen:${screen}`
+
 export interface PageInsight {
   path: string
   views: number
@@ -45,6 +74,12 @@ export interface PageInsight {
 
 export interface EventBatch {
   path: string
+  /**
+   * Which screen the page opened on. Sent with the view and only with
+   * the view, so the two counters add up to the views and cannot drift
+   * past them by being sent again on every flush.
+   */
+  screen?: Screen
   /** Engaged seconds by heading anchor. */
   sections?: Record<string, number>
   views?: number
@@ -182,9 +217,20 @@ export function cleanBatch(raw: unknown): EventBatch | null {
     }
   }
 
+  /* Only ever with a view. A screen arriving on its own would be a
+     counter a caller could raise without a page having been opened, and
+     the two counters are meant to be a division of the views rather than
+     a tally of their own. */
+  const views = count(input.views, 1)
+  const screen =
+    views && typeof input.screen === 'string' && (SCREENS as readonly string[]).includes(input.screen)
+      ? (input.screen as Screen)
+      : undefined
+
   const batch: EventBatch = {
     path: p,
-    views: count(input.views, 1),
+    ...(screen ? { screen } : {}),
+    views,
     seconds: count(input.seconds, MAX_SECONDS_PER_BATCH),
     finished: count(input.finished, 1),
     clicks,
@@ -243,6 +289,41 @@ export interface DayTotals {
   views: number
   seconds: number
   finished: number
+  /**
+   * Views that opened on a narrow screen and on a wide one.
+   *
+   * These will not add up to `views` for any day before the split
+   * shipped, and the desk says so rather than quietly implying the
+   * difference was some third kind of screen. See `screenSplitOf`.
+   */
+  small: number
+  large: number
+}
+
+/**
+ * The split as a share, and whether it is worth trusting yet.
+ *
+ * A day counted before this shipped has views and no screens, and a bare
+ * percentage of nothing reads as "0% mobile" rather than "not recorded".
+ * So the share is only offered where the counters actually cover the
+ * views, and `counted` is what the desk checks before drawing it.
+ */
+export function screenSplitOf(totals: Pick<DayTotals, 'views' | 'small' | 'large'>): {
+  counted: number
+  small: number
+  large: number
+  smallShare: number
+  /** Views recorded before the screen was counted. */
+  unattributed: number
+} {
+  const counted = totals.small + totals.large
+  return {
+    counted,
+    small: totals.small,
+    large: totals.large,
+    smallShare: counted > 0 ? totals.small / counted : 0,
+    unattributed: Math.max(0, totals.views - counted),
+  }
 }
 
 /* ── Reading one page's counters ──────────────────────────────────── */
