@@ -399,6 +399,18 @@ missing rather than folding them into either side. A split that quietly
 counted the old visits as desktop would be a wrong answer wearing a
 confident face.
 
+**The front page is a front page, not a teaching.** It used to print the
+whole of the lead piece under the card — so a reader met one teaching and
+had to scroll past all eleven minutes of it to discover the archive
+existed. It lists now: the lead with its picture, then every other
+teaching as a row. The reading happens on the teaching's own page, which
+is what the rows are for.
+
+The picture comes first in the lead, above the kicker and the headline.
+That is a news front page's order rather than a publication's, and the
+front page's job is the news one: the picture is what a reader decides
+on, and the headline is what they read once it has stopped them.
+
 **The front page opens on the teaching.** It used to spend a hundred and
 six pixels before one: a search field, the word "Articles" over a page of
 them, and three sort chips offered to a reader who had not yet been shown
@@ -494,21 +506,6 @@ it would only repeat the reading time already printed under the headline,
 and absent at the end, where somebody a paragraph from finishing does not
 need telling — and where it would sit over the last lines of the
 teaching.
-
-**Navigation, at the bottom, on a phone.** Four destinations — Reading,
-Prophecy, Teachings, Saved — fixed to the foot of the window below `lg`.
-The only way through the site on a phone was the menu button in the
-masthead: a sheet to open, read and dismiss to go one place, put at the
-furthest point on the screen from a thumb. The sheet stays for the wider
-menu; this is the short list of places somebody actually moves between.
-
-The foot of a phone screen is contested — the bar, the player while a
-teaching is read aloud, and the ask button are all pinned there — so one
-number governs the stack. `--bottom-nav-h` is the bar's height and
-`--bottom-nav-space` is that plus whatever the device reserves for a home
-indicator; the room a page leaves at its foot and the space the bar
-occupies are the same declaration and cannot drift apart. Above `lg` the
-bar is not rendered and the space collapses to zero.
 
 **Saved is a page now.** A teaching could be put aside from anywhere and
 then not be found again: saving wrote a slug to the browser and nothing
