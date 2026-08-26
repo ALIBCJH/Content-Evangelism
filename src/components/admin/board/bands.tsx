@@ -10,7 +10,7 @@ import { CLICK_WORDS, change, count, duration, percent } from './format'
 /* ── Band 1 · What needs you now ──────────────────────────────────── */
 
 /**
- * The four decisions, before any measurement.
+ * The decisions, before any measurement.
  *
  * This band is first and stays first. A desk that opens on a chart is a
  * dashboard, and the queue underneath it is the thing that actually keeps
@@ -37,6 +37,15 @@ export function NeedsBand({ needs }: { needs: DeskNeeds }) {
       note: 'Returned with a reason, not yet reworked.',
     },
     {
+      label: 'Live without a picture',
+      value: needs.pictureless,
+      /* Its own band, further down, is where they are listed and where
+         they can be taken off the site. The number here is the door. */
+      href: '#band-no-picture',
+      urgent: needs.pictureless > 0,
+      note: 'On the site wearing their section’s generated field, not a picture of their own.',
+    },
+    {
       label: 'Readers waiting',
       value: needs.unanswered,
       href: '/admin/questions',
@@ -50,7 +59,7 @@ export function NeedsBand({ needs }: { needs: DeskNeeds }) {
       <h2 id="band-needs" className="font-display text-xl text-ink-strong">
         What needs you
       </h2>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => {
           const body = (
             <>

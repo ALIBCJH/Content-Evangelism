@@ -115,17 +115,38 @@ export default function AdminPage() {
   }, [])
 
   /* "Edit first" on the review desk sends the reviewer here with the
-     piece named in the address. It opens once the list has arrived, and
-     only once — a writer who then navigates away is not dragged back. */
+     piece named in the address. It opens once, and only once — a writer
+     who then navigates away is not dragged back.
+     The named piece is taken from this desk's own list where it is there,
+     and asked for by name where it is not. A reviewer signed in with the
+     ministry's key is nobody's writer, so their list is empty and every
+     one of these links used to land on a blank form — which mattered
+     little while it was a convenience and matters a great deal now that
+     giving a teaching a picture is the way back onto the site. */
   const opened = React.useRef(false)
   React.useEffect(() => {
-    if (opened.current || articles.length === 0) return
+    if (opened.current || loadingList) return
     const wanted = new URLSearchParams(window.location.search).get('edit')
     if (!wanted) return
-    const article = articles.find((candidate) => candidate.slug === wanted)
-    if (!article) return
     opened.current = true
-    startEdit(article)
+
+    const mineAlready = articles.find((candidate) => candidate.slug === wanted)
+    if (mineAlready) {
+      startEdit(mineAlready)
+      return
+    }
+    void (async () => {
+      try {
+        const res = await fetch(`/api/articles/${wanted}`, { cache: 'no-store' })
+        if (!res.ok) {
+          setListError(`Could not open ${wanted}.`)
+          return
+        }
+        startEdit((await res.json()).article as ManagedArticle)
+      } catch {
+        setListError(`Could not open ${wanted}.`)
+      }
+    })()
   })
 
   const savedAt = useDraftAutosave({

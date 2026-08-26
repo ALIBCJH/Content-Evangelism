@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { canReview, deskToken, listPostedArticles } from '@/lib/posted'
+import { canReview, deskToken, hasPicture, listPostedArticles } from '@/lib/posted'
 import { listQuestions } from '@/lib/questions'
 import { readInsight, readInsightRange } from '@/lib/insight'
 import { counties } from '@/lib/content'
@@ -13,6 +13,7 @@ import {
   pieceRows,
   summarise,
   unread,
+  type DeskArticle,
   type DeskHealth,
 } from '@/lib/desk-overview'
 
@@ -58,7 +59,14 @@ export async function GET(request: Request) {
   ])
 
   const questions = questionQueue.questions ?? []
-  const rows = pieceRows(articles, current.pages, ever)
+  /* Whether a teaching has a picture is a fact about the teaching and a
+     rule about the site, so it is settled once in the store and carried
+     here rather than worked out again from URLs on the board. */
+  const onBoard: DeskArticle[] = articles.map((article) => ({
+    ...article,
+    hasPicture: hasPicture(article),
+  }))
+  const rows = pieceRows(onBoard, current.pages, ever)
 
   const health: DeskHealth = {
     storeAttached: Boolean(
@@ -84,7 +92,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     days,
-    needs: needsAttention(articles, questions),
+    needs: needsAttention(onBoard, questions),
     summary: summarise(current.series, previous.series),
     series: current.series,
     pieces: rows,

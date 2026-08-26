@@ -500,6 +500,68 @@ export function wroteIt(
   return article.authorId ? article.authorId === writer.id : article.authorName === writer.name
 }
 
+/**
+ * Whether a teaching has a picture of its own.
+ *
+ * Either one counts. The poster is what stands at the head of a piece and
+ * the landscape crop is what stands in a listing row, and a teaching that
+ * carries only one of them still has something of its own to show; what
+ * this is distinguishing is the teaching with neither, which a listing
+ * fills with generated field art belonging to its section rather than to
+ * it.
+ *
+ * That fallback is the reason this exists. Generated art is a reasonable
+ * thing to draw and an unreasonable thing to publish behind: every
+ * teaching in a section wears the same one, so a front page of them is a
+ * column of identical coloured bands, and a reader scanning it is given
+ * nothing to tell one teaching from the next. The ministry's rule is that
+ * a teaching without a picture waits until it has one.
+ */
+export function hasPicture(article: Pick<PostedArticle, 'imageUrl' | 'thumbnailUrl'>): boolean {
+  return Boolean(article.imageUrl || article.thumbnailUrl)
+}
+
+/**
+ * The record a write is about to change, and the array to put it back in.
+ *
+ * Reads have always been the union of the store over the repository —
+ * `readAll` — and writes have always looked in the store and only the
+ * store. For most of this site's life that difference was invisible,
+ * because everything the desk had written was in the store. It stopped
+ * being invisible the moment somebody tried to edit one of the thirteen
+ * teachings the repository carries: the desk showed the piece, the row
+ * offered an Edit button and an Unpublish button, and both answered 404
+ * for a teaching that is plainly on the site.
+ *
+ * So a write to a slug the store does not hold copies the repository's
+ * copy into the store first and changes that. The overlay is not a
+ * duplicate — `readAll` gives a stored slug precedence over the file of
+ * the same name, which is exactly the rule that makes the desk's copy the
+ * one a reader gets. The file stays where it is and stops being what the
+ * site serves.
+ *
+ * Null means no such teaching anywhere, which is the 404 the callers
+ * already return.
+ */
+async function forWriting(
+  slug: string
+): Promise<{ articles: PostedArticle[]; index: number } | null> {
+  const articles = await readStore()
+  const index = articles.findIndex((a) => a.slug === slug)
+  if (index !== -1) return { articles, index }
+
+  const carried = (await readSeeded()).find((a) => a.slug === slug)
+  if (!carried) return null
+  /* Appended rather than prepended: every read sorts by date, so where it
+     sits in the array is not where it sits on the site. */
+  return { articles: [...articles, { ...carried }], index: articles.length }
+}
+
+/** Whether the repository itself carries a teaching under this slug. */
+async function repositoryCarries(slug: string): Promise<boolean> {
+  return (await readSeeded()).some((a) => a.slug === slug)
+}
+
 export async function createPostedArticle(
   input: ArticleInput,
   token: string
@@ -574,9 +636,9 @@ export async function updatePostedArticle(
 ): Promise<WriteResult> {
   if (!authorized(token)) return { status: 401, error: 'Invalid posting key.' }
 
-  const articles = await readStore()
-  const index = articles.findIndex((a) => a.slug === slug)
-  if (index === -1) return { status: 404, error: 'No article with that slug.' }
+  const held = await forWriting(slug)
+  if (!held) return { status: 404, error: 'No article with that slug.' }
+  const { articles, index } = held
 
   const standing = articles[index]
   const senior = canReview(token)
@@ -631,15 +693,27 @@ export async function reviewArticle(
 ): Promise<WriteResult> {
   if (!canReview(token)) return { status: 401, error: 'Invalid review key.' }
 
-  const articles = await readStore()
-  const index = articles.findIndex((a) => a.slug === slug)
-  if (index === -1) return { status: 404, error: 'No article with that slug.' }
+  const found = await forWriting(slug)
+  if (!found) return { status: 404, error: 'No article with that slug.' }
+  const { articles, index } = found
 
   const now = new Date().toISOString()
   const held = articles[index]
   let article: PostedArticle
 
   if (verdict.action === 'approve') {
+    /* The one door onto the site, and so the one place the picture rule
+       can be kept. Refused rather than published-and-hidden: a desk that
+       said "published" about a teaching no reader could reach would be
+       holding two answers to one question, and the reviewer would have no
+       way to tell which was true. See `hasPicture`. */
+    if (!hasPicture(held)) {
+      return {
+        status: 409,
+        error:
+          'That teaching has no picture. Add one at the posting desk — a poster, a landscape crop, or both — and approve it then.',
+      }
+    }
     const { review: _sentBack, ...rest } = held
     article = { ...rest, status: 'published', verified: true, updatedAt: now }
   } else if (verdict.action === 'verify') {
@@ -677,7 +751,7 @@ export async function reviewArticle(
   return { status: 200, article }
 }
 
-/** Returns the status code: 204 deleted, 404 unknown, 401 bad key. */
+/** Returns the status code: 204 deleted, 409 carried by the repository, 404 unknown, 403 live and no review key, 401 bad key. */
 /**
  * Remove a teaching for good.
  *
@@ -702,6 +776,14 @@ export async function deletePostedArticle(slug: string, token: string): Promise<
   const standing = articles.find((a) => a.slug === slug)
   if (!standing) return 404
   if (isLive(standing) && !canReview(token)) return 403
+
+  /* A teaching the repository carries cannot be deleted here, and saying
+     so is the point. Deleting the store's copy of one would remove the
+     desk's overlay and leave the file underneath it — so a reviewer who
+     had just taken a teaching off the site could delete it and watch it
+     come straight back, live, at the same address. Removing one of these
+     is removing a file from the repository. */
+  if (await repositoryCarries(slug)) return 409
 
   const remaining = articles.filter((a) => a.slug !== slug)
   return (await writeStore(remaining)) ? 204 : 500

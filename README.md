@@ -205,26 +205,31 @@ them. They are five bands on one page now, in the order somebody needs
 them:
 
 1. **What needs you** — waiting for review, live but never verified, sent
-   back, and readers waiting on an answer. Decisions before measurements:
-   a desk that opens on a chart is a dashboard, and the queue under it is
-   what keeps a teaching from a reader.
+   back, live without a picture, and readers waiting on an answer.
+   Decisions before measurements: a desk that opens on a chart is a
+   dashboard, and the queue under it is what keeps a teaching from a
+   reader.
 2. **The last 7 / 30 / 90 days** — visits, engaged time, how many reached
    the end, and the change against the stretch before.
-3. **Everything written** — every piece as one row, sortable, with visits,
+3. **On the site without a picture** — the teachings wearing their
+   section's generated field rather than artwork of their own, oldest
+   first, each with a way to give it a picture and a way to take it off
+   the site. Absent entirely when there are none.
+4. **Everything written** — every piece as one row, sortable, with visits,
    finish rate and time in the chosen window. A row opens to show where
    *inside* the teaching the time went, by heading.
-4. **Where the time goes** — by part of the site, and which invitations
+5. **Where the time goes** — by part of the site, and which invitations
    readers took.
-5. **Who writes here** — the register: add a writer and hand them a key
+6. **Who writes here** — the register: add a writer and hand them a key
    (shown once, at the moment it is made, because nothing stores it),
    replace a lost one, turn a key off, and approve the words a writer has
    written about themselves. Turning a key off is not deletion: a
    writer's name is on published teachings and their author page is an
    address somebody may have shared, so what ends is the key.
-6. **The machinery** — store attached, whether the review desk has a key
+7. **The machinery** — store attached, whether the review desk has a key
    of its own, whether anything is being counted, altar coverage.
 
-Two lists sit between 3 and 4 because they are the only ones that are
+Two lists sit between 4 and 5 because they are the only ones that are
 advice rather than reporting: pieces readers **open and abandon** (enough
 visits to judge, and fewer than a quarter reaching the end), and pieces
 **published and barely opened**.
@@ -358,6 +363,30 @@ crawler the ministry had rewritten a dozen teachings in an afternoon.
 The board carries an **Unchecked** chip beside the sections, counting the
 live teachings nobody has read yet and narrowing to them — composed with
 the sections, so one part of the archive can be worked through at a time.
+A **No picture** chip sits beside it on the same terms.
+
+**A teaching waits until it has a picture.** A piece with no artwork is
+drawn with a generated field belonging to its section, so every teaching
+in Teachings wears the same coloured band and a reader scanning a listing
+is given nothing to tell one from the next. `approve` refuses a teaching
+with neither a poster nor a landscape crop, and says which two things
+would fix it — refused rather than published-and-hidden, because a desk
+that said "published" about a teaching no reader could reach would be
+holding two answers to one question. Taking one off the site is the
+ordinary `unpublish`: it returns to the queue, its address stops
+answering, and its writing is untouched.
+
+**Writes reach the teachings the repository carries.** Reads have always
+been the union of the store over `content/articles/`; writes looked in the
+store and only the store. That was invisible while everything at the desk
+had been posted there, and stopped being invisible the moment somebody
+tried to unpublish one of the eleven teachings that are files — the desk
+showed the piece, offered the button, and answered 404. A write to a slug
+the store does not hold now copies the repository's copy in and changes
+that; the file stays where it is and stops being what the site serves.
+Deleting one is refused (409), because deleting the desk's copy would
+remove the overlay and bring the file straight back, live, at the same
+address.
 It appears only when there is something on the list.
 
 There is deliberately no "check them all" button. The mark says a person
@@ -642,7 +671,10 @@ API (same deployment, Next.js route handlers):
 
 - `GET  /api/articles` — list posted articles (public)
 - `POST /api/articles` — create; requires `Authorization: Bearer <ADMIN_TOKEN>`
-- `GET  /api/articles/:slug` — single article (public)
+- `GET  /api/articles/:slug` — single article. Published only, unless the
+  caller holds the review key or is the writer who wrote it — the same
+  rule the listing keeps. A teaching taken off the site has to be
+  openable again by whoever took it down, or the desk has a one-way door
 - `DELETE /api/articles/:slug` — remove for good. A piece still in the
   queue takes the posting key; one that is **on the site** takes
   `REVIEW_TOKEN`, and answers 403 to the posting key. Taking a teaching
@@ -689,8 +721,11 @@ serverless bundle by `outputFileTracingIncludes` in `next.config.js`,
 because a directory read at runtime is invisible to the bundler.
 
 A piece the repository carries is removed by removing its file and
-redeploying: `DELETE /api/articles/:slug` works on the store, and cannot
-delete something that was never posted to one.
+redeploying. `DELETE /api/articles/:slug` answers 409 for one, because
+the desk's copy of it is an overlay and deleting an overlay uncovers the
+file underneath — the teaching would come back, live, at the same
+address. Taking it off the site is `unpublish`, which is what the desk
+means by it anyway.
 
 Publishing with no store attached fails cleanly with *"The article store
 is not writable"* rather than appearing to succeed; reading is unaffected

@@ -6,11 +6,12 @@ import { CheckCircle2, Loader2, Undo2, Trash2, RefreshCw } from 'lucide-react'
 import { ArticleProse } from '@/components/article-prose'
 import { Button } from '@/components/ui/button'
 import type { DayTotals } from '@/lib/insight-shape'
-import type { DeskNeeds, PartRow, PieceRow, WindowSummary } from '@/lib/desk-overview'
+import { withoutPicture, type DeskNeeds, type PartRow, type PieceRow, type WindowSummary } from '@/lib/desk-overview'
 import { FindingsBand } from '@/components/admin/board/findings'
 import { HealthBand, NeedsBand, PartsBand, StretchBand } from '@/components/admin/board/bands'
 import { PiecesTable } from '@/components/admin/board/pieces-table'
 import { WritersBand } from '@/components/admin/board/writers-band'
+import { WithoutPictureBand } from '@/components/admin/board/without-picture'
 import { dated as boardDated } from '@/components/admin/board/format'
 
 /**
@@ -141,29 +142,68 @@ export default function ReviewPage() {
      site is drawn from the board, which carries the counters with it. */
   const waiting = (articles ?? []).filter((article) => article.status === 'pending')
 
-  const decide = async (
+  /**
+   * One verdict, sent. No reload of its own, so a run of them is a run of
+   * decisions rather than a run of decisions each followed by the whole
+   * board being fetched again.
+   */
+  const send = async (
     slug: string,
     action: 'approve' | 'send-back' | 'unpublish' | 'verify',
     note?: string
-  ) => {
+  ): Promise<boolean> => {
     setBusy(slug)
-    setError(null)
     try {
       const response = await fetch(`/api/review/${slug}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, note }),
       })
-      const body = await response.json()
-      if (!response.ok) setError(body.error ?? 'That did not go through.')
-      else {
-        setOpen(null)
-        await load(days)
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        setError(body.error ?? 'That did not go through.')
+        return false
       }
+      return true
     } catch {
       setError('Could not reach the desk.')
+      return false
+    }
+  }
+
+  const decide = async (
+    slug: string,
+    action: 'approve' | 'send-back' | 'unpublish' | 'verify',
+    note?: string
+  ) => {
+    setError(null)
+    if (await send(slug, action, note)) {
+      setOpen(null)
+      await load(days)
     }
     setBusy(null)
+  }
+
+  /**
+   * Every pictureless teaching off the site, in one press.
+   *
+   * One at a time rather than all at once, and that is not politeness.
+   * The whole archive is a single document that every write reads,
+   * changes and puts back — see `writeStore` — so eleven of these fired
+   * together against Upstash race each other and ten of the eleven
+   * changes can be lost. Sequential is the only correct order.
+   *
+   * It stops at the first refusal. A run that carried on would leave the
+   * desk with one error message standing for an unknown number of
+   * failures, and no way to tell which teachings actually came down.
+   */
+  const takeDownAll = async (slugs: string[]) => {
+    setError(null)
+    for (const slug of slugs) {
+      if (!(await send(slug, 'unpublish'))) break
+    }
+    setBusy(null)
+    await load(days)
   }
 
   const remove = async (slug: string) => {
@@ -368,6 +408,16 @@ export default function ReviewPage() {
       {board && (
         <div className="mt-14 flex flex-col gap-14">
           <StretchBand summary={board.summary} series={board.series} days={board.days} />
+
+          {/* Above the table, because it is a decision rather than a
+              measurement, and below the numbers only because the queue
+              at the top of this page is the more urgent one. */}
+          <WithoutPictureBand
+            rows={withoutPicture(board.pieces)}
+            busy={busy}
+            onTakeDown={(slug) => decide(slug, 'unpublish')}
+            onTakeDownAll={takeDownAll}
+          />
 
           <PiecesTable
             rows={board.pieces}
