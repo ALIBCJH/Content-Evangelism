@@ -420,6 +420,23 @@ reference is legible at a hundred pixels where a headline is not — see
 `shortRef`, which is what makes "Matthew 3:2 and Matthew 4:17, KJV" fit
 in a square.
 
+`scripts/attach-art.mjs` attaches a poster and its crop to a teaching
+that is already on the site. The desk can do this and for one teaching the
+desk is the right place; this is for a stack of artwork arriving at once,
+each piece needing three fields set on a teaching whose body runs to
+eleven thousand characters, where retyping is a way to lose a paragraph.
+It reads the teaching as it stands and puts everything back untouched but
+the pictures.
+
+It insists on the review key, and checks which desk the key opens *before*
+writing anything. The posting key is authorized to make this edit — it
+simply demotes the teaching to the queue and strips its verified mark on
+the way, which is the right rule and a catastrophe applied to fourteen
+live pieces. Checking afterwards is too late, which is not a guess: the
+first version of the script checked afterwards, took a teaching off the
+site in testing, and then crashed reading back a page that had stopped
+answering.
+
 A teaching may carry two pictures. The ministry's own artwork is a
 portrait poster with the headline set into the picture — right at the
 head of a piece, and unusable in a listing row, where cropping it to a
