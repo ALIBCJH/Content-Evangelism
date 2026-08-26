@@ -46,6 +46,7 @@ export default function HomePage() {
       />
       <ArchiveView
         title="Articles"
+        quietTitle
         emptyMessage="Nothing has been published yet. The first piece will open here."
         collection={{
           name: 'The Archive',

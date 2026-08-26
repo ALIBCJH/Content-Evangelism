@@ -55,7 +55,13 @@ export function LeadCard({
   listening: boolean
 }) {
   return (
-    <article className="card card-glow card-glow-lead relative overflow-hidden">
+    /* Edge to edge on a phone, and a card again from `sm`.
+       A card is a border, a radius and padding on both sides of a column
+       that is already the narrowest thing on the device — spent to
+       separate the lead from a page it is the only thing on. Every news
+       front page settles on the same answer here: the lead touches both
+       edges and the rules below do the separating. */
+    <article className="card card-glow card-glow-lead relative overflow-hidden max-sm:-mx-5 max-sm:rounded-none max-sm:border-x-0">
       {/* The plate is what a teaching shows when it has no picture of its
           own. A piece with artwork shows the artwork — and shows it below
           the headline rather than above it, which is the order a

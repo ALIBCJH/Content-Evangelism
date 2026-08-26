@@ -399,6 +399,21 @@ missing rather than folding them into either side. A split that quietly
 counted the old visits as desktop would be a wrong answer wearing a
 confident face.
 
+**The front page opens on the teaching.** It used to spend a hundred and
+six pixels before one: a search field, the word "Articles" over a page of
+them, and three sort chips offered to a reader who had not yet been shown
+anything to sort. On a phone that is a fifth of the window gone to
+furniture.
+
+The search band is off below `sm` — it is already in the menu sheet as
+"Search the archive", so what it costs is one tap. The heading is read out
+and not drawn on the front page only, where the card beneath it already
+says "Latest teaching"; a topic or an author's page keeps it, because
+there the heading is the one thing saying whose listing this is. And the
+lead runs edge to edge on a phone, a card again from `sm`: a border, a
+radius and padding on both sides of the narrowest column on the device,
+spent to separate the lead from a page it is the only thing on.
+
 **Every teaching in a listing carries a mark.** A column of headlines
 with nothing beside them is read by nobody: the eye has no place to stop,
 so five teachings become one grey block. The shape every news front page
