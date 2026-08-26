@@ -5,6 +5,8 @@ import { ArrowRight } from 'lucide-react'
 import { ArticleDiagram } from '@/components/article-diagram'
 import { SharePassage } from '@/components/share-passage'
 import { platedQuotes } from '@/lib/scripture-rhythm'
+import { RecommendedStories } from '@/components/recommended-stories'
+import type { RealRow } from '@/lib/rows'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
 import { embedSrc, watchHref } from '@/lib/youtube'
 
@@ -111,22 +113,50 @@ const CALLOUT: Record<CalloutTone, { panel: string; label: string; body: string;
 /** What a `@related` slug resolves to: the row for that teaching. */
 export type ProseLink = { href: string; title: string; dek: string }
 
+/**
+ * Where "what to read next" is dropped into a teaching.
+ *
+ * At a heading, never mid-thought: an aside between two paragraphs of an
+ * argument interrupts it, and between two sections it is a pause the
+ * reader was taking anyway. The one nearest the middle, so it is not the
+ * first thing a reader meets and not so late that the people who leave
+ * early never see it — which is the whole reason it is not simply at the
+ * foot, where `ContinueReading` already sits.
+ *
+ * Nothing is inserted into a teaching with fewer than four headings.
+ * There is no middle to speak of, and the foot is close enough.
+ */
+export function recommendAfter(blocks: ReturnType<typeof parseBody>): number | null {
+  const headings = blocks.flatMap((block, index) => (block.kind === 'heading' ? [index] : []))
+  if (headings.length < 4) return null
+  return headings[Math.floor(headings.length / 2)]
+}
+
 export function ArticleProse({
   body,
   links = {},
+  recommended = [],
 }: {
   body: string
   links?: Record<string, ProseLink>
+  /** Teachings to offer part-way through. Empty on the desk's preview. */
+  recommended?: RealRow[]
 }) {
   const blocks = parseBody(body)
   /* Computed once for the piece rather than per block: the rule is about
      the distance between passages, so it needs the whole of it in hand. */
   const plated = platedQuotes(blocks)
+  const recommendAt = recommended.length > 0 ? recommendAfter(blocks) : null
   let firstParagraphSeen = false
 
   return (
     <>
       {blocks.map((block, index) => {
+        /* Before the heading, so the aside closes the section that was
+           finishing rather than interrupting the one about to start. */
+        const recommend =
+          index === recommendAt ? <RecommendedStories key="recommended" rows={recommended} /> : null
+
         switch (block.kind) {
           case 'heading':
             /* scroll-mt clears the masthead and the progress rule when a
@@ -137,14 +167,16 @@ export function ArticleProse({
                answered the thing they were asked — and until now the only
                thing they could send was the top of the page. */
             return (
+              <React.Fragment key={index}>
+                {recommend}
               <h2
-                key={index}
                 id={block.id}
-                className="chapter-head group mb-5 mt-16 flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.625rem] font-normal leading-[1.22] tracking-[-0.008em] text-gold-ink md:text-[2.0625rem]"
+                className="chapter-head group mb-5 mt-16 flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.625rem] font-bold leading-[1.22] tracking-[-0.008em] text-gold-ink md:text-[2.0625rem]"
               >
                 <span className="min-w-0">{block.text}</span>
                 <SharePassage id={block.id} heading={block.text} />
               </h2>
+              </React.Fragment>
             )
 
           case 'quote': {

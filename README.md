@@ -500,8 +500,23 @@ site already uses for its gold chips and flips to a warm brown in the
 dark theme, so the passage a teaching stands on reads as a different
 material from the writing in both.
 
-**The poster at the head of a teaching is an illustration, not a
-billboard.** Shown at the column's full width a two-by-three poster is
+**What to read next, part-way through.** The site offered this at the
+foot already, under `ContinueReading` — and a reader has to finish to
+reach the foot. About a third do; the rest leave from somewhere in the
+middle having been offered nothing. So the same idea is placed at the
+heading nearest the middle of the piece: at a heading rather than
+mid-thought, because an aside between two paragraphs of an argument
+interrupts it and between two sections it is a pause the reader was
+taking anyway. A teaching with fewer than four headings gets none — there
+is no middle to speak of.
+
+**No picture at the head of a teaching.** It earns its place on the front
+page and in a listing, where it is what makes somebody choose the piece.
+Once they have chosen it, it is a thing to scroll past on the way to the
+first sentence — and the artwork carries the headline inside it, so on
+the one page whose headline sits directly above it, it says the same
+thing twice. It is still in the structured data and the feed, where a
+search result and a reader's app take a picture from. Shown at the column's full width a two-by-three poster is
 five hundred and twenty-five pixels tall on a phone — most of the first
 screen, before a word of the teaching. It is capped by height and centred
 instead.
