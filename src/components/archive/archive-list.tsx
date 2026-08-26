@@ -10,7 +10,6 @@ import { unfinished as stillReading, useReadingProgress } from '@/lib/reading-pr
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
-import { InlineArticle } from '@/components/archive/inline-article'
 import { LeadCard } from '@/components/archive/lead-card'
 import { TeachingRow } from '@/components/archive/teaching-row'
 import { TopicsRail } from '@/components/archive/topics-rail'
@@ -322,16 +321,6 @@ export function ArchiveList({
                       ? speech.pause()
                       : speech.play({ slug: lead.slug, title: lead.title, href: lead.href })
                   }
-                />
-                {/* The teaching itself, carrying on under the card once
-                    the reader scrolls that far. */}
-                <InlineArticle
-                  piece={{
-                    slug: lead.slug,
-                    title: lead.title,
-                    href: lead.href,
-                    readMinutes: lead.readMinutes,
-                  }}
                 />
               </>
             )

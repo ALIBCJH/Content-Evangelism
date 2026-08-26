@@ -62,13 +62,27 @@ export function LeadCard({
        front page settles on the same answer here: the lead touches both
        edges and the rules below do the separating. */
     <article className="card card-glow card-glow-lead relative overflow-hidden max-sm:-mx-5 max-sm:rounded-none max-sm:border-x-0">
-      {/* The plate is what a teaching shows when it has no picture of its
-          own. A piece with artwork shows the artwork — and shows it below
-          the headline rather than above it, which is the order a
-          publication uses when the words are the product: what it is,
-          what it says, then what it looks like. Both at once would be two
-          large visuals stacked, and on this ministry's artwork the
-          passage is usually set into the picture already. */}
+      {/* The picture first, full width, above everything — the order a
+          news front page uses, because the picture is what a reader
+          decides on and the headline is what they read once it has
+          stopped them. It was below the headline before, which is a
+          publication's order and the wrong one for a page whose job is
+          to get somebody into a teaching.
+
+          The plate stands here when there is no picture, and never
+          alongside one: two large visuals stacked is neither. */}
+      {item.image && (
+        <Image
+          src={item.image.src}
+          alt={item.image.alt}
+          width={1024}
+          height={1536}
+          sizes="(max-width: 640px) 100vw, 640px"
+          className="h-auto w-full"
+          priority
+        />
+      )}
+
       {!item.image && item.quote && (
         <div className="scripture-plate px-6 py-7 sm:px-8 sm:py-9">
           {/* Ruled on its opening edge, as the scripture figures inside
@@ -121,24 +135,6 @@ export function LeadCard({
           <span className="headline-link">{item.title}</span>
         </Link>
       </h2>
-
-      {item.image && (
-        <figure className="relative mt-5 overflow-hidden rounded-xl">
-          {/* No fixed ratio: the ministry's own artwork is portrait and
-              carries its headline inside it, and cropping that to a
-              landscape band would cut the words out of the picture. The
-              lead has the room to show it whole. */}
-          <Image
-            src={item.image.src}
-            alt={item.image.alt}
-            width={1024}
-            height={1536}
-            sizes="(max-width: 640px) 100vw, 640px"
-            className="h-auto w-full"
-            priority
-          />
-        </figure>
-      )}
 
       <p className="mt-4 max-w-[38rem] text-pretty text-[1.125rem] leading-[1.6] text-ink-700">
         {item.dek}
