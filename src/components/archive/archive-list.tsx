@@ -72,10 +72,18 @@ type Order = keyof typeof ORDERS
 export function ArchiveList({
   items,
   header,
+  quietTitle = false,
 }: {
   items: ArchiveItem[]
   /** The band's title block, rendered on the server and passed in. */
   header?: React.ReactNode
+  /**
+   * Read out but not drawn on a phone. True on the front page, where the
+   * heading is the word "Articles" over a page of them and the card
+   * below already says what it is; false on a topic or an author's page,
+   * where the heading is the one thing saying whose listing this is.
+   */
+  quietTitle?: boolean
 }) {
   const [query, setQuery] = React.useState('')
   const [onlySaved, setOnlySaved] = React.useState(false)
@@ -162,7 +170,12 @@ export function ArchiveList({
   return (
     <>
       {/* ── The band: the search, and what is put aside ───────────── */}
-      <section className="border-b border-rule bg-raised">
+      {/* Not on a phone. It is fifty-six pixels of every screen on the
+          device this site is mostly read on, spent on a control that is
+          already in the menu sheet as "Search the archive" — so what it
+          costs a reader is one tap, and what it buys back is the top of
+          the teaching. */}
+      <section className="hidden border-b border-rule bg-raised sm:block">
         <div className="shell flex flex-wrap items-center gap-x-4 gap-y-2.5 py-2.5 sm:gap-x-8">
           <label className="relative w-full min-w-0 sm:ml-auto sm:w-auto sm:min-w-[20rem] sm:max-w-[26rem] sm:flex-1">
             <span className="sr-only">Search articles and verses</span>
@@ -232,7 +245,14 @@ export function ArchiveList({
 
         <div className="order-1 min-w-0 lg:order-none">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-            {header}
+            {/* On a phone the heading over a listing is a word describing
+                a page the reader can see — and the card beneath it
+                already says "Latest teaching". It is still in the markup
+                for a crawler and still read out, just not drawn, and
+                only where a lead follows it. */}
+            <div className={quietTitle ? 'sr-only sm:not-sr-only sm:min-w-0' : 'min-w-0'}>
+              {header}
+            </div>
             {/* Ordering, as three chips rather than a menu: there are only
                 three, and a reader should be able to see which one is on
                 without opening anything. */}

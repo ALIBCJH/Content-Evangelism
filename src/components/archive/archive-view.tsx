@@ -31,6 +31,8 @@ import { ArchiveList } from '@/components/archive/archive-list'
 export interface ArchiveViewProps {
   /** The listing's name, set as the page's headline. */
   title: string
+  /** See ArchiveList.quietTitle — set on the front page only. */
+  quietTitle?: boolean
   /** The line under the title. */
   purpose?: string
   /** Shown when nothing has been published yet. */
@@ -49,6 +51,7 @@ export interface ArchiveViewProps {
 
 export async function ArchiveView({
   title,
+  quietTitle,
   purpose,
   emptyMessage,
   filter,
@@ -152,7 +155,7 @@ export async function ArchiveView({
           </div>
         </>
       ) : (
-        <ArchiveList items={toArchiveItems(rows, views)} header={header} />
+        <ArchiveList items={toArchiveItems(rows, views)} header={header} quietTitle={quietTitle} />
       )}
 
       {/* The other archive. It used to be a panel in a sidebar, which on a
