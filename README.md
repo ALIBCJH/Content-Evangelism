@@ -486,6 +486,26 @@ words are the product: what it is, what it says, then what it looks like.
 Not both: the ministry's artwork sets the passage into the picture
 already.
 
+**A teaching does not read as one column of text.** Its subheadings are
+the questions it answers, and they were set in the same navy as
+everything around them — so an eleven-minute piece looked like an
+undifferentiated wall and a reader hunting for the part that answered
+their question had nothing to scan for. They are gold now, a size larger,
+with a short gold rule above each one.
+
+Scripture is set on parchment. It was `--raised`, a near-white with a
+blue cast, on a page already pale blue — about four values of difference,
+which the eye goes straight past. `--chip-gold` is the warm cream the
+site already uses for its gold chips and flips to a warm brown in the
+dark theme, so the passage a teaching stands on reads as a different
+material from the writing in both.
+
+**The poster at the head of a teaching is an illustration, not a
+billboard.** Shown at the column's full width a two-by-three poster is
+five hundred and twenty-five pixels tall on a phone — most of the first
+screen, before a word of the teaching. It is capped by height and centred
+instead.
+
 **A rest in a long scroll.** A teaching here runs eight to eleven
 minutes, and the longest stretches carry six and seven paragraphs with
 nothing to rest the eye on. Some passages are set on the plate the front

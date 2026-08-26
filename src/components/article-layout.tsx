@@ -290,7 +290,16 @@ export function ArticleLayout({
                         height={hero.height!}
                         priority
                         sizes="(min-width: 1024px) 42vw, 100vw"
-                        className="h-auto w-full rounded-panel bg-navy-deep"
+                        /* Held to a height rather than run to the full
+                           width of the column. A two-by-three poster at
+                           390px is five hundred and twenty-five pixels
+                           tall — most of the first screen, before a word
+                           of the teaching — and a picture that fills the
+                           window a reader opened to read is not
+                           welcoming, it is a wall. Capped it is an
+                           illustration beside the standfirst, which is
+                           what it should have been. */
+                        className="mx-auto h-auto max-h-[17rem] w-auto rounded-panel bg-navy-deep sm:max-h-[22rem]"
                       />
                     ) : (
                       <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
