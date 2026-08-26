@@ -417,6 +417,14 @@ them, and three sort chips offered to a reader who had not yet been shown
 anything to sort. On a phone that is a fifth of the window gone to
 furniture.
 
+There is no sort control. The listing offered newest, most read and
+shortest as chips above the lead, and they were the first thing on the
+page — three controls asking a reader to order a collection before being
+shown anything in it. Fourteen teachings is not an archive anybody needs
+to sort. What "most read" offered was real, and if it returns it should
+return as a band of its own further down, where it is an answer rather
+than a question.
+
 The search band is off below `sm` — it is already in the menu sheet as
 "Search the archive", so what it costs is one tap. The heading is read out
 and not drawn on the front page only, where the card beneath it already
