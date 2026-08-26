@@ -24,15 +24,17 @@ import { TopicsRail } from '@/components/archive/topics-rail'
  * before a single control is touched.
  *
  * Three orders, and each answers a question somebody actually has.
- * Newest is the default and what the page renders untouched. Most read is
- * new information rather than a rearrangement — it comes from the site's
- * own anonymous counters, and it is the only way a reader can be told
- * what the congregation is reading. Shortest is for the reader with ten
- * minutes before a service.
+ * There is no sort control. The listing has now had one twice and lost it
+ * twice, and the reason it keeps going is that it was the first thing on
+ * the page: three chips asking a reader to order a collection before
+ * being shown anything in it. Fourteen teachings is not an archive
+ * anybody needs to sort, and the front page's job is to hand over the
+ * newest one.
  *
- * An earlier version of this listing dropped its sort menu on the grounds
- * that newest was the only useful order. That was right about oldest and
- * longest, which are gone and are not coming back.
+ * What "most read" offered was real — it is the only way a reader could
+ * be told what the congregation is reading — and if it comes back it
+ * should come back as a band of its own further down, where it is an
+ * answer rather than a question.
  *
  * What the box searches is what the page shows — titles, standfirsts,
  * opening lines, references and sections. It deliberately does not search
@@ -45,28 +47,17 @@ import { TopicsRail } from '@/components/archive/topics-rail'
  * piece that holds both, which a substring test never did.
  */
 
-/* The rows arrive newest first; sorting here is what keeps that true of
-   a filtered set as well. */
-const ORDERS = {
-  newest: {
-    label: 'Newest',
-    sort: (a: ArchiveItem, b: ArchiveItem) => b.publishedAt.localeCompare(a.publishedAt),
-  },
-  read: {
-    label: 'Most read',
-    /* Ties fall back to newest rather than to nothing, so an archive
-       whose counters are empty still reads as an archive. */
-    sort: (a: ArchiveItem, b: ArchiveItem) =>
-      b.views - a.views || b.publishedAt.localeCompare(a.publishedAt),
-  },
-  shortest: {
-    label: 'Shortest',
-    sort: (a: ArchiveItem, b: ArchiveItem) =>
-      a.readMinutes - b.readMinutes || b.publishedAt.localeCompare(a.publishedAt),
-  },
-} as const
-
-type Order = keyof typeof ORDERS
+/* Newest, and only newest.
+   The listing offered three orders as chips above the lead — newest, most
+   read, shortest — and they were the first thing on the page: three
+   controls asking a reader to order a collection before they had been
+   shown a single thing in it. An archive of fourteen teachings is not one
+   a reader needs to sort, and a front page's job is to hand over the
+   newest one.
+   Sorting stays, because a filtered set has to be put back in order; what
+   goes is the asking. */
+const byNewest = (a: ArchiveItem, b: ArchiveItem) =>
+  b.publishedAt.localeCompare(a.publishedAt)
 
 export function ArchiveList({
   items,
@@ -86,7 +77,6 @@ export function ArchiveList({
 }) {
   const [query, setQuery] = React.useState('')
   const [onlySaved, setOnlySaved] = React.useState(false)
-  const [order, setOrder] = React.useState<Order>('newest')
   const [topic, setTopic] = React.useState<Category | null>(null)
   const { ready, toggle, isSaved, saved } = useSaved()
   const { ready: marksReady, marks } = useReadingProgress()
@@ -107,7 +97,7 @@ export function ArchiveList({
     const pool = items
       .filter((item) => (onlySaved ? saved.includes(item.slug) : true))
       .filter((item) => (topic ? item.category === topic : true))
-      .sort(ORDERS[order].sort)
+      .sort(byNewest)
     if (!query.trim()) return pool
     /* Ranked, not filtered: a word in a headline should bring the piece
        to the top, where the same word buried in a body should not. */
@@ -122,7 +112,7 @@ export function ArchiveList({
         { text: item.haystack, weight: 1 },
       ])
     )
-  }, [items, query, onlySaved, saved, topic, order])
+  }, [items, query, onlySaved, saved, topic])
 
   const [lead, ...rest] = shown
 
@@ -158,13 +148,9 @@ export function ArchiveList({
     ? 'Best match'
     : onlySaved
       ? 'Saved for later'
-      : order === 'read'
-        ? 'Most read'
-        : order === 'shortest'
-          ? 'Shortest read'
-          : topic
-            ? `Latest in ${topic}`
-            : 'Latest teaching'
+      : topic
+        ? `Latest in ${topic}`
+        : 'Latest teaching'
 
   return (
     <>
@@ -227,7 +213,7 @@ export function ArchiveList({
           standing between a reader and the teaching, so the order is
           reversed there and restored at lg: the piece first, the rest of
           the archive second, and what the archive holds last. */}
-      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-5 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
+      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-2 sm:pt-5 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
         <aside className="order-3 lg:order-none lg:row-span-2 xl:row-span-1">
           <TopicsRail
             counts={counts}
@@ -243,35 +229,24 @@ export function ArchiveList({
         </aside>
 
         <div className="order-1 min-w-0 lg:order-none">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-            {/* On a phone the heading over a listing is a word describing
-                a page the reader can see — and the card beneath it
-                already says "Latest teaching". It is still in the markup
-                for a crawler and still read out, just not drawn, and
-                only where a lead follows it. */}
-            <div className={quietTitle ? 'sr-only sm:not-sr-only sm:min-w-0' : 'min-w-0'}>
-              {header}
-            </div>
-            {/* Ordering, as three chips rather than a menu: there are only
-                three, and a reader should be able to see which one is on
-                without opening anything. */}
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
-              {(Object.keys(ORDERS) as Order[]).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setOrder(key)}
-                  aria-pressed={order === key}
-                  className={`focus-ring kicker rounded-chip border px-3.5 py-2 transition-colors ${
-                    order === key
-                      ? 'border-navy bg-card text-navy'
-                      : 'border-rule bg-card text-ink-muted hover:border-gold-pale hover:text-gold-ink'
-                  }`}
-                >
-                  {ORDERS[key].label}
-                </button>
-              ))}
-            </div>
+          {/* On a phone the heading over a listing is a word describing
+              a page the reader can see — and the card beneath it already
+              says "Latest teaching". It is still in the markup for a
+              crawler and still read out, just not drawn, and only where a
+              lead follows it.
+
+              The margin belongs to the heading rather than to a wrapper
+              round it: left on the wrapper it reserved twenty-four pixels
+              under something that was not being drawn, and the picture
+              sat that far down the page for no reason. */}
+          <div
+            className={
+              quietTitle
+                ? 'sr-only sm:not-sr-only sm:mb-6 sm:min-w-0'
+                : 'mb-6 min-w-0'
+            }
+          >
+            {header}
           </div>
 
           {shown.length === 0 ? (
