@@ -166,6 +166,14 @@ export default async function PostedArticlePage({ params }: Params) {
     <>
       <JsonLd data={articleLd} />
       {faqLd && <JsonLd data={faqLd} />}
+      {/* No picture at the head of the teaching. It earns its place on the
+          front page and in a listing, where it is what makes somebody
+          choose this piece — and once they have chosen it, it is a thing
+          to scroll past on the way to the first sentence. The artwork
+          also carries the headline inside it, so on the page whose
+          headline is directly above it, it says the same thing twice. It
+          is still in the structured data and the feed, where a search
+          result and a reader's app take a picture from. */}
       <ArticleLayout
         slug={article.slug}
         category={article.category}
@@ -178,28 +186,13 @@ export default async function PostedArticlePage({ params }: Params) {
         publishedAt={article.publishedAt}
         readMinutes={article.readMinutes}
         verified={article.verified}
-        {...(article.imageUrl
-          ? {
-              hero: {
-                src: article.imageUrl,
-                alt: article.imageAlt ?? '',
-                /* The page already measures the file for its structured
-                   data — see `schemaImage`. Handing the same numbers to
-                   the layout is what lets a portrait poster keep its
-                   shape instead of being cropped to a landscape band. */
-                ...(image?.width && image?.height
-                  ? { width: image.width, height: image.height }
-                  : {}),
-              },
-            }
-          : {})}
         headings={headings}
         verses={verses}
         related={related}
         more={more}
         body={article.body}
       >
-        <ArticleProse body={article.body} links={links} />
+        <ArticleProse body={article.body} links={links} recommended={related.slice(0, 4)} />
       </ArticleLayout>
     </>
   )
