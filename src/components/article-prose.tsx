@@ -140,7 +140,7 @@ export function ArticleProse({
               <h2
                 key={index}
                 id={block.id}
-                className="group mb-5 mt-14 flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.5rem] font-normal leading-[1.24] tracking-[-0.008em] text-navy md:text-[1.9rem]"
+                className="chapter-head group mb-5 mt-16 flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.625rem] font-normal leading-[1.22] tracking-[-0.008em] text-gold-ink md:text-[2.0625rem]"
               >
                 <span className="min-w-0">{block.text}</span>
                 <SharePassage id={block.id} heading={block.text} />

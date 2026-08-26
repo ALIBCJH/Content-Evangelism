@@ -651,12 +651,41 @@ option {
 }
 
 /* Pulled Scripture: a cream figure ruled 3px gold on its opening edge. */
+/* A chapter of a teaching announces itself.
+   The subheadings here are the questions the teaching answers, and they
+   were set in the same navy as everything else — so an eleven-minute
+   piece read as one column of undifferentiated text and a reader looking
+   for the part that answers their question had nothing to scan for. The
+   gold is the site's own accent, and the short rule above each one is
+   the mark that makes the sections findable at a glance. */
+.chapter-head {
+  position: relative;
+}
+.chapter-head::before {
+  content: '';
+  position: absolute;
+  top: -1.15rem;
+  inset-inline-start: 0;
+  width: 2.75rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+
+/* Scripture, set on parchment.
+   It was `--raised` — a near-white with a blue cast, on a page that is
+   already pale blue — so the passage the teaching stands on differed
+   from the prose around it by about four values, and a reader scrolling
+   went past it without the eye catching. `--chip-gold` is the warm cream
+   the site already uses for its gold chips, and it flips to a warm brown
+   in the dark theme, so Scripture reads as a different material from the
+   writing in both. */
 .scripture {
   position: relative;
   margin: 0 0 30px;
   padding: 28px 32px;
-  background: var(--raised);
-  border: 1px solid var(--rule);
+  background: var(--chip-gold);
+  border: 1px solid rgb(var(--gold-rgb) / 0.28);
   border-radius: 14px;
 }
 .scripture::before {
