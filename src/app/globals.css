@@ -35,6 +35,7 @@
   --plate-rule-rgb: 29 69 104;
   --plate-soft-rgb: 159 180 200;  /* secondary text on the plate */
   --plate-pale-rgb: 200 214 228;  /* body text on the plate */
+  --plate-head-rgb: 246 250 255;  /* a headline set on the plate */
 
   /* ── Gold ──────────────────────────────────────────────────────── */
   --gold-rgb: 184 148 74;         /* accent ink, the primary button */
@@ -115,6 +116,7 @@
   --plate-rule: rgb(var(--plate-rule-rgb));
   --plate-soft: rgb(var(--plate-soft-rgb));
   --plate-pale: rgb(var(--plate-pale-rgb));
+  --plate-head: rgb(var(--plate-head-rgb));
   --gold: rgb(var(--gold-rgb));
   --gold-light: rgb(var(--gold-light-rgb));
   --gold-pale: rgb(var(--gold-pale-rgb));
@@ -169,7 +171,7 @@
 
   /* The header plus its gold rule plus air: where every sticky
      sidebar and scroll-margin starts. */
-  --stick: 104px;
+  --stick: 126px;
 
   /* Surfaces and shadows */
   --surface-1: rgb(var(--navy-rgb) / 0.035);
@@ -250,6 +252,7 @@
   --plate-rule-rgb: 38 73 111;
   --plate-soft-rgb: 168 190 210;
   --plate-pale-rgb: 211 224 236;
+  --plate-head-rgb: 237 244 252;
 
   /* Gold carries further on navy than on paper, so the working values
      are the paler end of the same ramp. */
@@ -658,18 +661,111 @@ option {
    for the part that answers their question had nothing to scan for. The
    gold is the site's own accent, and the short rule above each one is
    the mark that makes the sections findable at a glance. */
+/* Chapters, numbered.
+   Each subheading in a teaching is a question it answers, and until now
+   the only thing marking one was a short gold rule — which said "a
+   section starts here" and nothing else. The number says where in the
+   teaching it starts, which is what a reader halfway down a ten-minute
+   read actually wants to know, and it is the same mark the archive index
+   counts its rows with.
+   Counted in CSS rather than passed in as a prop, because the count is a
+   fact about the rendered document: nothing has to keep a running index
+   in step with which blocks turned out to be headings. */
+.chapter-run {
+  counter-reset: chapter;
+}
 .chapter-head {
   position: relative;
+  counter-increment: chapter;
 }
 .chapter-head::before {
+  content: counter(chapter, decimal-leading-zero);
+  position: absolute;
+  top: -1.9rem;
+  inset-inline-start: 0;
+  font-family: var(--font-mono), ui-monospace, 'SFMono-Regular', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+.chapter-head::after {
   content: '';
   position: absolute;
-  top: -1.15rem;
-  inset-inline-start: 0;
-  width: 2.75rem;
-  height: 2px;
-  border-radius: 2px;
+  top: -1.4rem;
+  inset-inline-start: 2.35rem;
+  width: 2.25rem;
+  height: 1px;
   background: var(--gold);
+  opacity: 0.55;
+}
+
+/* ── The illuminated initial ──────────────────────────────────────── */
+/* A teaching opens with no picture — the artwork earns its place in a
+   listing, where it is what makes somebody choose the piece, and is a
+   thing to scroll past once they have. What a page still needs is
+   somewhere for the eye to start, and the answer a scripture-publishing
+   house has used for five hundred years is the initial.
+   Set in the display serif rather than the reading one: it is a mark, not
+   a letter being read, and Fraunces has the weight for it. Three lines
+   deep, which is the depth at which it reads as deliberate rather than as
+   a font that failed to load. */
+.dropcap::first-letter {
+  float: left;
+  font-family: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  font-size: 3.5em;
+  line-height: 0.82;
+  padding-inline-end: 0.09em;
+  margin-block-start: 0.06em;
+  color: var(--gold-ink);
+}
+/* Not on a narrow phone. At 360px a three-line initial takes a third of
+   the measure and the four lines beside it break to two or three words
+   each, which is harder to read than the plain paragraph it replaced. */
+@media (max-width: 24rem) {
+  .dropcap::first-letter {
+    float: none;
+    font-size: 1em;
+    line-height: inherit;
+    padding-inline-end: 0;
+    margin-block-start: 0;
+    color: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+  }
+}
+
+/* ── The article's own measure ────────────────────────────────────── */
+/* The reading area is two tracks — 34rem of teaching, a gap, and a 280px
+   rail — centred inside the shell. That comes to 56rem at `lg`, and half
+   a rem more at `xl` where the gap opens.
+   The masthead and the chapter strip hang off the same figure, so the
+   headline, the strip and the first sentence of the teaching all begin at
+   one left edge. A page whose headline started forty pixels to the left
+   of the writing under it would be two left margins with no relation
+   between them, which is what this page used to be.
+   Below `lg` the tracks are a single column filling the shell, and so is
+   everything else. */
+.article-measure {
+  width: 100%;
+  margin-inline: auto;
+}
+@media (min-width: 64rem) {
+  .article-measure { max-width: 56rem; }
+}
+@media (min-width: 80rem) {
+  .article-measure { max-width: 56.5rem; }
+}
+
+/* ── The article masthead ─────────────────────────────────────────── */
+/* A teaching opens on the ministry's own panel rather than on the cream
+   band the rest of the site uses. Two things follow from it. The page a
+   reader lands on is unmistakably this publication's, which a pale band
+   with a headline on it is not; and the top of a teaching with no
+   photograph has something to be, instead of being the absence of one. */
+.article-plate {
+  background: var(--plate-deep);
+  border-bottom: 1px solid var(--plate-rule);
 }
 
 /* Scripture, set on parchment.

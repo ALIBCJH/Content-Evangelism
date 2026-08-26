@@ -530,12 +530,72 @@ words are the product: what it is, what it says, then what it looks like.
 Not both: the ministry's artwork sets the passage into the picture
 already.
 
+**A teaching opens on the ministry's own panel.** It was a cream band
+with the headline set in the chrome's sans, the way back to the archive
+and the desk's verdict stacked against the right edge, and no byline at
+all. Three things are different.
+
+The band is navy and runs the full width, which makes a teaching
+unmistakably this publication's from the first screen — and gives the
+head of a piece with no photograph something to *be* rather than being
+the absence of one. The headline moves back into the reading serif: set
+in the sans it announced a screen, and set in Newsreader it announces a
+piece of writing in the same face the teaching under it is set in, so the
+page reads as one document rather than as an interface with an article
+inside it.
+
+The byline and the date are at the top. They were at the foot, on the
+grounds that a reader checks who wrote a thing after reading it — true of
+some readers, and false of the ones who have never heard of this
+ministry, which on a page arriving from a search result is most of them.
+Trust is decided before the first paragraph, not after the last.
+
+And the way back to the archive is gone from the head. It was a gold
+button in the top right of every teaching, competing with the headline
+for the one thing the eye should land on first, and offering a reader who
+had just arrived a way to leave. The site's own masthead is directly
+above it, and the foot of the teaching carries the link in front of
+somebody who has finished.
+
+**One strip says where the reader is.** Three things each answered half
+of that question and none of them together: a folded contents card
+between the standfirst and the first sentence, which a reader had to
+decide about before being allowed to start and which then scrolled away;
+a chapter rail in the left margin from `xl`, a width most of this
+ministry's readers do not have; and a floating "N min left" pill in the
+top right corner, unrelated to either. They are one strip pinned under
+the masthead — the chapter being read with its number, how much is left,
+and every chapter one tap away — travelling with the reader at every
+width, which is the only way an answer to "where am I" is any use.
+
+It opens on a `details` element rather than on state, which is the thing
+the contents card got right and is worth keeping: a chapter list is
+navigation, so it is in the markup for a crawler, openable in a new tab,
+and reachable by keyboard with no script running. What the script adds is
+which chapter is current and how much is left.
+
+The masthead, the strip and the reading column all hang off one figure —
+`.article-measure`, which is what the two tracks come to when they are
+centred. A headline that began forty pixels left of the writing under it
+would be two left margins on one page.
+
+**The teaching opens on an initial.** There is no picture at the head of
+a piece, so the page still needs somewhere for the eye to start, and the
+answer a scripture-publishing house has used for five hundred years is
+the illuminated letter: three lines deep, in the display serif, in gold.
+It withdraws below 24rem, where a three-line initial takes a third of the
+measure and the four lines beside it break to three words each.
+
 **A teaching does not read as one column of text.** Its subheadings are
 the questions it answers, and they were set in the same navy as
 everything around them — so an eleven-minute piece looked like an
 undifferentiated wall and a reader hunting for the part that answered
 their question had nothing to scan for. They are gold now, a size larger,
-with a short gold rule above each one.
+and each is numbered — the same mark the archive index counts its rows
+with, saying where in the teaching a section starts rather than only that
+one does. Counted in CSS off the rendered document, so nothing has to
+keep a running index in step with which blocks turned out to be
+headings.
 
 Scripture is set on parchment. It was `--raised`, a near-white with a
 blue cast, on a page already pale blue — about four values of difference,
@@ -560,10 +620,7 @@ Once they have chosen it, it is a thing to scroll past on the way to the
 first sentence — and the artwork carries the headline inside it, so on
 the one page whose headline sits directly above it, it says the same
 thing twice. It is still in the structured data and the feed, where a
-search result and a reader's app take a picture from. Shown at the column's full width a two-by-three poster is
-five hundred and twenty-five pixels tall on a phone — most of the first
-screen, before a word of the teaching. It is capped by height and centred
-instead.
+search result and a reader's app take a picture from.
 
 **A rest in a long scroll.** A teaching here runs eight to eleven
 minutes, and the longest stretches carry six and seven paragraphs with
@@ -646,10 +703,13 @@ fetch the teaching now, so it opens with no connection later and waits
 under *Saved* in the archive. Both had been reachable only from the
 archive's cards, which is not the page most readers arrive on.
 
-**Reading the verse.** The archive is its own concordance: `scripture-index.ts`
-collects every passage these teachings quote in full, so a reference in the
-rail opens the words as this ministry set them out, naming the teaching they
-came from. A reference nothing quotes still prints as a reference.
+**Reading the verse.** The archive is its own concordance:
+`scripture-index.ts` collects every passage these teachings quote in
+full, so a reference at the close of a teaching opens the words as this
+ministry set them out, naming the teaching they came from. A reference
+nothing quotes still prints as a reference. It is at the close rather
+than beside the writing because it is apparatus — consulted after a
+reading rather than during one.
 
 **Sending a passage.** Every chapter heading carries its own anchor as a
 share — the phone's share sheet where there is one, the clipboard where
