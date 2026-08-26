@@ -26,17 +26,31 @@ import { embedSrc, watchHref } from '@/lib/youtube'
  * next line without hunting. Muted grey is correct for a caption and
  * wrong for two thousand words.
  *
- * The body is Gentium Book Plus at 19px on a 1.74 line — larger and
- * looser than the chrome, because devotional writing wants the space, and
- * because Gentium's tall x-height is what keeps a long passage legible on
- * a phone. Chapter headings are Newsreader; every citation, label and
- * caption is IBM Plex. Serif for what you read, sans for what you scan.
+ * The body is Newsreader at 17.5px on a phone and 19.5px above it, on a
+ * 1.7 line, in `--ink` — the deepest ink on the site, the one otherwise
+ * reserved for headings.
+ *
+ * It was Gentium Book Plus in `--ink-700`, and both halves of that were
+ * wrong for a long read. The ink is a mid grey-blue on a page that is
+ * itself pale blue, so the words sat back off the paper rather than on
+ * it; Gentium is a scripture-typesetting face whose strokes thin out on
+ * a backlit screen, which is the same weakness again. Newsreader is
+ * already the face of the headline and of every chapter heading, so a
+ * teaching is now one voice from the masthead to the last line — and the
+ * deepest ink is what makes it read as printed rather than as displayed.
+ *
+ * Gentium stays where its reason for being here still holds: quoted
+ * Scripture, and the panels where the ministry speaks for itself. Those
+ * are set apart on the page, and they should be set apart in the type.
+ *
+ * Every citation, label and caption is IBM Plex. Serif for what you
+ * read, sans for what you scan.
  */
 
 /* One class, used by the paragraph and by every list item, so a bullet
    and the sentence above it are set in the same type. */
 const RUNNING_TEXT =
-  'font-reading text-[1.0625rem] leading-[1.74] text-ink-700 text-pretty sm:text-[1.1875rem]'
+  'font-article text-[1.09375rem] leading-[1.7] text-ink text-pretty sm:text-[1.21875rem]'
 
 function Inlines({ inlines }: { inlines: Inline[] }) {
   return (
@@ -482,7 +496,7 @@ export function ArticleProse({
                 key={index}
                 className={
                   isFirst
-                    ? 'dropcap font-reading text-pretty text-[1.1875rem] leading-[1.7] text-ink-900 sm:text-[1.25rem]'
+                    ? 'dropcap font-article text-pretty text-[1.15625rem] leading-[1.68] text-ink sm:text-[1.28125rem]'
                     : `mt-5 ${RUNNING_TEXT}`
                 }
               >

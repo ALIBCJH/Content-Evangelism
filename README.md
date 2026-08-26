@@ -579,6 +579,32 @@ The masthead, the strip and the reading column all hang off one figure —
 centred. A headline that began forty pixels left of the writing under it
 would be two left margins on one page.
 
+**The body is set in Newsreader, in the deepest ink.** It was Gentium
+Book Plus in `--ink-700`, and both halves of that were wrong for a ten-
+minute read. `--ink-700` is a mid grey-blue on a page that is itself pale
+blue (`--ground` is `#EEF2F8`, not white), so the words sat back off the
+paper rather than on it; and Gentium is a scripture-typesetting face
+whose strokes thin out on a backlit screen, which is the same weakness
+again. Newsreader already sets the headline and every chapter heading, so
+a teaching is now one voice from the masthead to the last line, and
+`--ink` — the value otherwise reserved for headings — is what makes it
+read as printed rather than as displayed. 17.5px on a phone, 19.5px above
+it, on a 1.7 line.
+
+Gentium stays where its reason for being here still holds: quoted
+Scripture, and the panels where the ministry speaks for itself. Those are
+set apart on the page and should be set apart in the type.
+
+Newsreader's italic comes back with this, because the body reaches for it
+42 times across the teachings — the Greek and Hebrew a teaching
+transliterates (*harpazō*, *metanoia*, *qadosh*), and the phrases it
+lifts out of a verse to examine. It is its own `next/font` instance for
+one reason: `preload: false`. The italic is a small fraction of the words
+on any page, so it is fetched when the browser meets one rather than
+raced against the text on a Kenyan mobile connection. That is the
+opposite call from the body face itself, where taking the preload off was
+measured at 1.5s of First Contentful Paint and put straight back.
+
 **The teaching opens on an initial.** There is no picture at the head of
 a piece, so the page still needs somewhere for the eye to start, and the
 answer a scripture-publishing house has used for five hundred years is

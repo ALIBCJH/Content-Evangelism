@@ -79,14 +79,34 @@ const newsreader = Newsreader({
      weight from 300 up is available from the one file, and `opsz` keeps
      the standfirst and the 56px headline evenly drawn. */
   axes: ['opsz'],
-  /* Upright only. The italic was declared here and rendered nowhere —
-     nothing in the site sets `font-article` in italic, and the italic a
-     teaching does use is the body's own face, Gentium. Because
-     `next/font` preloads every face it is given, that unused italic was
-     the single largest download on the site: 144kB of variable font,
-     fetched on every page, ahead of the text, to draw nothing. */
+  /* Upright only, and the italic is declared separately below. The
+     italic used to be on this instance, rendering nowhere, and because
+     `next/font` preloads every face it is given it was the single
+     largest download on the site: 144kB of variable font fetched on
+     every page, ahead of the text, to draw nothing. */
   variable: '--font-newsreader',
   display: 'swap',
+})
+
+/* The same face's italic, for the body — which is set in Newsreader now,
+   and which reaches for italic 42 times across the teachings: the Greek
+   and Hebrew a teaching transliterates (harpazō, metanoia, qadosh), and
+   the phrases it lifts out of a verse to examine. A browser asked for
+   italic with no italic face to hand slants the upright one, and a
+   slanted serif on a page of real ones reads as a rendering fault.
+   Its own instance for one reason: `preload: false`. This is a small
+   fraction of the words on any page, so it is fetched when the browser
+   actually meets one rather than raced against the text on a Kenyan
+   mobile connection, and `display: swap` covers the gap. That is the
+   opposite call from the body face itself, where taking the preload off
+   was measured at 1.5s of First Contentful Paint and put straight back. */
+const newsreaderItalic = Newsreader({
+  subsets: ['latin'],
+  style: ['italic'],
+  axes: ['opsz'],
+  variable: '--font-newsreader-italic',
+  display: 'swap',
+  preload: false,
 })
 
 /* Every word of the article body, and the Scripture it quotes.
@@ -293,6 +313,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         inter.variable,
         mono.variable,
         newsreader.variable,
+        newsreaderItalic.variable,
         gentium.variable,
         plex.variable,
       ].join(' ')}

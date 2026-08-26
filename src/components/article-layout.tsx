@@ -34,11 +34,12 @@ import { ShareRow } from '@/components/share-row'
  * question and they are one strip now — `ChapterBar`.
  *
  * From here down the page leaves the chrome's type behind and is set in
- * the reading layer: Newsreader for the headline and the standfirst,
- * Gentium for every word of the body, IBM Plex for the byline and the
- * rail. Serif for what you read, sans for what you scan. The column is
- * capped at --read rather than --measure, because 19px Gentium reaches 65
- * characters sooner than the chrome's text does.
+ * the reading layer: Newsreader for the headline, the standfirst and
+ * every word of the body; Gentium for quoted Scripture and the panels
+ * where the ministry speaks for itself; IBM Plex for the byline and the
+ * apparatus. Serif for what you read, sans for what you scan. The column
+ * is capped at --read rather than --measure, because the reading serif
+ * reaches 65 characters sooner than the chrome's text does.
  *
  * Every teaching is rendered through this shell, from /articles/[slug],
  * so a change to how a teaching is presented is made once.
@@ -194,7 +195,7 @@ export function ArticleLayout({
               the track — and with it the whole page — sideways. The blocks
               that are wider than the measure scroll inside their own
               frames; this is what keeps that promise. */}
-          <article className="min-w-0 max-w-read font-reading">
+          <article className="min-w-0 max-w-read font-article">
             {/* What the reading bar measures: the teaching itself, from
                 its first line to its last. Everything below this — the
                 Scriptures cited, the byline, the share row, Read Next —
