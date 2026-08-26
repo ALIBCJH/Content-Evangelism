@@ -463,26 +463,41 @@ lead runs edge to edge on a phone, a card again from `sm`: a border, a
 radius and padding on both sides of the narrowest column on the device,
 spent to separate the lead from a page it is the only thing on.
 
-**Every teaching in a listing carries a mark.** A column of headlines
-with nothing beside them is read by nobody: the eye has no place to stop,
-so five teachings become one grey block. The shape every news front page
-on a phone has settled on is a mark about a third of the width with the
-headline beside it, and that is what a listing row is now — ruled rather
-than carded, because a card costs a border and padding on both edges of a
-column already narrow, and a hairline does the same work for one pixel.
+**Below the lead, the archive is an index.** A column of headlines with
+nothing beside them is read by nobody — the eye has no place to stop —
+which is why every row once carried a mark about a third of the width,
+the shape every news front page on a phone has settled on. The trouble is
+what the mark was. Only two teachings here have artwork; the rest drew
+`categoryArt`, the section's own field, and a section's field is the same
+for every teaching in it. So four rows carried four copies of one
+coloured band: the eye had nowhere to stop after all, and every headline
+was a third narrower for the privilege. Four identical marks are worse
+than none.
 
-Where a teaching has a photograph, the photograph is the mark. Where it
-has none — which is five of six — the mark is made of the teaching:
-`categoryArt` has named a palette for every section since the site was
-built and nothing ever drew one, so this is that field, carrying the
-passage the teaching opens on. It is deliberately typographic rather than
-iconographic. Sixteen hand-drawn marks is a large piece of design with a
-real risk of reading as clip-art beside the ministry's own artwork; a
-passage on a coloured field is the scripture plate's own language, it
-differs for every teaching without anybody drawing anything, and a short
-reference is legible at a hundred pixels where a headline is not — see
-`shortRef`, which is what makes "Matthew 3:2 and Matthew 4:17, KJV" fit
-in a square.
+What is actually different from row to row is the day a teaching went up
+and where it sits in the archive. So those are what the column is built
+from — a date over each run that arrived together, a two-digit number
+counting through the whole listing with the lead as the first, the
+headline, and the section and length under it. One column at every width,
+because a chronology poured down two is read in the wrong order by
+anybody who reads across. Day headings are dropped for a set the reader
+has reordered by searching it: the order there is relevance, and a date
+heading over it would claim a chronology the list does not have.
+
+Deep ink rather than the ministry's navy. Navy is right on a card, where
+it is one headline with air round it; down a column of a dozen it reads
+as a list of links rather than a list of teachings.
+
+`TeachingRow` and `TeachingArt` — the row with a mark, and the field it
+drew — are kept and drawn by nothing. Whether a listing row should carry
+a picture is a question the ministry has not finished answering, and
+those are the answer it had. The generated field is deliberately
+typographic rather than iconographic: sixteen hand-drawn marks is a large
+piece of design with a real risk of reading as clip-art beside the
+ministry's own artwork, where a passage on a coloured field is the
+scripture plate's own language and a short reference is legible at a
+hundred pixels — see `shortRef`, which is what makes "Matthew 3:2 and
+Matthew 4:17, KJV" fit in a square.
 
 `scripts/attach-art.mjs` attaches a poster and its crop to a teaching
 that is already on the site. The desk can do this and for one teaching the
@@ -505,9 +520,9 @@ A teaching may carry two pictures. The ministry's own artwork is a
 portrait poster with the headline set into the picture — right at the
 head of a piece, and unusable in a listing row, where cropping it to a
 hundred-pixel band cuts the words out of the middle of the artwork.
-`thumbnailUrl` is the wide crop with no words in it. A listing takes the
-crop, then the poster, then the section's field; the head of a piece
-always takes the poster.
+`thumbnailUrl` is the wide crop with no words in it. The lead card takes
+the crop, then the poster; the head of a piece always takes the poster.
+Nothing below the lead takes either.
 
 On the lead, a picture stands where the plate would, and below the
 headline rather than above it — the order a publication uses when the

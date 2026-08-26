@@ -11,7 +11,7 @@ import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
 import { LeadCard } from '@/components/archive/lead-card'
-import { TeachingRow } from '@/components/archive/teaching-row'
+import { TeachingIndex } from '@/components/archive/teaching-index'
 import { TopicsRail } from '@/components/archive/topics-rail'
 
 /**
@@ -305,19 +305,17 @@ export function ArchiveList({
         {rest.length > 0 && (
           <div className="order-2 min-w-0 lg:order-none">
             <h2 className="sr-only">The rest of the archive</h2>
-            {/* Ruled rather than carded, and one column on a phone.
-                These were cards two across: on a 390px screen that is a
-                border and padding on both edges of a column already too
-                narrow, spent on separating things a hairline separates
-                for one pixel. Two across returns from `sm`, where there
-                is width to spend. */}
-            <ol className="divide-y divide-rule-soft sm:grid sm:grid-cols-2 sm:gap-x-6 sm:divide-y-0 xl:grid-cols-1">
-              {rest.map((item) => (
-                <li key={item.slug} className="sm:border-b sm:border-rule-soft">
-                  <TeachingRow item={item} />
-                </li>
-              ))}
-            </ol>
+            {/* An index, and one column at every width. These were rows
+                with a picture each, two across from `sm` — and for most
+                of the archive the picture was the section's own generated
+                field, so a column of them was one coloured band repeated
+                and every headline was a third narrower for it. What is
+                different from row to row is the day and the position, so
+                those are what the column is built out of.
+                One column because the day headings are a chronology, and
+                a chronology poured down two columns is read in the wrong
+                order by anybody who reads it across. */}
+            <TeachingIndex items={rest} startAt={2} dated={!query.trim()} />
           </div>
         )}
       </div>

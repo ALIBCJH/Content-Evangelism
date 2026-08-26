@@ -24,6 +24,14 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * and on a 390px phone that is thirty or forty pixels of measure gone
  * from the only thing on the row that matters. A hairline does the same
  * work — these are separate things — and costs one pixel.
+ *
+ * Nothing draws this at the moment. The archive below the lead is
+ * `TeachingIndex`, which carries no pictures — because for most of the
+ * archive the mark was the section's own generated field, and a column of
+ * four identical bands is worse than none. It is kept, with `TeachingArt`
+ * under it, because whether a listing row should carry a picture is a
+ * question the ministry has not finished answering, and this is the
+ * answer it had.
  */
 export function TeachingRow({ item }: { item: ArchiveItem }) {
   return (
