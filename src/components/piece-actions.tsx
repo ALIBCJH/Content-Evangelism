@@ -31,10 +31,21 @@ export function PieceActions({
   slug,
   title,
   className = '',
+  onPlate = false,
 }: {
   slug: string
   title: string
   className?: string
+  /**
+   * Set on the ministry's navy panel rather than on paper.
+   *
+   * The pills are a card with a hairline round it, which on navy is a
+   * white rectangle floating in the band. On the plate they are the
+   * plate's own rule and the plate's own text, and the pressed state
+   * moves to pale gold — the gold that carries on navy, where the ink
+   * gold is a brown nobody can read there.
+   */
+  onPlate?: boolean
 }) {
   const speech = useSpeech()
   const { ready, isSaved, toggle } = useSaved()
@@ -56,6 +67,12 @@ export function PieceActions({
 
   const pill =
     'focus-ring inline-flex h-10 items-center gap-2 rounded-chip border px-4 font-mono text-[0.625rem] uppercase tracking-[0.12em] transition-colors [&_svg]:size-3.5'
+  const resting = onPlate
+    ? 'border-plate-rule bg-transparent text-plate-soft hover:border-gold hover:text-gold-pale'
+    : 'border-rule bg-card text-ink-muted hover:border-gold hover:text-navy'
+  const pressed = onPlate
+    ? 'border-gold bg-gold/15 text-gold-pale'
+    : 'border-gold bg-gold/10 text-gold-ink'
 
   return (
     <div className={className}>
@@ -66,15 +83,13 @@ export function PieceActions({
           disabled={loading}
           aria-pressed={playing}
           className={`${pill} ${
-            mine && speech.status !== 'idle'
-              ? 'border-gold bg-gold/10 text-gold-ink'
-              : 'border-rule bg-card text-ink-muted hover:border-gold hover:text-navy'
+            mine && speech.status !== 'idle' ? pressed : resting
           } disabled:opacity-60`}
         >
           {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
           {loading ? 'Starting…' : playing ? 'Pause' : paused ? 'Resume' : 'Listen'}
           {(playing || paused) && (
-            <span className="tabular normal-case tracking-normal text-gold-ink/80">
+            <span className="tabular normal-case tracking-normal opacity-80">
               {clock(speech.elapsed)}
             </span>
           )}
@@ -84,7 +99,7 @@ export function PieceActions({
           <button
             type="button"
             onClick={speech.stop}
-            className={`${pill} border-rule bg-card text-ink-muted hover:border-gold hover:text-navy`}
+            className={`${pill} ${resting}`}
           >
             <Square aria-hidden />
             Stop
@@ -95,11 +110,7 @@ export function PieceActions({
           type="button"
           onClick={() => toggle(slug)}
           aria-pressed={ready ? kept : undefined}
-          className={`${pill} ${
-            kept
-              ? 'border-gold bg-gold/10 text-gold-ink'
-              : 'border-rule bg-card text-ink-muted hover:border-gold hover:text-navy'
-          }`}
+          className={`${pill} ${kept ? pressed : resting}`}
         >
           {kept ? <BookmarkCheck aria-hidden /> : <Bookmark aria-hidden />}
           {kept ? 'Saved' : 'Save'}
@@ -109,7 +120,12 @@ export function PieceActions({
       {/* What the device did, where the reader is looking — the bar at the
           foot of the window says the same thing, and a reader who has not
           scrolled has not seen it. */}
-      <p aria-live="polite" className="mt-2 min-h-[1.25rem] text-[0.8125rem] leading-[1.5] text-ink-subtle">
+      <p
+        aria-live="polite"
+        className={`mt-2 text-[0.8125rem] leading-[1.5] ${
+          onPlate ? 'empty:mt-0 text-plate-soft' : 'min-h-[1.25rem] text-ink-subtle'
+        }`}
+      >
         {mine && speech.status === 'unsupported'
           ? 'This device has no voice installed, so it cannot read aloud.'
           : mine && speech.status === 'failed'

@@ -150,7 +150,11 @@ export function ArticleProse({
   let firstParagraphSeen = false
 
   return (
-    <>
+    /* `chapter-run` is what numbers the chapters. The count is kept by CSS
+       rather than passed in, because it is a fact about the rendered
+       document: nothing here has to hold a running index in step with
+       which blocks turned out to be headings. */
+    <div className="chapter-run">
       {blocks.map((block, index) => {
         /* Before the heading, so the aside closes the section that was
            finishing rather than interrupting the one about to start. */
@@ -171,7 +175,7 @@ export function ArticleProse({
                 {recommend}
               <h2
                 id={block.id}
-                className="chapter-head group mb-5 mt-16 flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.625rem] font-bold leading-[1.22] tracking-[-0.008em] text-gold-ink md:text-[2.0625rem]"
+                className="chapter-head group mb-5 mt-[4.5rem] flex scroll-mt-stick items-baseline gap-2.5 text-balance font-article text-[1.625rem] font-bold leading-[1.22] tracking-[-0.008em] text-gold-ink md:text-[2.0625rem]"
               >
                 <span className="min-w-0">{block.text}</span>
                 <SharePassage id={block.id} heading={block.text} />
@@ -465,12 +469,20 @@ export function ArticleProse({
           default: {
             const isFirst = !firstParagraphSeen
             firstParagraphSeen = true
+            /* The opening paragraph is set a size larger and takes the
+               initial. A teaching opens with no picture — the artwork
+               earns its place in a listing, where it is what makes
+               somebody choose the piece, and is a thing to scroll past
+               once they have — so the page still needs somewhere for the
+               eye to start, and the answer a scripture-publishing house
+               has used for five hundred years is the illuminated letter.
+               See `.dropcap`, which withdraws it on a narrow phone. */
             return (
               <p
                 key={index}
                 className={
                   isFirst
-                    ? 'font-reading text-pretty text-[1.1875rem] leading-[1.7] text-ink-900 sm:text-[1.25rem]'
+                    ? 'dropcap font-reading text-pretty text-[1.1875rem] leading-[1.7] text-ink-900 sm:text-[1.25rem]'
                     : `mt-5 ${RUNNING_TEXT}`
                 }
               >
@@ -480,6 +492,6 @@ export function ArticleProse({
           }
         }
       })}
-    </>
+    </div>
   )
 }

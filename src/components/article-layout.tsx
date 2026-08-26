@@ -1,35 +1,37 @@
 import * as React from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { Posted } from '@/components/posted'
-import { ArrowLeft, BadgeCheck, CircleDashed } from 'lucide-react'
 import { siteUrl, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
 import type { Verse } from '@/lib/scripture-index'
 import { scriptureRefs } from '@/lib/scripture'
 import type { Heading } from '@/lib/toc'
-import { ArticleContents } from '@/components/article-contents'
+import { ArticleMasthead } from '@/components/article-masthead'
 import { AskQuestion } from '@/components/ask-question'
-import { ArticleRail, ChapterNav, ScriptureList } from '@/components/article-rail'
+import { ChapterBar } from '@/components/chapter-bar'
+import { ScriptureList } from '@/components/article-rail'
 import { JsonLd } from '@/components/json-ld'
 import { ContinueReading } from '@/components/continue-reading'
 import { FollowChannel } from '@/components/follow-channel'
 import { MoreArticles } from '@/components/more-articles'
-import { PieceActions } from '@/components/piece-actions'
 import { ReadingProgress } from '@/components/progress-bar'
 import { SectionTimer } from '@/lib/section-time'
 import { ShareRow } from '@/components/share-row'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 /**
  * One article page, for every article.
  *
- * The design sets it in two parts. First a cream band: the breadcrumb, the
- * headline and its standfirst on the left, the photograph on the right —
- * so a reader knows what the piece is and what it looks like before
- * scrolling at all. Then the reading column with a 280px rail beside it
- * carrying the chapters and the Scriptures the teaching rests on.
+ * Three parts. The masthead — the ministry's navy panel, carrying the
+ * section, the headline, the standfirst and the byline; see
+ * `ArticleMasthead` for why the byline moved to the top and the way back
+ * to the archive left the head entirely. Under it, pinned, the chapter
+ * strip: where the reader is, how much is left, and every chapter one tap
+ * away. Then the reading column, with what to read next beside it.
+ *
+ * What used to be here and is not: a folded contents card between the
+ * standfirst and the first sentence, a chapter rail in the left margin at
+ * widths most of this ministry's readers do not have, and a floating
+ * minutes-left pill in the corner. Those were three answers to one
+ * question and they are one strip now — `ChapterBar`.
  *
  * From here down the page leaves the chrome's type behind and is set in
  * the reading layer: Newsreader for the headline and the standfirst,
@@ -60,8 +62,7 @@ export interface ArticleLayoutProps {
    * silence on every other page means.
    */
   verified?: boolean
-  hero?: { src: string; alt: string; caption?: string; width?: number; height?: number }
-  /** Chapters, for the rail and the in-flow contents list. */
+  /** Chapters, for the strip under the masthead. */
   headings: Heading[]
   /** What to read next — see `relatedRows`. */
   related: RealRow[]
@@ -90,71 +91,20 @@ export interface ArticleLayoutProps {
   children: React.ReactNode
 }
 
-/**
- * The way back, and whether the desk has been through the teaching.
- *
- * The way back is gold and larger than a plain pill: it is the one
- * control on the page and has to be findable from the end of a long read.
- *
- * Green is the site's fulfilled colour and carries the same meaning here:
- * this was looked at and it holds. The unchecked state is grey and
- * deliberately quiet — it reports that nobody has been through the piece
- * yet, which is not an accusation against it.
- */
-function Controls({ verified, className = '' }: { verified?: boolean; className?: string }) {
-  return (
-    <div className={`flex flex-col items-start gap-3 ${className}`}>
-      <Link
-        href="/"
-        className={cn(
-          buttonVariants({ variant: 'outline' }),
-          'gap-2 border-gold bg-gold/10 px-7 text-gold-ink hover:border-gold hover:bg-gold/20 hover:text-gold-ink [&_svg]:size-[1.125rem]'
-        )}
-      >
-        <ArrowLeft aria-hidden />
-        All articles
-      </Link>
-      <span
-        title={
-          verified
-            ? "Checked by the editorial desk against the ministry's published teaching."
-            : 'Not yet checked by the editorial desk.'
-        }
-        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-apparatus text-[0.6875rem] font-medium uppercase tracking-[0.08em] ${
-          verified
-            ? 'border-fulfilled/35 bg-fulfilled/10 text-fulfilled'
-            : 'border-rule bg-card text-ink-subtle'
-        }`}
-      >
-        {verified ? (
-          <BadgeCheck aria-hidden className="h-3.5 w-3.5" />
-        ) : (
-          <CircleDashed aria-hidden className="h-3.5 w-3.5" />
-        )}
-        {verified ? 'Verified' : 'Not verified'}
-      </span>
-    </div>
-  )
-}
-
-/**
- * The tracks, shared by the band and the reading area.
- *
- * The headline used to sit at the shell's edge while the teaching below it
- * began 300px further in — two left margins on one page, with no relation
- * between them. Both hang off the same grid now, so the headline starts
- * where the chapters start and ends where the teaching ends.
- */
 /** The element the reading bar measures, named so a server page can point at it. */
 const READING_TARGET = 'the-teaching'
 
+/**
+ * The reading area: the teaching, and what to read next beside it.
+ *
+ * Two tracks where there were three. The left one carried the chapters,
+ * and the chapters travel with the reader now — so what is left is the
+ * writing at the measure it should be read at, and one rail. The pair is
+ * centred, so the slack on a wide screen is a margin on both sides rather
+ * than a void on one.
+ */
 const TRACKS =
-  'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:grid-cols-[240px_minmax(0,var(--read))_260px] xl:gap-x-14'
-
-/** Taller than it is wide, and measured rather than assumed. */
-function isPortrait(hero: { width?: number; height?: number }): boolean {
-  return Boolean(hero.width && hero.height && hero.height > hero.width)
-}
+  'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:gap-x-20'
 
 export function ArticleLayout({
   slug,
@@ -165,7 +115,6 @@ export function ArticleLayout({
   publishedAt,
   readMinutes,
   verified,
-  hero,
   headings,
   related,
   more,
@@ -207,127 +156,22 @@ export function ArticleLayout({
       <SectionTimer path={`/articles/${slug}`} ids={headings.map((heading) => heading.id)} />
 
       <main>
-        {/* ── The band ───────────────────────────────────────────── */}
-        <section className="border-b border-rule bg-raised">
-          {/* One block across the whole grid. A teaching with no photograph
-              had been laying its headline into a 1fr track beside an empty
-              0.85fr one — half the band blank, and the headline broken over
-              three lines to fit a column that was only narrow because of a
-              picture that was never there. */}
-          <div className={`${TRACKS} pb-5 pt-4`}>
-            <div className="col-span-full">
-              {/* With a photograph beside the headline the right of the
-                  band is spoken for, so the controls stay above it. With
-                  no photograph — which is every teaching so far — they
-                  move into that space instead; see below. */}
-              {hero && <Controls verified={verified} className="mb-4" />}
+        <ArticleMasthead
+          slug={slug}
+          category={category}
+          title={title}
+          dek={dek}
+          author={author}
+          publishedAt={publishedAt}
+          readMinutes={readMinutes}
+          verified={verified}
+        />
 
-              {/* The photograph is what asks for two columns. Without one
-                  there is nothing to sit beside, and the headline takes
-                  the width. */}
-              <div
-                className={
-                  hero
-                    ? 'grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.72fr)] lg:gap-14'
-                    : 'flex flex-col gap-y-5 sm:flex-row sm:items-start sm:justify-between sm:gap-x-12'
-                }
-              >
-                <div className="min-w-0">
-                  {/* The headline used to be the reading serif at 300 —
-                      unhurried, and easy to read past. A teaching has to
-                      earn a reader who is deciding in a second whether to
-                      stay, so it is set the way a headline is set when that
-                      is its job: the sans at 700, tight, with the tracking
-                      pulled in. The teaching itself is still the serif —
-                      this changes what announces the piece, not what is
-                      read for ten minutes. */}
-                  <h1 className="mb-3 text-balance font-apparatus text-[1.625rem] font-bold leading-[1.1] tracking-[-0.022em] text-navy sm:text-[2rem] lg:text-[2.375rem]">
-                    {title}
-                  </h1>
-                  {/* The standfirst keeps a measure of its own — a headline
-                      can run the width of the page, two sentences cannot —
-                      and it follows the headline out of the italic serif.
-                      Set upright in the same face, it reads as the second
-                      line of the announcement rather than as a caption
-                      apologising under it. */}
-                  <p className="mb-3.5 max-w-[44rem] text-pretty font-apparatus text-[0.9375rem] leading-[1.55] text-ink-700 sm:text-[1rem]">
-                    {dek}
-                  </p>
-
-                  {/* Read it to me, or keep it for when the line drops.
-                      Both were reachable only from the archive's cards,
-                      which is not the page most readers arrive on. */}
-                  <PieceActions slug={slug} title={title} className="mt-4" />
-                </div>
-
-                {/* The way back and the desk's verdict, in the width a
-                    headline does not use. They were stacked above the
-                    teaching, which cost two rows before the first word;
-                    on the right of the same rows they cost none.
-
-                    The byline that sat under the standfirst is gone with
-                    them. Author, date and reading time are still in the
-                    page's structured data and in the feed, where a search
-                    result and a reader's app take them from. */}
-                {!hero && <Controls verified={verified} className="order-first shrink-0 sm:order-none sm:items-end" />}
-
-                {hero && (
-                  <figure className="m-0">
-                    {/* A photograph is cropped to a consistent 3:2, which
-                        is what gives every teaching's head the same
-                        rhythm. A portrait picture is not: the ministry's
-                        artwork is a poster with the headline set into it,
-                        and forcing that into a landscape band cuts the
-                        words out of the middle of the picture. The page
-                        already knows which it is — it measures the file
-                        for the structured data — so it can simply not do
-                        that. */}
-                    {isPortrait(hero) ? (
-                      <Image
-                        src={hero.src}
-                        alt={hero.alt}
-                        width={hero.width!}
-                        height={hero.height!}
-                        priority
-                        sizes="(min-width: 1024px) 42vw, 100vw"
-                        /* Held to a height rather than run to the full
-                           width of the column. A two-by-three poster at
-                           390px is five hundred and twenty-five pixels
-                           tall — most of the first screen, before a word
-                           of the teaching — and a picture that fills the
-                           window a reader opened to read is not
-                           welcoming, it is a wall. Capped it is an
-                           illustration beside the standfirst, which is
-                           what it should have been. */
-                        className="mx-auto h-auto max-h-[17rem] w-auto rounded-panel bg-navy-deep sm:max-h-[22rem]"
-                      />
-                    ) : (
-                      <div className="relative aspect-[3/2] overflow-hidden rounded-panel bg-navy-deep">
-                        <Image
-                          src={hero.src}
-                          /* What the photograph shows — not the headline
-                             again, which tells a screen reader and image
-                             search nothing the h1 above has not already
-                             said. */
-                          alt={hero.alt}
-                          fill
-                          priority
-                          sizes="(min-width: 1024px) 42vw, 100vw"
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    {hero.caption && (
-                      <figcaption className="mt-3 text-xs leading-snug text-ink-subtle">
-                        {hero.caption}
-                      </figcaption>
-                    )}
-                  </figure>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Where the reader is, pinned under the site's own masthead.
+            Outside the reading grid because it spans the window, and
+            directly after the band because that is the moment it starts
+            being an answer rather than a decoration. */}
+        <ChapterBar headings={headings} targetId={READING_TARGET} readMinutes={readMinutes} />
 
         {/* ── The reading column ─────────────────────────────────── */}
         {/* Three columns where there is room for three: where you are in
@@ -350,13 +194,7 @@ export function ArticleLayout({
               the track — and with it the whole page — sideways. The blocks
               that are wider than the measure scroll inside their own
               frames; this is what keeps that promise. */}
-          <article className="min-w-0 max-w-read font-reading xl:col-start-2 xl:row-start-1">
-            {/* The chapter list, for every width the rail does not reach. */}
-            <ArticleContents
-              headings={headings}
-              className="mb-10 rounded-panel border border-rule bg-card px-6 py-5 lg:hidden"
-            />
-
+          <article className="min-w-0 max-w-read font-reading">
             {/* What the reading bar measures: the teaching itself, from
                 its first line to its last. Everything below this — the
                 Scriptures cited, the byline, the share row, Read Next —
@@ -371,26 +209,12 @@ export function ArticleLayout({
                   <ScriptureList scriptures={refs} verses={verses} />
                 </div>
               )}
-              {/* Who wrote it and when, at the foot rather than the head.
-                  It was under the standfirst, in front of a reader who had
-                  not yet decided to read; here it is in front of one who
-                  has finished, which is when a person checks how old a
-                  thing is and who stands behind it. The same three facts
-                  are in the page's Article data for a search result. */}
-              <p className="mt-10 border-t border-rule-soft pt-5 font-apparatus text-[0.75rem] tracking-[0.06em] text-ink-subtle">
-                {author.href ? (
-                  <Link href={author.href} rel="author" className="transition-colors hover:text-gold">
-                    {author.name}
-                  </Link>
-                ) : (
-                  <span>{author.name}</span>
-                )}
-                <span aria-hidden className="mx-2">·</span>
-                <Posted iso={publishedAt} />
-                <span aria-hidden className="mx-2">·</span>
-                <span className="tabular">{readMinutes} MIN READ</span>
-              </p>
-
+              {/* No byline here any more. It was at the foot on the
+                  grounds that a reader checks who wrote a thing after
+                  reading it — true of some readers, and false of the ones
+                  who have never heard of this ministry, which on a page
+                  arriving from a search result is most of them. It is on
+                  the masthead, where trust is actually decided. */}
               {colophon}
               <div className="ornament mx-auto mt-8 max-w-xs">
                 <span aria-hidden className="text-base leading-none">✦</span>
@@ -414,30 +238,16 @@ export function ArticleLayout({
             <ContinueReading rows={related} category={category} />
           </article>
 
-          {/* The one-rail width. Both halves, stacked, on the right. */}
-          {/* No explicit row here: a grid item with a definite row is
-              placed before the auto-placed ones, which would hand the rail
-              the reading track and squeeze the teaching into the rail. */}
-          <div className="hidden lg:block xl:hidden">
-            <ArticleRail headings={headings}>
-              <MoreArticles rows={more} />
-            </ArticleRail>
-          </div>
-
-          {/* The three-column width, where they part company. */}
-          {headings.length > 1 && (
-            <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-1 xl:row-start-1 xl:block">
-              <ChapterNav headings={headings} />
-            </aside>
-          )}
-          {/* This rail has carried two things that were not it. First the
-              Scriptures the teaching cites, which is apparatus — consulted
-              after a reading rather than during one, and now at the close.
-              Then the prophetic record, which is a different archive
-              making a different claim, and reads beside a teaching as a
-              change of subject. What a reader halfway through a teaching
-              wants in their eyeline is the next teaching. */}
-          <aside className="hidden self-start xl:sticky xl:top-stick xl:col-start-3 xl:row-start-1 xl:block">
+          {/* The one rail, from `lg`. It has carried three things that
+              were not it. The Scriptures the teaching cites, which is
+              apparatus — consulted after a reading rather than during
+              one, and now at the close. The prophetic record, which is a
+              different archive making a different claim and reads beside
+              a teaching as a change of subject. And the chapters, which
+              travel with the reader now. What is left is what a reader
+              halfway through a teaching actually wants in their eyeline:
+              the next teaching. */}
+          <aside className="hidden self-start lg:sticky lg:top-stick lg:block">
             <MoreArticles rows={more} />
           </aside>
         </div>

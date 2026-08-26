@@ -76,6 +76,7 @@ const config: Config = {
           rule: 'rgb(var(--plate-rule-rgb) / <alpha-value>)',
           soft: 'rgb(var(--plate-soft-rgb) / <alpha-value>)',
           pale: 'rgb(var(--plate-pale-rgb) / <alpha-value>)',
+          head: 'rgb(var(--plate-head-rgb) / <alpha-value>)',
         },
 
         /* ── Gold ──────────────────────────────────────────────── */
