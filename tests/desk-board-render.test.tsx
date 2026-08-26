@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { FindingsBand } from '@/components/admin/board/findings'
 import { HealthBand, NeedsBand, PartsBand, StretchBand } from '@/components/admin/board/bands'
 import { PiecesTable } from '@/components/admin/board/pieces-table'
-import { pieceRows, summarise, type DeskArticle } from '@/lib/desk-overview'
+import { WithoutPictureBand } from '@/components/admin/board/without-picture'
+import { pieceRows, summarise, withoutPicture, type DeskArticle } from '@/lib/desk-overview'
 import type { DayTotals, PageInsight } from '@/lib/insight-shape'
 
 /**
@@ -57,13 +58,17 @@ const ROWS = pieceRows(
 )
 
 describe('the bands draw', () => {
-  it('shows the four things needing a decision', () => {
+  it('shows the things needing a decision', () => {
     const html = renderToStaticMarkup(
-      <NeedsBand needs={{ waiting: 2, unverified: 12, sentBack: 1, unanswered: 4 }} />
+      <NeedsBand
+        needs={{ waiting: 2, unverified: 12, sentBack: 1, pictureless: 11, unanswered: 4 }}
+      />
     )
     expect(html).toContain('Waiting for review')
     expect(html).toContain('Live but unverified')
     expect(html).toContain('12')
+    expect(html).toContain('Live without a picture')
+    expect(html).toContain('#band-no-picture')
     /* The readers' queue is the one that is somewhere else. */
     expect(html).toContain('/admin/questions')
   })
@@ -177,5 +182,58 @@ describe('the bands draw', () => {
     )
     expect(html).toContain('Problem: ')
     expect(html).toContain('Good: ')
+  })
+})
+
+describe('the teachings on the site without a picture', () => {
+  const rows = pieceRows(
+    [
+      article('plain'),
+      article('also-plain'),
+      article('has-art', { hasPicture: true }),
+      article('waiting', { status: 'pending' }),
+    ],
+    [],
+    []
+  )
+
+  it('lists them, and offers the two ways out', () => {
+    const html = renderToStaticMarkup(
+      <WithoutPictureBand
+        rows={withoutPicture(rows)}
+        busy={null}
+        onTakeDown={() => {}}
+        onTakeDownAll={() => {}}
+      />
+    )
+    expect(html).toContain('On the site without a picture')
+    expect(html).toContain('plain')
+    /* A picture is one way out and taking it down is the other; a band
+       that only offered the second would read as a demand to delete. */
+    expect(html).toContain('Give it a picture')
+    expect(html).toContain('Take it off')
+    expect(html).toContain('Take all 2 off the site')
+  })
+
+  it('leaves out the ones that are fine and the ones already off the site', () => {
+    const html = renderToStaticMarkup(
+      <WithoutPictureBand
+        rows={withoutPicture(rows)}
+        busy={null}
+        onTakeDown={() => {}}
+        onTakeDownAll={() => {}}
+      />
+    )
+    expect(html).not.toContain('has-art')
+    expect(html).not.toContain('waiting')
+  })
+
+  /* A heading reading "None" is a job advertised to somebody who has
+     already finished it. */
+  it('draws nothing at all when there are none', () => {
+    const html = renderToStaticMarkup(
+      <WithoutPictureBand rows={[]} busy={null} onTakeDown={() => {}} onTakeDownAll={() => {}} />
+    )
+    expect(html).toBe('')
   })
 })

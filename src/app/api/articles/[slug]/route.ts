@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import {
+  canReview,
   deskSession,
   deskToken,
   deletePostedArticle,
   getPostedArticle,
+  isLive,
   updatePostedArticle,
   validateInput,
+  wroteIt,
 } from '@/lib/posted'
 import { revalidatePublished } from '@/lib/revalidate'
 import { listWriters } from '@/lib/writers'
@@ -32,10 +35,32 @@ interface Params {
   params: { slug: string }
 }
 
-/** GET /api/articles/[slug] — public single article. */
-export async function GET(_request: Request, { params }: Params) {
-  const article = await getPostedArticle(params.slug)
+/**
+ * GET /api/articles/[slug] — one article.
+ *
+ * Published only, unless the caller is somebody the piece belongs to —
+ * the same rule the archive listing keeps, for the same reason. A desk
+ * that can take a teaching off the site and then cannot open it again has
+ * a one-way door, and that is what this was: the review desk's "Edit at
+ * the posting desk" link, and now "Give it a picture", both send somebody
+ * to a form that has to be filled from the teaching they named.
+ *
+ * A reviewer may read anything. A writer may read their own, pending or
+ * not, which is what the posting desk already shows them. Anybody else
+ * gets the 404 a reader gets — including a writer asking after somebody
+ * else's draft, because a reviewer's reason for sending a piece back is
+ * between the reviewer and the person who wrote it.
+ */
+export async function GET(request: Request, { params }: Params) {
+  const article = await getPostedArticle(params.slug, { includePending: true })
   if (!article) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
+
+  if (!isLive(article) && !canReview(await deskToken(request))) {
+    const editor = await editorOf(request)
+    if (!editor || !wroteIt(article, editor)) {
+      return NextResponse.json({ error: 'Not found.' }, { status: 404 })
+    }
+  }
   return NextResponse.json({ article })
 }
 
@@ -104,8 +129,10 @@ export async function DELETE(request: Request, { params }: Params) {
       ? 'Invalid posting key.'
       : status === 403
         ? 'That teaching is on the site. Removing it needs the review key.'
-        : status === 404
-          ? 'Not found.'
-          : 'Delete failed.'
+        : status === 409
+          ? 'That teaching is a file in the repository, not a record at the desk. Unpublish it to take it off the site; removing it for good means removing the file.'
+          : status === 404
+            ? 'Not found.'
+            : 'Delete failed.'
   return NextResponse.json({ error }, { status })
 }

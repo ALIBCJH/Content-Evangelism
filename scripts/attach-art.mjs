@@ -39,20 +39,26 @@ if (!base) die('Usage: DESK_KEY=… node scripts/attach-art.mjs <list|set> <base
 /* ── list ─────────────────────────────────────────────────────────── */
 
 if (mode === 'list') {
-  const res = await fetch(`${base}/api/v1/articles?limit=100`)
+  /* The desk's own listing rather than the public one, and with the key
+     where there is one: the teachings this is used to inspect are the
+     ones without artwork, and those are the ones most likely to be off
+     the site. A list that could not see them would report the job as
+     finished the moment it was taken down. */
+  const res = await fetch(`${base}/api/articles`, {
+    headers: key ? { authorization: `Bearer ${key}` } : {},
+  })
   if (!res.ok) die(`Could not read the archive: ${res.status}`)
-  const { data } = await res.json()
-  const rows = await Promise.all(
-    data.map(async (a) => {
-      const one = await fetch(`${base}/api/articles/${a.slug}`)
-      const held = one.ok ? (await one.json()).article : {}
-      return { slug: a.slug, poster: held.imageUrl, crop: held.thumbnailUrl }
-    })
-  )
-  const missing = rows.filter((r) => !r.poster)
+  const { articles } = await res.json()
+  const rows = articles.map((a) => ({
+    slug: a.slug,
+    poster: a.imageUrl,
+    crop: a.thumbnailUrl,
+    live: a.status !== 'pending',
+  }))
+  const missing = rows.filter((r) => !r.poster && !r.crop)
   for (const r of rows) {
-    const mark = r.poster ? (r.crop ? '✓ poster + crop' : '~ poster only') : '· none'
-    console.log(`  ${mark.padEnd(16)} ${r.slug}`)
+    const mark = r.poster ? (r.crop ? '✓ poster + crop' : '~ poster only') : r.crop ? '~ crop only' : '· none'
+    console.log(`  ${mark.padEnd(16)} ${(r.live ? 'live' : 'held').padEnd(5)} ${r.slug}`)
   }
   console.log(`\n  ${rows.length - missing.length} of ${rows.length} have artwork.`)
   process.exit(0)
@@ -95,9 +101,15 @@ for (const suffix of ['', '-wide']) {
   if (!head.ok) die(`That image is not on the server yet: ${url} (${head.status})`)
 }
 
-const got = await fetch(`${base}/api/articles/${slug}`)
+/* With the key, because a teaching taken off the site for having no
+   picture is exactly the teaching this script is most often pointed at,
+   and without the key that read is the 404 a reader gets. */
+const got = await fetch(`${base}/api/articles/${slug}`, {
+  headers: { authorization: `Bearer ${key}` },
+})
 if (!got.ok) die(`No teaching with that slug: ${slug} (${got.status})`)
 const a = (await got.json()).article
+const wasLive = a.status !== 'pending'
 
 const res = await fetch(`${base}/api/articles/${slug}`, {
   method: 'PUT',
@@ -116,23 +128,32 @@ const res = await fetch(`${base}/api/articles/${slug}`, {
 
 if (!res.ok) die(`${res.status} ${await res.text()}`)
 
-/* Read it back rather than trusting the 200: the one thing that must not
-   have happened is the teaching leaving the site. */
-const back = await fetch(`${base}/api/articles/${slug}`)
-/* A 404 here is the one outcome that matters: the public read refuses a
-   teaching that is no longer on the site, so a missing answer *is* the
-   answer. */
-if (!back.ok) {
-  die(
-    `The teaching is no longer on the site after that edit (${back.status}).\n` +
-      'Put it back from the review desk before attaching another.'
-  )
-}
+/* Read it back rather than trusting the 200, and with the key: a teaching
+   held off the site for having no picture is exactly what this is pointed
+   at, and a keyless read of one is the 404 a reader gets. */
+const back = await fetch(`${base}/api/articles/${slug}`, {
+  headers: { authorization: `Bearer ${key}` },
+})
+if (!back.ok) die(`Could not read ${slug} back after the edit (${back.status}).`)
+
 const after = (await back.json()).article
 const live = after.status !== 'pending'
+/* The thing that must not have happened is the *edit* taking a teaching
+   off the site. A piece that was already held — waiting for the picture
+   this run just gave it — is not that, and saying so would turn the
+   ordinary way back onto the site into an alarm. */
+const tookItDown = wasLive && !live
 console.log(`  ${slug}`)
 console.log(`    poster   ${after.imageUrl}`)
 console.log(`    crop     ${after.thumbnailUrl}`)
-console.log(`    on site  ${live ? 'yes' : 'NO — put this right before doing another'}`)
+console.log(
+  `    on site  ${
+    live
+      ? 'yes'
+      : tookItDown
+        ? 'NO — this edit took it off. Put it right before doing another'
+        : 'not yet — approve it at the review desk'
+  }`
+)
 console.log(`    verified ${after.verified ? 'yes' : 'no'}`)
-if (!live) process.exit(1)
+if (tookItDown) process.exit(1)

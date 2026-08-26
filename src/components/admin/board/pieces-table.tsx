@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, ExternalLink, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink, ImageOff, Search } from 'lucide-react'
 import type { PieceRow } from '@/lib/desk-overview'
 import {
   ENOUGH_TO_JUDGE,
@@ -10,6 +10,7 @@ import {
   narrow,
   sectionCounts,
   uncheckedCount,
+  withoutPicture,
 } from '@/lib/desk-overview'
 import { count, dated, duration, headingWords, percent } from './format'
 
@@ -125,6 +126,7 @@ export function PiecesTable({
   const [needle, setNeedle] = React.useState('')
   const [section, setSection] = React.useState<string>(EVERY_SECTION)
   const [onlyUnchecked, setOnlyUnchecked] = React.useState(false)
+  const [onlyPictureless, setOnlyPictureless] = React.useState(false)
 
   /* The counts are the filter and the balance at once. The posting desk
      drew a bar chart of section counts on one tab and offered a section
@@ -133,10 +135,11 @@ export function PiecesTable({
      and "show me the lopsided part" with one control. */
   const sections = React.useMemo(() => sectionCounts(rows), [rows])
   const unchecked = React.useMemo(() => uncheckedCount(rows), [rows])
+  const pictureless = React.useMemo(() => withoutPicture(rows).length, [rows])
 
   const shown = React.useMemo(
-    () => sorted(narrow(rows, needle, section, onlyUnchecked), key, ascending),
-    [rows, key, ascending, needle, section, onlyUnchecked]
+    () => sorted(narrow(rows, needle, section, onlyUnchecked, onlyPictureless), key, ascending),
+    [rows, key, ascending, needle, section, onlyUnchecked, onlyPictureless]
   )
 
   const head = (column: (typeof COLUMNS)[number]) => {
@@ -233,6 +236,18 @@ export function PiecesTable({
               onPress={() => setOnlyUnchecked((was) => !was)}
             />
           )}
+
+          {/* The same working list, for the other debt. Offered on the
+              same terms and for the same reason: a chip reading
+              "No picture 0" is a job somebody has already finished. */}
+          {pictureless > 0 && (
+            <SectionChip
+              label="No picture"
+              n={pictureless}
+              active={onlyPictureless}
+              onPress={() => setOnlyPictureless((was) => !was)}
+            />
+          )}
         </div>
       </div>
 
@@ -272,6 +287,12 @@ export function PiecesTable({
                       </button>
                       <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-xs text-ink-subtle">
                         <Status row={row} />
+                        {row.status !== 'pending' && !row.hasPicture && (
+                          <span className="inline-flex items-center gap-1 text-status-warning">
+                            <ImageOff aria-hidden className="h-3 w-3" />
+                            No picture
+                          </span>
+                        )}
                         <span>{row.category}</span>
                         <span>{row.authorName}</span>
                         <span className="tabular">{row.readMinutes} min</span>

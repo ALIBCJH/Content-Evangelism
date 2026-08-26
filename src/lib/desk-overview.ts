@@ -43,6 +43,15 @@ export interface DeskArticle {
   verified?: boolean
   submittedAt?: string
   review?: { note: string; at: string }
+  /**
+   * Whether the teaching has a picture of its own — a poster, a landscape
+   * crop, or both.
+   *
+   * A boolean rather than the URLs, because the board is a place for
+   * counting and nothing here draws the picture. `hasPicture` in the
+   * store is the one definition; this is it, carried.
+   */
+  hasPicture?: boolean
 }
 
 export interface DeskQuestion {
@@ -66,6 +75,16 @@ export interface DeskNeeds {
   unverified: number
   /** Sent back with a reason, and not yet reworked. */
   sentBack: number
+  /**
+   * On the site with no picture of its own.
+   *
+   * A listing draws generated field art for these — the same band for
+   * every teaching in a section — so a front page of them gives a reader
+   * nothing to tell one from the next. The ministry's rule is that a
+   * teaching waits until it has a picture, and this is how many are on
+   * the site in breach of it.
+   */
+  pictureless: number
   /** Readers waiting on an answer. */
   unanswered: number
 }
@@ -78,6 +97,7 @@ export function needsAttention(
     waiting: articles.filter((a) => a.status === 'pending' && !a.review).length,
     unverified: articles.filter((a) => a.status !== 'pending' && !a.verified).length,
     sentBack: articles.filter((a) => a.status === 'pending' && Boolean(a.review)).length,
+    pictureless: articles.filter((a) => a.status !== 'pending' && !a.hasPicture).length,
     unanswered: questions.filter((q) => q.status === 'new').length,
   }
 }
@@ -240,11 +260,14 @@ export function narrow(
    * the working list for an archive that was published before there was
    * a review desk to publish it through.
    */
-  onlyUnchecked = false
+  onlyUnchecked = false,
+  /** Only the teachings on the site that have no picture of their own. */
+  onlyPictureless = false
 ): PieceRow[] {
   const wanted = needle.trim().toLowerCase()
   return rows.filter((row) => {
     if (onlyUnchecked && (row.status === 'pending' || row.verified)) return false
+    if (onlyPictureless && (row.status === 'pending' || row.hasPicture)) return false
     if (section !== EVERY_SECTION && row.category !== section) return false
     if (!wanted) return true
     return `${row.title}\n${row.authorName}\n${row.category}`.toLowerCase().includes(wanted)
@@ -254,6 +277,24 @@ export function narrow(
 /** How many live teachings nobody has checked yet. */
 export const uncheckedCount = (rows: PieceRow[]): number =>
   rows.filter((row) => row.status !== 'pending' && !row.verified).length
+
+/**
+ * On the site, and with no picture of its own.
+ *
+ * Oldest first, which is the order somebody works through them in: the
+ * teachings that have been on the site longest without artwork are the
+ * ones the ministry has been living with, and the newest is the one
+ * somebody is most likely still holding a picture for.
+ *
+ * Pending pieces are not here. They are already off the site, which is
+ * where the rule wants them, and listing them would turn a list of things
+ * to fix into a list of things that are fine.
+ */
+export function withoutPicture(rows: PieceRow[]): PieceRow[] {
+  return rows
+    .filter((row) => row.status !== 'pending' && !row.hasPicture)
+    .sort((a, b) => a.publishedAt.localeCompare(b.publishedAt))
+}
 
 /** How many pieces sit in each section, largest first. */
 export function sectionCounts(rows: PieceRow[]): { name: string; n: number }[] {
