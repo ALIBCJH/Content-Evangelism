@@ -40,6 +40,11 @@ function loadWorker() {
         const key = keyFor(request)
         return store.has(key) ? { body: store.get(key), from: name } : undefined
       },
+      /* Insertion order, which is what a real Cache returns and what the
+         worker's trim depends on to know which page is oldest. A Map
+         preserves it, and a re-put after a delete moves the entry to the
+         end — exactly as the browser does. */
+      keys: async () => Array.from(store.keys()).map((url) => ({ url })),
       delete: async (request: any) => store.delete(keyFor(request)),
     }
   }
@@ -85,9 +90,18 @@ const req = (pathname: string, mode = 'no-cors', method = 'GET') => ({
 
 function fetchEvent(request: any) {
   let answered: Promise<any> | null = null
+  const pending: Promise<any>[] = []
   return {
-    event: { request, respondWith: (value: Promise<any>) => (answered = value), waitUntil: () => undefined },
+    event: {
+      request,
+      respondWith: (value: Promise<any>) => (answered = value),
+      /* Held rather than dropped: writing the page to the cache happens
+         in here, and a test that asserts on what was cached has to be
+         able to wait for it. */
+      waitUntil: (value: Promise<any>) => pending.push(value),
+    },
     answered: () => answered,
+    settled: () => Promise.all(pending),
   }
 }
 
@@ -242,5 +256,109 @@ describe('the altars, kept in advance', () => {
 
     worker.caches.open = original
     expect(await (await worker.caches.open('shell-v1')).match('/offline')).toBeTruthy()
+  })
+})
+
+
+describe('a connection that hangs rather than fails', () => {
+  /* The case the worker exists for. A phone with one bar does not reject
+     — it holds the request open, and before this the reader watched a
+     blank screen for as long as the platform allowed while a good copy
+     sat in the cache underneath them. */
+  it('answers from the cache once its patience runs out', async () => {
+    vi.useFakeTimers()
+    try {
+      const worker = loadWorker()
+      const href = 'https://site.test/articles/read-before'
+      ;(await worker.caches.open('pages-v1')).put(href, { body: 'read before' })
+      /* Never settles, which is what a stalled radio actually does. */
+      worker.fetch.mockReturnValueOnce(new Promise(() => undefined))
+
+      const { event, answered } = fetchEvent({ url: href, method: 'GET', mode: 'navigate' })
+      worker.handlers.fetch(event)
+
+      await vi.advanceTimersByTimeAsync(3000)
+      expect((await answered()).body).toBe('read before')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps waiting when there is nothing cached to fall back to', async () => {
+    vi.useFakeTimers()
+    try {
+      const worker = loadWorker()
+      /* No install, so not even the offline page is there. Cutting the
+         network short here would hand the reader a failure while their
+         connection was merely slow. */
+      let release: (value: any) => void = () => undefined
+      worker.fetch.mockReturnValueOnce(new Promise((resolve) => (release = resolve)))
+
+      const { event, answered } = fetchEvent({
+        url: 'https://site.test/articles/never-seen',
+        method: 'GET',
+        mode: 'navigate',
+      })
+      worker.handlers.fetch(event)
+      await vi.advanceTimersByTimeAsync(10_000)
+
+      release({ ok: true, body: 'arrived late', clone: () => ({ body: 'arrived late' }) })
+      expect((await answered()).body).toBe('arrived late')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('the pages a reader merely passed through', () => {
+  it('does not let them grow without limit and take the saved ones down', async () => {
+    const worker = loadWorker()
+
+    const saved = 'https://site.test/articles/kept-for-the-journey'
+    ;(await worker.caches.open('saved-v1')).put(saved, { body: 'the saved teaching' })
+
+    for (let n = 0; n < 45; n++) {
+      const { event, answered, settled } = fetchEvent({
+        url: `https://site.test/articles/passed-through-${n}`,
+        method: 'GET',
+        mode: 'navigate',
+      })
+      worker.handlers.fetch(event)
+      await answered()
+      await settled()
+    }
+
+    const pages = await worker.caches.open('pages-v1')
+    expect((await pages.keys()).length).toBe(40)
+    /* Oldest out first... */
+    expect(await pages.match('https://site.test/articles/passed-through-0')).toBeFalsy()
+    /* ...newest still there... */
+    expect(await pages.match('https://site.test/articles/passed-through-44')).toBeTruthy()
+    /* ...and what the reader actually chose to keep, untouched. */
+    expect(await (await worker.caches.open('saved-v1')).match(saved)).toBeTruthy()
+  })
+
+  it('moves a page a reader returns to back to the young end', async () => {
+    const worker = loadWorker()
+    const visit = async (pathname: string) => {
+      const { event, answered, settled } = fetchEvent({
+        url: `https://site.test${pathname}`,
+        method: 'GET',
+        mode: 'navigate',
+      })
+      worker.handlers.fetch(event)
+      await answered()
+      await settled()
+    }
+
+    await visit('/articles/read-every-day')
+    for (let n = 0; n < 39; n++) await visit(`/articles/filler-${n}`)
+    /* Returned to, so it is no longer the oldest thing in the cache. */
+    await visit('/articles/read-every-day')
+    for (let n = 0; n < 5; n++) await visit(`/articles/later-${n}`)
+
+    const pages = await worker.caches.open('pages-v1')
+    expect(await pages.match('https://site.test/articles/read-every-day')).toBeTruthy()
+    expect(await pages.match('https://site.test/articles/filler-0')).toBeFalsy()
   })
 })
