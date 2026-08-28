@@ -191,15 +191,21 @@ export function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-rule bg-raised">
-        <div className="mx-auto flex h-[72px] max-w-shell items-center gap-6 px-5 sm:px-8 lg:gap-10">
-          <Link href="/" className="focus-ring flex shrink-0 items-center gap-3 rounded-md">
+        {/* `gap-6` below `sm` was 24px the narrowest phone did not have.
+            The row carries three controls there now, and at 320px the
+            brand and the controls together wanted 424px of a 320px bar —
+            which `overflow-x: clip` on the body hid by simply cutting the
+            menu button off the end of the world. Nothing in here is
+            `shrink-0` any more except the controls themselves. */}
+        <div className="mx-auto flex h-[72px] max-w-shell items-center gap-3 px-5 sm:gap-6 sm:px-8 lg:gap-10">
+          <Link href="/" className="focus-ring flex min-w-0 items-center gap-3 rounded-md">
             <Image
               src="/logo.png"
               alt=""
               width={34}
               height={34}
               priority
-              className="h-[34px] w-[34px] rounded-full"
+              className="h-[34px] w-[34px] shrink-0 rounded-full"
             />
             {/* The publication's own name, which is what a masthead
                 carries. The ministry it belongs to is named in full on
@@ -265,7 +271,15 @@ export function SiteHeader() {
             >
               <Search aria-hidden className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.9} />
             </button>
-            <ThemeToggle />
+            {/* Not below `sm`. The toggle is 64px wide and the smallest
+                phones this site is read on are 320: seal, name, search,
+                theme and menu do not fit, and something had to give. Of
+                the three controls it is the only one that is a preference
+                rather than a way to move around the site, so it is the
+                one that goes behind a tap — it is a line in the sheet at
+                that width. From `sm` up it is back in the corner, which
+                is where a reader looks for it. */}
+            <ThemeToggle className="hidden sm:inline-flex" />
             <button
               ref={buttonRef}
               type="button"
@@ -435,6 +449,15 @@ export function SiteHeader() {
                   <Search aria-hidden className="h-[1.125rem] w-[1.125rem] shrink-0 text-ink-subtle" strokeWidth={1.8} />
                   <span className="font-sans text-[0.9375rem]">Search the archive</span>
                 </button>
+
+                {/* Where the theme toggle lives below `sm`, since the bar
+                    at that width has no room for it — see the note in the
+                    masthead. Above `sm` it is in the corner and this row
+                    is not drawn, so the control is never in two places. */}
+                <div className="flex min-h-[48px] items-center justify-between gap-4 pl-4 pr-3 sm:hidden">
+                  <span className="font-sans text-[0.9375rem] text-ink-700">Appearance</span>
+                  <ThemeToggle />
+                </div>
               </div>
             </motion.div>
           </div>

@@ -173,8 +173,23 @@ export function AltarFinder() {
             live for anyone who does manage to hit one, and the search
             below still finds a county by name; this is a third way in,
             not a replacement for either. */}
-        <label className="mt-4 block lg:hidden">
+        <label className="relative mt-4 block lg:hidden">
           <span className="sr-only">Choose a county</span>
+          {/* `appearance-none` takes the platform's own arrow off, and
+              without one back the control reads as a text field that
+              happens not to accept typing. The mark is what says this
+              opens a list. */}
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
           <select
             value={selected ?? ''}
             onChange={(event) => {
@@ -189,7 +204,7 @@ export function AltarFinder() {
                  county you are already on should not clear it. */
               if (no !== selected) select(no)
             }}
-            className="focus-ring w-full appearance-none rounded-chip border border-rule bg-card px-4 py-3 text-[0.9375rem] text-ink-900"
+            className="focus-ring w-full appearance-none rounded-chip border border-rule bg-card py-3 pl-4 pr-11 text-[0.9375rem] text-ink-900"
           >
             <option value="">All counties</option>
             {counties.map((county) => {

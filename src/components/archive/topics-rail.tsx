@@ -65,7 +65,14 @@ export function TopicChips({
        the chips and on a trackpad it is drawn only while scrolling. */
     <nav
       aria-label="Filter by topic"
-      className="-mx-5 mb-6 flex snap-x gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+      /* `scroll-pl-5` matters more than it looks. Snapping aligns a chip's
+         start with the start of the scroll port, and the scroll port does
+         not include the padding — so the first chip snapped straight past
+         the 20px inset and sat flush against the edge of the screen, with
+         the container quietly resting at scrollLeft: 20. Naming the same
+         inset as scroll-padding is what makes the row start where the
+         shell's own margin starts. */
+      className="-mx-5 mb-6 flex snap-x scroll-pl-5 gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
     >
       <button
         type="button"
