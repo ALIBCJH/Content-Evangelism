@@ -189,7 +189,15 @@ export function AskBot() {
           id="ask-bot-panel"
           role="dialog"
           aria-labelledby="ask-bot-title"
-          className="ask-panel fixed bottom-[5.5rem] right-5 z-40 flex max-h-[min(32rem,calc(100vh-8rem))] w-[min(24rem,calc(100vw-2.5rem))] flex-col rounded-panel border border-rule bg-card shadow-glow-soft sm:right-6"
+          /* A sheet on a phone, the floating card it always was from `sm`
+             up. Two reasons it could not stay a card at every width: a
+             conversation in a 24rem box anchored to a corner is a hard
+             read on a six-inch screen, and the box was measured in `vh` —
+             which on iOS is the window with the URL bar retracted and
+             takes no notice of the keyboard, so the field a reader was
+             typing into could sit underneath the keyboard they were
+             typing on. `dvh` is the viewport as it actually is. */
+          className="ask-panel fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col pb-[env(safe-area-inset-bottom)] sm:pb-0 rounded-t-panel border border-rule bg-card shadow-glow-soft sm:inset-x-auto sm:bottom-[5.5rem] sm:right-6 sm:max-h-[min(32rem,calc(100dvh-8rem))] sm:w-[min(24rem,calc(100vw-3rem))] sm:rounded-panel"
         >
           <div className="border-b border-rule px-5 pb-3.5 pt-4">
             <span className="kicker text-gold">Ask the archive</span>
@@ -347,7 +355,11 @@ export function AskBot() {
         onClick={() => setOpen((was) => !was)}
         aria-expanded={open}
         aria-controls="ask-bot-panel"
-        className={`ask-launcher focus-ring fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-plate text-plate-pale shadow-glow-soft transition-all duration-300 hover:bg-plate-deep active:translate-y-px sm:right-6 sm:h-14 sm:w-14 ${
+        /* The page is laid out under the home indicator now
+           (`viewportFit: 'cover'`), so twenty pixels off the bottom is
+           twenty pixels into it. The bar the launcher steps over when
+           audio is playing is set in globals.css and does the same. */
+        className={`ask-launcher focus-ring fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-plate text-plate-pale shadow-glow-soft transition-all duration-300 hover:bg-plate-deep active:translate-y-px sm:right-6 sm:h-14 sm:w-14 ${
           hidden ? 'pointer-events-none translate-y-24 opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >

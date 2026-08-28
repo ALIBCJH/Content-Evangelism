@@ -189,6 +189,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  /* The page is laid out under the notch and the home indicator, and the
+     things pinned to the edges stand themselves off it with
+     `env(safe-area-inset-*)` — which returns zero without this, so the
+     audio bar's own safe-area padding had been doing nothing since it was
+     written. */
+  viewportFit: 'cover',
   colorScheme: 'light',
   /* One, and light, because that is what a reader is given on arrival
      whatever their machine is set to. A pair keyed on the system

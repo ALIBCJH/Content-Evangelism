@@ -49,7 +49,19 @@
   --ink-900-rgb: 38 51 63;        /* lead paragraphs */
   --ink-700-rgb: 64 80 94;        /* running text */
   --ink-500-rgb: 92 107 122;      /* secondary */
-  --ink-400-rgb: 139 152 165;     /* meta, timestamps, placeholders */
+  /* Meta, timestamps, placeholders — and it was 139 152 165, which
+     measured 2.62:1 on the ground and 2.94:1 on a card against the 4.5:1
+     that normal text has to clear. It is the colour of `.kicker`, the
+     dateline under every headline on the site, set at ten pixels: the
+     smallest type here was also the faintest, in the theme that ships by
+     default, on the device most of this is read on, often in daylight.
+     4.71:1 on the ground now.
+
+     It sits close to --ink-500 as a result, and that is the honest cost:
+     there is no room between "passes at ten pixels" and "is the secondary
+     ink". The dark theme was never the problem and is unchanged — it
+     measured 5.6:1 all along. */
+  --ink-400-rgb: 96 109 123;
 
   --fulfilled-rgb: 30 122 78;
   --fulfilled-navy-rgb: 35 147 94;
@@ -365,6 +377,28 @@ option {
 @media (max-width: 40rem) {
   .shell { padding-inline: 20px; }
 }
+/* The page is laid out under the notch now (`viewportFit: 'cover'`), and
+   a phone held sideways puts that notch through the shell's left or right
+   margin. The inset is zero on every device that does not have one, so
+   this costs nothing anywhere else. */
+@supports (padding: max(0px)) {
+  .shell {
+    padding-inline-start: max(20px, env(safe-area-inset-left));
+    padding-inline-end: max(20px, env(safe-area-inset-right));
+  }
+  @media (min-width: 40.0625rem) {
+    .shell {
+      padding-inline-start: max(32px, env(safe-area-inset-left));
+      padding-inline-end: max(32px, env(safe-area-inset-right));
+    }
+  }
+  @media (min-width: 90rem) {
+    .shell {
+      padding-inline-start: max(48px, env(safe-area-inset-left));
+      padding-inline-end: max(48px, env(safe-area-inset-right));
+    }
+  }
+}
 
 /* ── The art a teaching carries ────────────────────────────────────
    `categoryArt` in content.ts has named a palette and an icon for every
@@ -523,6 +557,19 @@ option {
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+/* One pixel more on a phone, and a little of the tracking given back.
+   Ten pixels of uppercase mono at 0.14em is a comfortable label on a
+   twenty-seven inch display held at arm's length and a squint on a
+   six-inch one held in a matatu — and this is the dateline under every
+   headline, the section name on every card, and the state of every chip.
+   The desktop setting is untouched; letter-spacing eases because tracking
+   that flatters small caps at 10px starts to loosen the word at 11px. */
+@media (max-width: 40rem) {
+  .kicker {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+  }
+}
 .kicker-lg {
   font-family: var(--font-mono), ui-monospace, 'SFMono-Regular', monospace;
   font-size: 0.6875rem;
@@ -552,7 +599,19 @@ option {
    the offsets are the plain ones again. */
 @media (max-width: 1023px) {
   body[data-audio] .ask-launcher {
-    bottom: 6.25rem;
+    bottom: calc(6.25rem + env(safe-area-inset-bottom));
+  }
+  /* The panel is a sheet on the bottom edge below `sm` now, which is the
+     edge the player is on. It steps over it for the same reason the
+     launcher does: a reader who opens a question mid-teaching should not
+     lose the control that pauses the voice reading it to them. */
+  body[data-audio] .ask-panel {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 640px) {
+  body[data-audio] .ask-panel {
+    bottom: 5.5rem;
   }
 }
 
