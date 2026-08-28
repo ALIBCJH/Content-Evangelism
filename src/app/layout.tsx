@@ -21,10 +21,17 @@ import './globals.css'
 /* Display: every headline, standfirst, card title, and pull quote. */
 const fraunces = Fraunces({
   subsets: ['latin'],
-  /* Variable across weight and optical size — the design sets headlines
-     at 500 and runs them from 19px to 84px, which is exactly the range
-     `opsz` exists to keep even. */
-  axes: ['opsz'],
+  /* Variable across weight only. It carried `opsz` as well, on the sound
+     reasoning that the design runs headlines from 19px to 84px and that
+     is exactly the range optical sizing exists to keep even — but the
+     axis is not free, and it was not cheap here: 67kB against 37kB for
+     the same family without it, and 132kB against 58kB for Newsreader
+     next door. 104kB of the 374kB this site preloaded on every page was
+     being spent on optical sizing.
+
+     On the connections this ministry's readers actually have, a second
+     of blank headline costs more than an evenly drawn one earns. The
+     axis is a refinement; arriving is not. */
   variable: '--font-fraunces',
   display: 'swap',
 })
@@ -67,6 +74,13 @@ const mono = JetBrains_Mono({
  * Contentful Paint and 2s of Speed Index, because a face nobody has
  * asked for yet is a face the browser does not start fetching until it
  * has laid the text out. It was tried, it was worse, it is not here.
+ *
+ * What was reduced instead is the size of what gets preloaded, which is a
+ * different question from how many things do. Two changes, together worth
+ * 135kB of the 374kB that used to be on the critical path of every page:
+ * the optical-size axis is gone from both display serifs (see Fraunces
+ * above), and Gentium's bold is a second, unpreloaded instance (see
+ * below). Every face a page opens with still arrives with the page.
  */
 
 /* Article headlines, the italic standfirst, and the chapter headings. At
@@ -75,10 +89,10 @@ const mono = JetBrains_Mono({
    written in. `opsz` keeps it even from the standfirst up to the h1. */
 const newsreader = Newsreader({
   subsets: ['latin'],
-  /* Variable across weight and optical size, so no `weight` list: every
-     weight from 300 up is available from the one file, and `opsz` keeps
-     the standfirst and the 56px headline evenly drawn. */
-  axes: ['opsz'],
+  /* Variable across weight, so no `weight` list: every weight from 300 up
+     is available from the one file. `opsz` was here too and was the
+     single most expensive thing this site downloaded — 132kB, against
+     58kB for the same face without it. See the note on Fraunces. */
   /* Upright only, and the italic is declared separately below. The
      italic used to be on this instance, rendering nowhere, and because
      `next/font` preloads every face it is given it was the single
@@ -103,7 +117,6 @@ const newsreader = Newsreader({
 const newsreaderItalic = Newsreader({
   subsets: ['latin'],
   style: ['italic'],
-  axes: ['opsz'],
   variable: '--font-newsreader-italic',
   display: 'swap',
   preload: false,
@@ -116,10 +129,34 @@ const newsreaderItalic = Newsreader({
    x-height is what keeps a long passage readable on a phone. */
 const gentium = Gentium_Book_Plus({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['400'],
   style: ['normal', 'italic'],
   variable: '--font-gentium',
   display: 'swap',
+})
+
+/* The same face's bold, on its own instance for one reason: `preload:
+   false`. Gentium is not a variable font, so each weight and style is a
+   file of its own, and all four were preloaded — 63kB racing the page to
+   draw the two that a teaching opens with.
+
+   Upright 400 is the body of every reading block and italic 400 is the
+   Scripture the front page leads with, so both stay on the critical
+   path. Bold is a <strong> inside a statement panel: a handful of words
+   on the pages that have any, and none at all on most. It is fetched
+   when the browser meets one, and `display: swap` covers the moment.
+
+   This is the same call the italic next door makes, for the same reason,
+   and it is why `.font-reading strong` has to be named in globals.css —
+   a family that holds only 400 does not answer a request for 700, it
+   smears the 400 into a synthetic bold. */
+const gentiumBold = Gentium_Book_Plus({
+  subsets: ['latin'],
+  weight: ['700'],
+  style: ['normal', 'italic'],
+  variable: '--font-gentium-bold',
+  display: 'swap',
+  preload: false,
 })
 
 /* Everything that is not prose: the eyebrow, the byline, the citation
@@ -321,6 +358,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         newsreader.variable,
         newsreaderItalic.variable,
         gentium.variable,
+        gentiumBold.variable,
         plex.variable,
       ].join(' ')}
     >

@@ -758,6 +758,17 @@ option {
   opacity: 0.55;
 }
 
+/* ── Bold in the reading face ─────────────────────────────────────── */
+/* Gentium's bold is a separate instance and deliberately not preloaded —
+   see layout.tsx. That instance is what a <strong> inside a reading block
+   has to be pointed at: `--font-gentium` now holds 400 and 400 italic
+   only, and a browser asked for 700 by a family that has no 700 does not
+   go looking for another one, it smears the 400 into a synthetic bold.
+   The same shape of rule, and the same reason, as the italic below. */
+.font-reading :is(strong, b) {
+  font-family: var(--font-gentium-bold), Georgia, 'Times New Roman', serif;
+}
+
 /* ── Italic in the body ───────────────────────────────────────────── */
 /* The teaching is set in Newsreader, whose italic is a separate file and
    deliberately not preloaded — see layout.tsx. Naming it here is what
