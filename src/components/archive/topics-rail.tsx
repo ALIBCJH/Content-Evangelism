@@ -19,6 +19,79 @@ function Divider() {
   return <hr className="my-7 border-0 border-t border-rule" />
 }
 
+/**
+ * The topics, as one scrolling line — below `lg` only.
+ *
+ * The rail this belongs to is at the foot of the page on a phone, and
+ * deliberately so: stacked above the archive it is a screen of furniture
+ * standing between a reader and the teaching, which is the whole reason
+ * the column order is reversed at that width. That reasoning is right and
+ * it is not touched here.
+ *
+ * What it left behind is a different problem. Filtering was still in the
+ * rail, so on a phone the only way to narrow the archive by subject was
+ * to scroll past the entire archive to find the control for it — which is
+ * to say there was no way, because nobody scrolls to the bottom of a
+ * listing looking for the thing that would have shortened it.
+ *
+ * One line, not a screen: a row of chips the width of the shell that
+ * scrolls sideways, at the top where the control belongs, carrying the
+ * same counts and driving the same state as the rail's list. The rail
+ * keeps every other thing it holds — what you were reading, what is being
+ * read to you — and simply stops drawing its topics at this width, so the
+ * two are never both on the page.
+ */
+export function TopicChips({
+  counts,
+  total,
+  active,
+  onPick,
+}: {
+  counts: { category: Category; count: number }[]
+  total: number
+  active: Category | null
+  onPick: (category: Category | null) => void
+}) {
+  const chip =
+    'focus-ring flex min-h-[40px] shrink-0 snap-start items-center gap-1.5 whitespace-nowrap rounded-chip border px-3.5 text-[0.875rem] transition-colors'
+  const on = 'border-transparent bg-chip-gold font-semibold text-gold-ink'
+  const off = 'border-rule bg-card text-ink-700'
+
+  return (
+    /* Bled to the shell's own margin so the line runs off both edges of
+       the screen rather than stopping short of them — which is what says
+       "there is more of this sideways" before anybody has touched it. The
+       scrollbar is hidden because on a touch device it is a smear across
+       the chips and on a trackpad it is drawn only while scrolling. */
+    <nav
+      aria-label="Filter by topic"
+      className="-mx-5 mb-6 flex snap-x gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+    >
+      <button
+        type="button"
+        onClick={() => onPick(null)}
+        aria-current={active === null ? 'true' : undefined}
+        className={`${chip} ${active === null ? on : off}`}
+      >
+        All
+        <span className="tabular text-[0.8125rem] opacity-70">{total}</span>
+      </button>
+      {counts.map(({ category, count }) => (
+        <button
+          key={category}
+          type="button"
+          onClick={() => onPick(category === active ? null : category)}
+          aria-current={category === active ? 'true' : undefined}
+          className={`${chip} ${category === active ? on : off}`}
+        >
+          {category}
+          <span className="tabular text-[0.8125rem] opacity-70">{count}</span>
+        </button>
+      ))}
+    </nav>
+  )
+}
+
 export function TopicsRail({
   counts,
   total,
@@ -45,6 +118,10 @@ export function TopicsRail({
 
   return (
     <div className="lg:sticky lg:top-stick">
+      {/* The chip row above the lead carries these below `lg` — see
+          TopicChips. Drawn in both places they would be one control with
+          two appearances and two positions on the same page. */}
+      <div className="hidden lg:block">
       <p className="kicker text-ink-subtle">Topics</p>
       <div className="mt-3 flex flex-col gap-0.5">
         <button
@@ -77,10 +154,16 @@ export function TopicsRail({
           </button>
         ))}
       </div>
+      </div>
 
       {unfinished.length > 0 && (
         <>
-          <Divider />
+          {/* The rule separates the topics from what follows, and below
+              `lg` the topics are not here — so without this it is a line
+              drawn across the top of the rail with nothing above it. */}
+          <div className="hidden lg:block">
+            <Divider />
+          </div>
           {/* Everything begun and not finished, most recent first. A
               reader who put a teaching down halfway through should not
               have to remember which one it was, or hunt the archive for
