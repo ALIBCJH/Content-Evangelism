@@ -12,7 +12,7 @@ import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
 import { LeadCard } from '@/components/archive/lead-card'
 import { TeachingIndex } from '@/components/archive/teaching-index'
-import { TopicsRail } from '@/components/archive/topics-rail'
+import { TopicChips, TopicsRail } from '@/components/archive/topics-rail'
 
 /**
  * The archive as a reader handles it: filtered, ordered, and marked up
@@ -248,6 +248,12 @@ export function ArchiveList({
           >
             {header}
           </div>
+
+          {/* The filter, on the widths where the rail that holds it is at
+              the foot of the page. One line, above the lead, so narrowing
+              the archive by subject does not require scrolling the whole
+              archive first to find the control for it. */}
+          <TopicChips counts={counts} total={items.length} active={topic} onPick={setTopic} />
 
           {shown.length === 0 ? (
             <div className="py-16 text-center">
