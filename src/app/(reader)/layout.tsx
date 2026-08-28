@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { buildSearchIndex } from '@/lib/search-index'
 import { AskBot } from '@/components/ask-bot'
 import { OfflineReady } from '@/components/offline-ready'
 import { PastoralCare } from '@/components/pastoral-care'
@@ -10,15 +9,16 @@ import { Tracker } from '@/components/insight/tracker'
 /**
  * Shared chrome for every reader-facing page; /admin stays outside.
  *
- * The search index is built here, once per render of the shell, and handed
- * to the masthead — so the overlay answers a keystroke without a request
- * and every page carries the same index.
+ * The search index is no longer built here. It was, and it was handed to
+ * the masthead as a prop — which put the full text of every teaching into
+ * the RSC payload of every page on the site, 130KB of the front page's
+ * 283KB, for a control most readers never opened. The overlay fetches it
+ * on its first open instead; see `app/api/search-index/route.ts`.
  */
-export default async function ReaderLayout({ children }: { children: React.ReactNode }) {
-  const docs = await buildSearchIndex()
+export default function ReaderLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader docs={docs} />
+      <SiteHeader />
       <div className="flex-1">{children}</div>
       {/* Every reader page ends the same way: the way to reach a person,
           and then the footer. Placed here rather than page by page so that

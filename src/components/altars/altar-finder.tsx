@@ -155,8 +155,63 @@ export function AltarFinder() {
           </ul>
         </div>
 
+        {/* The picker, below `lg` only.
+
+            The map cannot be the control on a phone. Forty-seven counties
+            share about 280px of width there, so the average one is a
+            33px shape and the small ones — Nairobi, Mombasa, Vihiga —
+            are under twenty: well beneath the 44px a thumb needs, and no
+            amount of enlarging the hit areas fixes it, because there is
+            not enough room on the screen for forty-seven targets of that
+            size. Making the shapes bigger would only mean tapping the
+            wrong county more precisely.
+
+            So on a phone the map goes back to being what it is good at —
+            showing at a glance which counties have an altar — and the
+            county is chosen from a list the platform draws itself, at the
+            size the platform thinks a list should be. The shapes stay
+            live for anyone who does manage to hit one, and the search
+            below still finds a county by name; this is a third way in,
+            not a replacement for either. */}
+        <label className="mt-4 block lg:hidden">
+          <span className="sr-only">Choose a county</span>
+          <select
+            value={selected ?? ''}
+            onChange={(event) => {
+              const value = event.target.value
+              if (!value) {
+                clear()
+                return
+              }
+              const no = Number(value)
+              /* `select` toggles, which is right for a shape you tap
+                 twice and wrong for a list you pick from — choosing the
+                 county you are already on should not clear it. */
+              if (no !== selected) select(no)
+            }}
+            className="focus-ring w-full appearance-none rounded-chip border border-rule bg-card px-4 py-3 text-[0.9375rem] text-ink-900"
+          >
+            <option value="">All counties</option>
+            {counties.map((county) => {
+              const altars = altarsIn(county)
+              return (
+                <option key={county.no} value={county.no}>
+                  {county.name}
+                  {altars
+                    ? ` — ${altars} ${altars === 1 ? 'altar' : 'altars'}`
+                    : ' — none recorded'}
+                </option>
+              )
+            })}
+          </select>
+        </label>
+
+        {/* Said differently at each width, because it is a different
+            instruction: a shape to tap where tapping works, and the list
+            above where it does not. */}
         <p className="mt-3 text-center font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-subtle">
-          Tap a county to see its altars
+          <span className="lg:hidden">Choose a county to see its altars</span>
+          <span className="hidden lg:inline">Tap a county to see its altars</span>
         </p>
       </div>
 

@@ -78,12 +78,23 @@ export default async function SearchPage({ searchParams }: Props) {
         </p>
       ) : (
         <div className="grid gap-12 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-14">
-          <nav aria-label="Content type" className="self-start lg:sticky lg:top-stick">
+          {/* The facets come second on a phone and first from `lg`. In the
+              markup the nav is first, which is the order a keyboard and a
+              screen reader want — filters before the thing they filter —
+              but drawn in that order on a single column it meant a reader
+              who searched was handed a list of content types where their
+              results should have been, and had to scroll past it to find
+              out whether anything matched at all. The archive listing
+              already solves this the same way; this page had been missed. */}
+          <nav
+            aria-label="Content type"
+            className="order-2 self-start lg:order-none lg:sticky lg:top-stick"
+          >
             <p className="kicker mb-3 text-ink-subtle">Content type</p>
             <Link
               href={link({ q: query })}
               aria-current={kind ? undefined : 'true'}
-              className={`flex justify-between gap-3 border-b border-rule-soft py-2.5 text-sm transition-colors hover:text-gold ${
+              className={`flex min-h-[44px] items-center justify-between gap-3 border-b border-rule-soft py-2.5 text-sm transition-colors hover:text-gold ${
                 kind ? 'text-ink-700' : 'text-gold'
               }`}
             >
@@ -95,7 +106,7 @@ export default async function SearchPage({ searchParams }: Props) {
                 key={facet.label}
                 href={link({ q: query, kind: facet.label })}
                 aria-current={kind === facet.label ? 'true' : undefined}
-                className={`flex justify-between gap-3 border-b border-rule-soft py-2.5 text-sm transition-colors hover:text-gold ${
+                className={`flex min-h-[44px] items-center justify-between gap-3 border-b border-rule-soft py-2.5 text-sm transition-colors hover:text-gold ${
                   kind === facet.label ? 'text-gold' : 'text-ink-700'
                 }`}
               >
@@ -105,7 +116,7 @@ export default async function SearchPage({ searchParams }: Props) {
             ))}
           </nav>
 
-          <div>
+          <div className="order-1 min-w-0 lg:order-none">
             {results.length === 0 ? (
               <p className="max-w-measure text-[1.0625rem] leading-[1.75] text-ink-muted">
                 Nothing found for &ldquo;{query}&rdquo;. Try a different word — or read the

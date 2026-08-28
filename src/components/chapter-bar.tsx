@@ -153,7 +153,9 @@ export function ChapterBar({
 
         <nav
           aria-label="Chapters in this teaching"
-          className="max-h-[60vh] overflow-y-auto border-t border-rule-soft bg-raised"
+          /* `dvh`, so the list of chapters ends where the window actually
+             ends on a phone rather than under the browser's own chrome. */
+          className="max-h-[60dvh] overflow-y-auto overscroll-contain border-t border-rule-soft bg-raised"
         >
           <ol className="shell article-measure py-1">
             {headings.map((heading, index) => (

@@ -4,17 +4,22 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, GraduationCap, Info, RadioTower, Search, X } from 'lucide-react'
+import { Bookmark, BookOpen, GraduationCap, Info, RadioTower, Search, X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { navSections, siteInfo } from '@/lib/content'
-import type { SearchDoc } from '@/lib/search-docs'
 import { SearchOverlay } from '@/components/search-overlay'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 /**
  * The masthead: the seal and the wordmark on the left, the four sections
  * on the right, search beside them, and the gold rule closing the bar.
+ *
+ * Search has a control at every width now. Below `lg` it had none: it
+ * opened from the "/" key, which a phone does not have, and from a line
+ * inside the menu sheet — so the archive's own way in cost two taps and a
+ * guess on the device this site is mostly read on. It is a button in the
+ * bar beside the menu, where a reader looks for it.
  *
  * From `lg` up the sections are laid out inline, so the whole site is one
  * click away without opening anything. Below that the wordmark alone fills
@@ -61,7 +66,7 @@ const SECTION_ICON: Record<string, typeof BookOpen> = {
   '/about': Info,
 }
 
-export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
+export function SiteHeader() {
   const [open, setOpen] = React.useState(false)
   const [searching, setSearching] = React.useState(false)
   const pathname = usePathname()
@@ -75,9 +80,10 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
 
   const panelRef = React.useRef<HTMLDivElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
-  /* Search has no button in the masthead or in the sheet — it opens from
-     the "/" key and from the footer — so closing it hands focus back to
-     whatever had it when it opened, rather than to a fixed control. */
+  /* Search opens from the button below `lg`, from the sheet, from the
+     footer and from the "/" key — four different openers, so closing it
+     hands focus back to whatever had it when it opened rather than to any
+     one of them. */
   const searchOpener = React.useRef<HTMLElement | null>(null)
   const wasOpen = React.useRef(false)
 
@@ -250,7 +256,15 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
               layouts — the corner is where a reader looks for it. */}
           <ThemeToggle className="ml-auto hidden lg:ml-2 lg:flex" />
 
-          <div className="ml-auto flex shrink-0 items-center gap-2.5 lg:hidden">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:hidden">
+            <button
+              type="button"
+              aria-label="Search the archive"
+              onClick={openSearch}
+              className="focus-ring icon-only flex h-11 w-11 items-center justify-center rounded-tile border border-rule bg-card text-navy"
+            >
+              <Search aria-hidden className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.9} />
+            </button>
             <ThemeToggle />
             <button
               ref={buttonRef}
@@ -383,9 +397,35 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
                   </ul>
                 </nav>
 
-                {/* What the sections are not: a way to search everything,
-                    which on a wide screen is a control in the masthead. */}
+                {/* What the sections are not. Search is a button in the
+                    bar at every width now, so what belongs here is the
+                    other thing a phone had no route to: the pieces a
+                    reader put aside. Saving worked below `sm` and the way
+                    back to what was saved did not — the filter lives in a
+                    band this width never draws, and the only other door
+                    was a twelve-pixel link in the footer's legal bar. */}
                 <div className="my-2 border-t border-rule" />
+
+                <Link
+                  href="/saved"
+                  aria-current={pathname === '/saved' ? 'page' : undefined}
+                  className={cn(
+                    'flex min-h-[48px] items-center gap-4 rounded-full pl-4 pr-5 transition-colors',
+                    pathname === '/saved'
+                      ? 'bg-chip-gold font-semibold text-gold-ink'
+                      : 'text-ink-700 active:bg-surface-2'
+                  )}
+                >
+                  <Bookmark
+                    aria-hidden
+                    className={cn(
+                      'h-[1.125rem] w-[1.125rem] shrink-0',
+                      pathname === '/saved' ? 'text-gold-ink' : 'text-ink-subtle'
+                    )}
+                    strokeWidth={pathname === '/saved' ? 2.2 : 1.8}
+                  />
+                  <span className="font-sans text-[0.9375rem]">Saved</span>
+                </Link>
 
                 <button
                   type="button"
@@ -402,7 +442,6 @@ export function SiteHeader({ docs = [] }: { docs?: SearchDoc[] }) {
       </AnimatePresence>
 
       <SearchOverlay
-        docs={docs}
         open={searching}
         onClose={() => {
           setSearching(false)

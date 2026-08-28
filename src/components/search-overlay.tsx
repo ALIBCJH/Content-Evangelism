@@ -2,29 +2,65 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { searchDocs, type SearchDoc } from '@/lib/search-docs'
 
 /**
  * The search overlay: a sheet over the page holding one field and the
  * results beneath it, live as you type.
  *
- * The whole index is already on the client, so a keystroke is answered
- * without a request. Escape and the backdrop both dismiss it, focus moves
- * into the field on open and back to the opener on close, and the page
- * behind it is held still. "All results →" hands off to /search, which is
- * the crawlable, linkable version of the same thing.
+ * The index is fetched rather than handed down. It used to arrive as a
+ * prop from the reader layout, which meant the full text of every teaching
+ * was serialised into every page of the site whether or not anybody ever
+ * pressed "/" — see `app/api/search-index/route.ts` for the measurement.
+ * Now the first open pays for it once and the module holds it for the rest
+ * of the session, so the second open is as instant as the old one and no
+ * page carries the cost of a control nobody touched.
+ *
+ * Escape and the backdrop both dismiss it, focus moves into the field on
+ * open and back to the opener on close, and the page behind it is held
+ * still. "All results →" hands off to /search, which is the crawlable,
+ * linkable version of the same thing — and the one that still works when
+ * the fetch below does not.
+ *
+ * On a phone it is the whole screen. It used to open as a panel inset
+ * 88px from the top and 24px from each side, which on a six-inch screen
+ * spent a third of the window on the page it was covering; and it is
+ * measured in `dvh` rather than `vh`, so the results end where the
+ * keyboard begins rather than underneath it.
  */
-export function SearchOverlay({
-  docs,
-  open,
-  onClose,
-}: {
-  docs: SearchDoc[]
-  open: boolean
-  onClose: () => void
-}) {
+
+/* Held for the life of the tab. A reader opens search, closes it, opens it
+   again three pages later: that is one download, not three. */
+let held: SearchDoc[] | null = null
+let inFlight: Promise<SearchDoc[]> | null = null
+
+function loadIndex(): Promise<SearchDoc[]> {
+  if (held) return Promise.resolve(held)
+  if (!inFlight) {
+    inFlight = fetch('/api/search-index')
+      .then((response) => {
+        if (!response.ok) throw new Error(`search index: ${response.status}`)
+        return response.json() as Promise<SearchDoc[]>
+      })
+      .then((docs) => {
+        held = docs
+        return docs
+      })
+      .catch((error) => {
+        /* Cleared so a reader who opens search again after the signal
+           comes back gets another attempt rather than a cached failure. */
+        inFlight = null
+        throw error
+      })
+  }
+  return inFlight
+}
+
+export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = React.useState('')
+  const [docs, setDocs] = React.useState<SearchDoc[] | null>(held)
+  const [failed, setFailed] = React.useState(false)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const panelRef = React.useRef<HTMLDivElement>(null)
 
@@ -32,6 +68,26 @@ export function SearchOverlay({
     if (!open) return
     inputRef.current?.focus()
   }, [open])
+
+  /* Fetched on the first open and never again. A reader can type while it
+     is in the air; the results appear under what they have already
+     written the moment it lands. */
+  React.useEffect(() => {
+    if (!open || docs) return
+    let live = true
+    setFailed(false)
+    loadIndex().then(
+      (loaded) => {
+        if (live) setDocs(loaded)
+      },
+      () => {
+        if (live) setFailed(true)
+      }
+    )
+    return () => {
+      live = false
+    }
+  }, [open, docs])
 
   React.useEffect(() => {
     if (!open) return
@@ -76,12 +132,13 @@ export function SearchOverlay({
 
   if (!open) return null
 
-  const hits = searchDocs(docs, query)
+  const hits = docs ? searchDocs(docs, query) : []
   const shown = hits.slice(0, 8)
+  const loading = !docs && !failed
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex justify-center bg-plate-deep/70 px-6 pt-[88px]"
+      className="fixed inset-0 z-[100] flex justify-center bg-plate-deep/70 sm:px-6 sm:pt-[88px]"
       role="dialog"
       aria-modal="true"
       aria-label="Search"
@@ -91,7 +148,7 @@ export function SearchOverlay({
     >
       <div
         ref={panelRef}
-        className="flex max-h-full w-full max-w-[780px] flex-col self-start overflow-hidden rounded-panel bg-raised shadow-[0_32px_80px_rgba(13,44,70,0.30)]"
+        className="flex h-[100dvh] w-full max-w-[780px] flex-col overflow-hidden bg-raised shadow-[0_32px_80px_rgba(13,44,70,0.30)] sm:h-auto sm:max-h-[calc(100dvh-88px)] sm:self-start sm:rounded-panel"
       >
         <div className="flex items-center gap-3.5 border-b border-rule px-6 py-5">
           <Search aria-hidden className="h-5 w-5 shrink-0 text-gold" strokeWidth={1.75} />
@@ -104,18 +161,43 @@ export function SearchOverlay({
             aria-label="Search the archive"
             className="min-w-0 flex-1 border-0 bg-transparent text-[1.1875rem] text-ink outline-none"
           />
+          {/* A phone has no Escape key, and "ESC" in a 30x22 box was
+              neither a legible instruction nor a target a thumb could
+              find. The mark is the control below `sm`; the word is kept
+              from `sm` up, where it is telling a reader with a keyboard
+              something true and useful. */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close search"
-            className="icon-only rounded-md border border-rule px-2 py-1 font-mono text-[0.6875rem] text-ink-subtle transition-colors hover:text-ink"
+            className="focus-ring icon-only -mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink-subtle transition-colors hover:text-ink sm:mr-0 sm:h-auto sm:w-auto sm:rounded-md sm:border sm:border-rule sm:px-2 sm:py-1 sm:font-mono sm:text-[0.6875rem]"
           >
-            ESC
+            <X aria-hidden className="h-5 w-5 sm:hidden" />
+            <span aria-hidden className="hidden sm:inline">ESC</span>
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto py-2">
-          {shown.length === 0 ? (
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2">
+          {loading ? (
+            <p className="px-6 py-8 text-[0.9375rem] text-ink-500" aria-live="polite">
+              Opening the archive…
+            </p>
+          ) : failed ? (
+            /* The index did not arrive. /search does the same job on the
+               server, so the reader is sent to the thing that still works
+               rather than told the search is broken. */
+            <p className="px-6 py-8 text-[0.9375rem] text-ink-500">
+              Search is not available offline.{' '}
+              <Link
+                href={query ? `/search?q=${encodeURIComponent(query)}` : '/search'}
+                onClick={onClose}
+                className="border-b border-gold/50 text-navy hover:text-gold"
+              >
+                Search the archive
+              </Link>{' '}
+              when you are back on a signal.
+            </p>
+          ) : shown.length === 0 ? (
             <p className="px-6 py-8 text-[0.9375rem] text-ink-500">
               Nothing matches “{query}”. Try a book of the Bible, a nation, or a subject.
             </p>
@@ -144,9 +226,9 @@ export function SearchOverlay({
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-rule bg-ground px-6 py-3.5">
+        <div className="flex items-center justify-between border-t border-rule bg-ground px-6 py-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:pb-3.5">
           <span className="text-xs text-ink-subtle">
-            {hits.length} {hits.length === 1 ? 'result' : 'results'}
+            {loading ? '' : `${hits.length} ${hits.length === 1 ? 'result' : 'results'}`}
           </span>
           <Link
             href={query ? `/search?q=${encodeURIComponent(query)}` : '/search'}

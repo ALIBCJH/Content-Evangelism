@@ -77,7 +77,13 @@ export function LeadCard({
           alt={item.image.alt}
           width={1024}
           height={1536}
-          sizes="(max-width: 640px) 100vw, 640px"
+          /* The card is the full shell below `lg`, the middle of a
+             two-track grid at `lg`, and the middle of a three-track grid
+             from `xl` — where it is narrower than it was at `lg`, because
+             the archive rail arrives on its right. 640px flat meant the
+             browser fetched a 640px file for a 940px slot at `lg` and
+             upscaled it. */
+          sizes="(min-width: 1280px) 620px, (min-width: 1024px) 62vw, 100vw"
           className="h-auto w-full"
           priority
         />
@@ -191,10 +197,18 @@ export function LeadCard({
         {/* The teaching runs on below this card, and nothing said so.
             "Read article" used to stand here and at least implied a way
             in; scrolling is the way in now, and a reader arriving for the
-            first time has to be told that once. */}
+            first time has to be told that once.
+
+            It was hidden below `sm`, which is the one width where the
+            reasoning above bites hardest: on a phone the card fills the
+            window, there is nothing visible under it to imply that
+            anything follows, and the scroll to the first sentence is the
+            longest it ever is. It is the whole width of the row there,
+            with the target height a thumb needs, and returns to a quiet
+            trailing link from `sm` up. */}
         <a
           href="#continue"
-          className="focus-ring group ml-auto hidden items-center gap-1.5 font-apparatus text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-gold-ink sm:inline-flex"
+          className="focus-ring group ml-auto inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-chip border border-rule font-apparatus text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-gold-ink sm:w-auto sm:min-h-0 sm:justify-start sm:rounded-none sm:border-0"
         >
           Read on
           <ChevronDown
