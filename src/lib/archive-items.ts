@@ -1,3 +1,4 @@
+import { artSizes } from '@/lib/art-sizes'
 import { parseBody, type Block } from '@/lib/article-body'
 import { scriptureRefs } from '@/lib/scripture'
 import { dateline } from '@/lib/search-docs'
@@ -39,7 +40,7 @@ export interface ArchiveItem {
    * one, the poster where it does not, and absent where it has neither —
    * in which case the row draws the section's own field instead.
    */
-  thumbnail?: { src: string; alt: string }
+  thumbnail?: { src: string; alt: string; width?: number; height?: number }
   /**
    * The passage the teaching leads with, set on the plate at the head of
    * the lead card. Absent on a piece that opens on prose rather than on
@@ -203,6 +204,63 @@ export function spreadFields(items: ArchiveItem[]): ArchiveItem[] {
   })
 }
 
+/**
+ * How wide a picture has to be before it is allowed to lead the page.
+ *
+ * The lead runs the full width of its column, which is 516px at the
+ * widest shell the site has and 426px at the narrowest screen the lead
+ * is drawn on at all. So anything past ~520 is not upscaled — but "not
+ * upscaled" is a low bar on a display that draws two device pixels per
+ * CSS pixel, which is most of them. 720 is the honest middle: sharp on a
+ * 1x screen, a little soft on a 2x one, and it is the widest bar this
+ * archive can currently clear.
+ *
+ * That matters more here than it would elsewhere, because of how this
+ * ministry's artwork is made. Almost every landscape crop on the site is
+ * the wordless region of a poster whose headline is set into the
+ * picture, so the crop is as wide as the photograph happens to be and no
+ * wider — `importance-of-repentance-wide.webp` stops at 485px because
+ * column 486 is the first gold pixel of the word IMPORTANCE. Run at lead
+ * size that file is upscaled by a fifth, and a soft photograph at the
+ * top of the page is worse than a page with no lead on it.
+ */
+export const LEAD_MIN_WIDTH = 720
+
+/**
+ * Whether this piece can be the one at the head of the front page.
+ *
+ * A photograph the site ships, big enough to be run large. Everything
+ * else — a teaching with no picture, a picture the site does not ship
+ * and cannot measure, a crop too small to enlarge — stays a row, which
+ * is not a demotion: a row is what the whole listing is.
+ *
+ * Note what this deliberately does not ask: whether the picture is any
+ * good. That is a judgement, it belongs to whoever attaches artwork, and
+ * the place it is recorded is `CREDITS.md`.
+ */
+export function canLead(item: ArchiveItem): boolean {
+  return (item.thumbnail?.width ?? 0) >= LEAD_MIN_WIDTH
+}
+
+/**
+ * Which piece leads, in a list already in the order the reader sees.
+ *
+ * The newest one that can carry a lead — not simply the newest. On this
+ * archive today those are different pieces: the newest teaching is "What
+ * is the importance of repentance?", whose photograph is 485px wide, and
+ * the newest that can lead is "Why did Jesus have to die on the cross?"
+ * at 896px. Taking the newest regardless would put a stretched picture
+ * at the top of the page, and taking a pinned favourite would freeze the
+ * front page on whatever was true the day somebody chose it.
+ *
+ * -1 where nothing qualifies, and the page is then the plain column of
+ * rows it has always been. That is the case on most topic pages, and it
+ * is a fine page — the lead is an enrichment, never a requirement.
+ */
+export function pickLead(items: ArchiveItem[]): number {
+  return items.findIndex(canLead)
+}
+
 const CHIPPED = 3
 
 export function toArchiveItems(
@@ -246,7 +304,14 @@ export function toArchiveItems(
             ? { src: (row.thumbnailUrl ?? row.imageUrl)!, alt: row.imageAlt ?? '' }
             : undefined
         const thumbnail = attached ?? bodyFigure(row.body)
-        return thumbnail ? { thumbnail } : {}
+        if (!thumbnail) return {}
+        /* How big the file actually is, where the site is the one that
+           ships it. The front page needs this to decide whether a
+           picture can carry the lead — see `canLead`. A path the site
+           does not ship (an absolute URL on a record) simply has no
+           size, and is never offered the lead. */
+        const size = artSizes[thumbnail.src]
+        return { thumbnail: size ? { ...thumbnail, width: size[0], height: size[1] } : thumbnail }
       })(),
       quote: leadQuote(row.body),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
