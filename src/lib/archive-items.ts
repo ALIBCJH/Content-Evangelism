@@ -154,11 +154,11 @@ export function bodyFigure(body: string | undefined): { src: string; alt: string
  * other — which is the exact objection that took pictures out of this
  * listing the last time, and it was a fair one.
  *
- * The section is already written in words directly above the headline, so
- * the colour is not needed to carry it and is free to do the other job:
- * telling one row from the next. Keyed on the slug, so a teaching's field
- * is the same colour every time anybody loads the page, and stable across
- * a rebuild.
+ * The colour is not carrying the section — nothing on the row is, since
+ * the kicker that named it came off — so it is free to do the only job a
+ * listing actually needs it for: telling one row from the next. Keyed on
+ * the slug, so a teaching's field is the same colour every time anybody
+ * loads the page, and stable across a rebuild.
  */
 const PALETTES = ['dawn', 'flame', 'olive', 'wine', 'orchid', 'midnight', 'harvest'] as const
 

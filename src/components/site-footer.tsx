@@ -33,7 +33,10 @@ export function SiteFooter() {
     <footer className="mt-auto bg-raised text-ink-700">
       <div className="gold-rule" />
 
-      <div className="shell grid gap-10 pb-10 pt-16 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_repeat(5,minmax(0,1fr))]">
+      {/* The brand block, then one track per column in `footerColumns` —
+          three of them now, and the number here has to move with that
+          list or the row ends in empty tracks. */}
+      <div className="shell grid gap-10 pb-10 pt-16 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
         <div>
           <div className="mb-4 flex items-center gap-3">
             <Image

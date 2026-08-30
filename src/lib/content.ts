@@ -894,34 +894,29 @@ export interface FooterColumn {
   links: { label: string; href: string }[]
 }
 
+/**
+ * Three columns where there were five.
+ *
+ * The Teachings and Articles columns are gone, and with them the three
+ * links that opened the About page — About, Mission, Statement of Faith.
+ * They were the site's own internal linking, so this is a real cost: the
+ * footer is where link equity circulates and where a reader who has
+ * reached the bottom of a page is offered somewhere else to go.
+ *
+ * Nothing has been orphaned by it. About is in the masthead at every
+ * width and in the legal bar directly below this; the topic pages are
+ * reachable from the rail beside the archive; teachings, questions and
+ * the prophetic record are all in the masthead or in the columns that
+ * remain. The two headings that went were lists of destinations already
+ * one tap away somewhere else.
+ *
+ * `SiteFooter` hardcodes the column count in its grid template. If a
+ * column is added or removed here, that number changes with it.
+ */
 export const footerColumns: FooterColumn[] = [
   {
     title: 'Ministry',
-    links: [
-      { label: 'About', href: '/about' },
-      { label: 'Mission', href: '/about#mission' },
-      { label: 'Statement of Faith', href: '/about#faith' },
-      { label: 'Altars & Locations', href: '/altars' },
-    ],
-  },
-  {
-    title: 'Teachings',
-    links: [
-      { label: 'All Teachings', href: '/teachings' },
-      { label: 'Questions Answered', href: '/questions' },
-      { label: 'Repentance', href: '/topics/teachings' },
-      { label: 'Prophecy', href: '/topics/prophecy' },
-      { label: 'Devotional', href: '/topics/devotional' },
-    ],
-  },
-  {
-    title: 'Articles',
-    links: [
-      { label: 'The Archive', href: '/' },
-      { label: 'Doctrine', href: '/topics/doctrine' },
-      { label: 'Church History', href: '/topics/church-history' },
-      { label: 'Testimony', href: '/topics/testimony' },
-    ],
+    links: [{ label: 'Altars & Locations', href: '/altars' }],
   },
   {
     title: 'Archive',

@@ -29,22 +29,28 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * the only thing on the row that matters. A hairline says "these are
  * separate things" for one pixel.
  *
- * The section is stated in words above the headline. It used to be left
- * to the colour of the field beside it, which said nothing to a reader
- * who had not learnt the code and nothing at all to one who cannot see
- * colour — and it freed the field's palette to do the job it is better
- * at, which is telling one row from the next. See `paletteFor`.
+ * No section on the row at all now. It was a gold kicker above the
+ * headline and it read "Teachings" eight times in fourteen rows, which is
+ * a label that separates nothing while spending the line directly above
+ * the only thing on the row that matters. The rail and the topic pages
+ * are where a section is a thing a reader can act on.
+ *
+ * Which leaves the field beside a picture-less teaching carrying no
+ * meaning about section, and it should not: it is keyed to the piece
+ * rather than to its category precisely so that a column of them reads as
+ * fourteen different things. See `paletteFor`.
  */
 export function PieceRow({ item, priority = false }: { item: ArchiveItem; priority?: boolean }) {
   return (
     <article className="group relative border-b border-rule py-5 last:border-b-0">
       <div className="flex items-start justify-between gap-4 sm:gap-6">
         <div className="min-w-0 flex-1">
-          {/* The section, as a word. Gold rather than the ministry's navy
-              because it is a label on a headline and not part of it — the
-              same mark every kicker on this site carries. */}
-          <p className="kicker mb-1.5 text-gold-ink">{item.category}</p>
-
+          {/* No section label. It stood here as a gold kicker and said
+              "Teachings" on eight of fourteen rows, which is a word that
+              distinguishes nothing while taking the line above every
+              headline — and the two places a reader can act on a section
+              are the topics rail and the topic pages, both of which are
+              still there. */}
           <h3 className="text-pretty font-apparatus text-[1.0625rem] font-bold leading-[1.3] tracking-[-0.011em] text-navy sm:text-[1.125rem]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
