@@ -10,9 +10,8 @@ import { unfinished as stillReading, useReadingProgress } from '@/lib/reading-pr
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
-import { LeadCard } from '@/components/archive/lead-card'
 import { PieceRow } from '@/components/archive/piece-row'
-import { TopicChips, TopicsRail } from '@/components/archive/topics-rail'
+import { TopicsRail } from '@/components/archive/topics-rail'
 
 /**
  * The archive as a reader handles it: filtered, ordered, and marked up
@@ -114,7 +113,13 @@ export function ArchiveList({
     )
   }, [items, query, onlySaved, saved, topic])
 
-  const [lead, ...rest] = shown
+  /* Every piece is a row. There used to be a lead card here — the newest
+     teaching given a picture, a standfirst, a scripture plate and a pair
+     of buttons, with the rest of the archive listed underneath it. The
+     listing is one uniform column now, so the newest teaching is simply
+     the first row of it. Listen and Save have not gone anywhere; they are
+     on the teaching's own masthead, which is where a reader deciding to
+     hear a piece read aloud actually is — see `PieceActions`. */
 
   /* Everything read, most recent first, and still in the archive: a
      teaching withdrawn since it was read should not be offered back. */
@@ -130,8 +135,10 @@ export function ArchiveList({
      was finished as well as what was not — because that is the question
      it exists to answer. */
   const inTheRail = React.useMemo(
-    () => stillReading(history).filter((held) => held.slug !== lead?.slug).slice(0, 1),
-    [history, lead?.slug]
+    /* No lead any more, so nothing to exclude: there is no piece the
+       reader is "in" rather than away from. */
+    () => stillReading(history).slice(0, 1),
+    [history]
   )
 
   /* The section each piece belongs to, which the mark itself does not
@@ -140,18 +147,6 @@ export function ArchiveList({
     () => new Map(items.map((item) => [item.slug, item.category as string])),
     [items]
   )
-  /* The lead card leads the current view, and says which view that is.
-     Calling a search result "the latest teaching" would be the one thing
-     this card must not do. */
-  const featured = shown.length > 0
-  const kicker = query.trim()
-    ? 'Best match'
-    : onlySaved
-      ? 'Saved for later'
-      : topic
-        ? `Latest in ${topic}`
-        : 'Latest teaching'
-
   return (
     <>
       {/* ── The band: the search, and what is put aside ───────────── */}
@@ -207,30 +202,24 @@ export function ArchiveList({
         onStop={speech.stop}
       />
 
-      {/* ── The archive: the rail, the lead, and the rest ──────────── */}
+      {/* ── The archive: the rail, and the listing ─────────────────── */}
       {/* On a wide screen the rail is orientation, and it belongs beside
           the writing. Stacked on a phone it is a screen of furniture
           standing between a reader and the teaching, so the order is
           reversed there and restored at lg: the piece first, the rest of
           the archive second, and what the archive holds last. */}
-      {/* Two tracks, at every width that has room for two.
+      {/* Two tracks, at every width that has room for two: the rail, and
+          the listing.
 
-          There were three from `xl`: the rail, the lead, and the archive
-          in a 340px column beside it. That column was cut for a numbered
-          index — a line of text each, which is compact enough to read at
-          that width — and the rows that stand there now are not. A
-          headline beside a 152px picture in 340px of track wraps to five
-          lines, while the lead card's own column, having nothing under
-          it, ran seven hundred pixels of empty page down the middle of
-          the screen.
-
-          So the archive goes back under the lead where it belongs, the
-          two share one measure, and the pair is centred — the same shape
-          the article page uses, for the same reason: the slack on a wide
-          screen should be a margin on both sides rather than a void on
-          one. */}
+          There were three from `xl` — the rail, a lead card, and the
+          archive in a 340px column beside it. Both of the other two are
+          gone: the 340px column because a headline beside a 152px picture
+          wraps to five lines in it, and the lead because the listing is
+          one uniform column now. What is left is centred, so the slack on
+          a wide screen is a margin on both sides rather than a void on
+          one — the same shape the article page uses. */}
       <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-2 sm:pt-5 lg:grid-cols-[236px_minmax(0,44rem)] lg:justify-center lg:gap-x-14">
-        <aside className="order-3 lg:order-none lg:row-span-2">
+        <aside className="order-2 lg:order-none">
           <TopicsRail
             counts={counts}
             total={items.length}
@@ -245,15 +234,15 @@ export function ArchiveList({
         </aside>
 
         <div className="order-1 min-w-0 lg:order-none">
-          {/* On a phone the heading over a listing is a word describing
-              a page the reader can see — and the card beneath it already
-              says "Latest teaching". It is still in the markup for a
-              crawler and still read out, just not drawn, and only where a
-              lead follows it.
+          {/* On a phone the heading over a listing is a word describing a
+              page the reader can already see, so it is read out and given
+              to a crawler without being drawn — which is the whole of
+              what the reader asked for here: the articles, and nothing
+              above them.
 
               The margin belongs to the heading rather than to a wrapper
               round it: left on the wrapper it reserved twenty-four pixels
-              under something that was not being drawn, and the picture
+              under something that was not being drawn, and the listing
               sat that far down the page for no reason. */}
           <div
             className={
@@ -264,12 +253,6 @@ export function ArchiveList({
           >
             {header}
           </div>
-
-          {/* The filter, on the widths where the rail that holds it is at
-              the foot of the page. One line, above the lead, so narrowing
-              the archive by subject does not require scrolling the whole
-              archive first to find the control for it. */}
-          <TopicChips counts={counts} total={items.length} active={topic} onPick={setTopic} />
 
           {shown.length === 0 ? (
             <div className="py-16 text-center">
@@ -303,30 +286,8 @@ export function ArchiveList({
               </div>
             </div>
           ) : (
-            featured &&
-            lead && (
-              <>
-                <LeadCard
-                  item={lead}
-                  kicker={kicker}
-                  saved={ready && isSaved(lead.slug)}
-                  ready={ready}
-                  onToggle={() => toggle(lead.slug)}
-                  listening={speech.piece?.slug === lead.slug && speech.status === 'playing'}
-                  onListen={() =>
-                    speech.piece?.slug === lead.slug && speech.status === 'playing'
-                      ? speech.pause()
-                      : speech.play({ slug: lead.slug, title: lead.title, href: lead.href })
-                  }
-                />
-              </>
-            )
-          )}
-        </div>
-
-        {rest.length > 0 && (
-          <div className="order-2 min-w-0 lg:order-none lg:col-start-2">
-            <h2 className="sr-only">The rest of the archive</h2>
+            <>
+              <h2 className="sr-only">The archive</h2>
             {/* Rows with a picture each, one column at every width.
 
                 This listing has been three things. Rows with a picture,
@@ -351,11 +312,15 @@ export function ArchiveList({
                 One column because the archive is a chronology, and a
                 chronology poured down two columns is read in the wrong
                 order by anybody who reads it across. */}
-            {spreadFields(rest).map((item) => (
-              <PieceRow key={item.slug} item={item} />
-            ))}
-          </div>
-        )}
+              {spreadFields(shown).map((item, index) => (
+                /* The first row is the top of the page and the only
+                   picture above the fold, so it is the one the browser is
+                   told to fetch first rather than to lazy-load. */
+                <PieceRow key={item.slug} item={item} priority={index === 0} />
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
       {/* The whole shelf, where a reader who has scrolled the archive
