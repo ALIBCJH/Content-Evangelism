@@ -3,13 +3,17 @@
 Openly-licensed photographs used as article cover images.
 CC BY / CC BY-SA images require this attribution to remain with the project.
 
-> **Four files here are the ministry's own work** and are not covered by
+> **Six files here are the ministry's own work** and are not covered by
 > the licences below: `rapture-of-the-church.webp`,
-> `unforgivable-sin.webp` and the two `-wide.webp` crops taken from them.
-> They were supplied by the Ministry of Repentance and Holiness. The
-> `-wide` files are wordless regions of the same artwork, cut for listing
-> rows — see `thumbnailUrl` in `src/lib/posted.ts` for why a listing
-> cannot use the poster itself.
+> `unforgivable-sin.webp`, `why-jesus-died-on-the-cross.webp` and the
+> three `-wide.webp` crops taken from them. They were supplied by the
+> Ministry of Repentance and Holiness. The `-wide` files are wordless
+> regions of the same artwork, cut for listing rows — see `thumbnailUrl`
+> in `src/lib/posted.ts` for why a listing cannot use the poster itself.
+>
+> `why-jesus-died-on-the-cross-wide.webp` is the region to the right of
+> the headline and above the torn banner: the praying figure and the
+> cross, with no type in it.
 
 > **One image here is not openly licensed.** `holiness-puzzle.webp` is a
 > watermarked stock-library preview, published at the ministry's

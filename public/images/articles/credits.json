@@ -120,5 +120,17 @@
     "height": 558,
     "query": null,
     "note": "Supplied by the ministry and published at their instruction. The file carries a visible stock-library watermark across the lettering and is a low-resolution comp. It must be replaced with a licensed copy — overwrite holiness-puzzle.webp and this entry; nothing else needs to change."
+  },
+  "why-jesus-died-on-the-cross": {
+    "title": "Why did Jesus have to die on the cross?",
+    "creator": "Ministry of Repentance and Holiness",
+    "license": "ministry-supplied",
+    "license_url": null,
+    "source_page": null,
+    "provider": "supplied by the ministry",
+    "note": "The ministry's own artwork, not a stock photograph. Recorded here so its absence from the openly-licensed list above is not later read as an oversight. The -wide file is a wordless region of the same picture, cut for listing rows.",
+    "width": 1536,
+    "height": 1024,
+    "query": null
   }
 }
