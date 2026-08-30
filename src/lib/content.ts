@@ -889,49 +889,16 @@ export const altarHref = (altar: Altar) =>
 
 /* ── The footer ──────────────────────────────────────────────────── */
 
-export interface FooterColumn {
-  title: string
-  links: { label: string; href: string }[]
-}
+/* There were five columns of links here, then three, and now none.
+   The footer is the seal, what the site is, the three official channels,
+   and the legal bar — nothing else.
 
-/**
- * Three columns where there were five.
- *
- * The Teachings and Articles columns are gone, and with them the three
- * links that opened the About page — About, Mission, Statement of Faith.
- * They were the site's own internal linking, so this is a real cost: the
- * footer is where link equity circulates and where a reader who has
- * reached the bottom of a page is offered somewhere else to go.
- *
- * Nothing has been orphaned by it. About is in the masthead at every
- * width and in the legal bar directly below this; the topic pages are
- * reachable from the rail beside the archive; teachings, questions and
- * the prophetic record are all in the masthead or in the columns that
- * remain. The two headings that went were lists of destinations already
- * one tap away somewhere else.
- *
- * `SiteFooter` hardcodes the column count in its grid template. If a
- * column is added or removed here, that number changes with it.
- */
-export const footerColumns: FooterColumn[] = [
-  {
-    title: 'Ministry',
-    links: [{ label: 'Altars & Locations', href: '/altars' }],
-  },
-  {
-    title: 'Archive',
-    links: [
-      { label: 'Prophecy Archive', href: '/prophecies' },
-      { label: 'Search', href: '/search' },
-      { label: 'RSS', href: '/feed.xml' },
-    ],
-  },
-  {
-    title: 'Media',
-    links: [
-      { label: 'Jesus is LORD Radio', href: radioChannel.href },
-      { label: 'YouTube', href: youtubeChannel.href },
-      { label: 'Share on WhatsApp', href: whatsappChannel.href },
-    ],
-  },
-]
+   Losing them costs the site its own internal linking, which is worth
+   naming rather than pretending otherwise: the footer is where a reader
+   who has reached the bottom of a page is offered somewhere else to go.
+   Every destination they carried is still reachable, and that was checked
+   rather than assumed — About, Search, Saved, RSS and the sitemap in the
+   legal bar; Articles, the prophetic record, Teachings and About in the
+   masthead at every width; the altars from the About page and from the
+   offline page; the three channels from the icons in the block above,
+   which is where they already were. */
