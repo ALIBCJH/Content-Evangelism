@@ -39,19 +39,102 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * meaning about section, and it should not: it is keyed to the piece
  * rather than to its category precisely so that a column of them reads as
  * fourteen different things. See `paletteFor`.
+ *
+ * ## The same row, run as the lead
+ *
+ * One row on the front page is drawn large from `xl`: the picture above
+ * the headline at the full width of its column, with the standfirst
+ * under it. It is the same component and the same markup — the lead is a
+ * set of `xl:` classes on this row, not a second component and not a
+ * second copy of the row in the page.
+ *
+ * That is worth being deliberate about. The obvious way to add a lead is
+ * to render a `LeadCard` beside the listing and hide whichever of the two
+ * does not apply, and it is the wrong way twice over: a browser fetches
+ * the picture inside a `display:none` box, so every phone on the site
+ * would pay in bandwidth for a lead it is never shown, and the same
+ * teaching would sit in the page twice for anything reading the markup
+ * rather than looking at it.
+ *
+ * What a phone does pay here is exact and small: one `grid-row` property
+ * that means nothing outside a grid, and the lead's standfirst, which is
+ * two sentences already being sent for the search to score. No second
+ * picture, no second row, and no phone-width class touched.
  */
-export function PieceRow({ item, priority = false }: { item: ArchiveItem; priority?: boolean }) {
+export function PieceRow({
+  item,
+  priority = false,
+  lead = false,
+  beside = 0,
+}: {
+  item: ArchiveItem
+  priority?: boolean
+  /**
+   * Draw this row as the front page's lead — from `xl` only, and only
+   * where the picture is big enough to stand it. `canLead` decides;
+   * nothing here checks.
+   */
+  lead?: boolean
+  /**
+   * How many rows stand in the second column beside the lead, which is
+   * how many grid rows the lead has to span to sit against all of them.
+   * Ignored on every row but the lead, and inert at every width where
+   * the listing is not a grid.
+   */
+  beside?: number
+}) {
   return (
-    <article className="group relative border-b border-rule py-5 last:border-b-0">
-      <div className="flex items-start justify-between gap-4 sm:gap-6">
-        <div className="min-w-0 flex-1">
+    /* Where the row sits at `xl`, which is the whole of the two-column
+       front. The lead is pinned to the first column and spans it; every
+       other row is put in the second. Below `xl` neither class applies
+       and the rows are the single column they have always been.
+
+       Flat, rather than a wrapper round the lead and another round the
+       rest: the rows stay siblings, so `last:border-b-0` still finds the
+       last row of the page instead of the last row of a wrapper. */
+    <article
+      className={`group relative border-b border-rule py-5 last:border-b-0 ${
+        lead
+          ? 'xl:sticky xl:top-24 xl:col-start-1 xl:self-start xl:border-b-0 xl:pb-0 xl:pt-0'
+          : 'xl:col-start-2'
+      }`}
+      /* The lead's grid area, counted rather than guessed. It has to
+         start at the first row and end after the last one in the column
+         beside it: given a span shorter than that the rows below it have
+         nowhere to go, and given a longer one the browser stretches the
+         rows it does not reach — which drew a five-hundred-pixel hole
+         under the first headline the first time this was tried with a
+         round number.
+
+         Inline because the number is only known at render, and harmless
+         inline because `grid-row` means nothing to an element that is
+         not in a grid: below `xl` this listing is a plain column and the
+         property is never consulted. */
+      style={lead && beside > 0 ? { gridRow: `1 / span ${beside}` } : undefined}
+    >
+      <div
+        className={`flex items-start justify-between gap-4 sm:gap-6 ${
+          /* Picture over headline, which is the order a front page uses
+             and the opposite of the order a row uses. A row is scanned,
+             so the headline comes first and the picture is what the eye
+             reaches only once a headline has stopped it. A lead is not
+             scanned — it is the one thing on the page asking to be
+             looked at, and the picture is what does the asking. */
+          lead ? 'xl:flex-col-reverse xl:gap-0' : ''
+        }`}
+      >
+        <div className={`min-w-0 flex-1 ${lead ? 'xl:mt-5 xl:w-full xl:flex-none' : ''}`}>
           {/* No section label. It stood here as a gold kicker and said
               "Teachings" on eight of fourteen rows, which is a word that
               distinguishes nothing while taking the line above every
               headline — and the two places a reader can act on a section
               are the topics rail and the topic pages, both of which are
               still there. */}
-          <h3 className="text-pretty font-apparatus text-[1.0625rem] font-bold leading-[1.3] tracking-[-0.011em] text-navy sm:text-[1.125rem]">
+          <h3
+            className={`text-pretty font-apparatus text-[1.0625rem] font-bold leading-[1.3] tracking-[-0.011em] text-navy sm:text-[1.125rem] ${
+              lead ? 'xl:text-[1.75rem] xl:leading-[1.15] xl:tracking-[-0.02em]' : ''
+            }`}
+          >
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place. */}
@@ -64,7 +147,20 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               not repeated here; what is left is when it was published and
               what it will cost to read, which is what a reader deciding
               between two teachings actually weighs. */}
-          <p className="kicker mt-2 leading-[1.5] text-ink-subtle">
+          {/* The standfirst, on the lead and nowhere else. It is two
+              sentences saying what the teaching answers, and it is the
+              difference between a big picture with a headline on it and
+              something a reader can decide about — but it is also four
+              lines, which is why no row carries one. Already on every
+              item for the search to score, so drawing it here costs the
+              page nothing it was not already sending. */}
+          {lead && item.dek && (
+            <p className="mt-3 hidden font-reading text-[1.0625rem] leading-[1.6] text-ink-muted xl:block">
+              {item.dek}
+            </p>
+          )}
+
+          <p className={`kicker leading-[1.5] text-ink-subtle ${lead ? 'mt-2 xl:mt-4' : 'mt-2'}`}>
             <Posted iso={item.publishedAt} dated={item.dated} />
             <span aria-hidden className="mx-1.5">·</span>
             <span className="tabular">{item.readMinutes}</span> min
@@ -76,8 +172,14 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
             in that order — and the section's own field where it has
             none. See `bodyFigure` for why the widest figure is the one
             taken, and `TeachingArt` for why the field is not a blank. */}
+        {/* 16:10 at both sizes, and that is not a coincidence: every
+            landscape crop in `public/images/articles` is cut to 16:10, so
+            the lead shows the whole of the picture somebody framed rather
+            than a taller slice of it with the ends taken off. */}
         <span
-          className="relative aspect-[16/10] w-[7.5rem] shrink-0 overflow-hidden rounded-md bg-surface-2 sm:w-[9.5rem]"
+          className={`relative aspect-[16/10] w-[7.5rem] shrink-0 overflow-hidden rounded-md bg-surface-2 sm:w-[9.5rem] ${
+            lead ? 'xl:w-full xl:rounded-lg' : ''
+          }`}
           style={{ containerType: 'inline-size' }}
         >
           {item.thumbnail ? (
@@ -86,7 +188,11 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               alt=""
               fill
               priority={priority}
-              sizes="(max-width: 640px) 120px, 152px"
+              sizes={
+                lead
+                  ? '(max-width: 640px) 120px, (max-width: 1279px) 152px, 33vw'
+                  : '(max-width: 640px) 120px, 152px'
+              }
               className="object-cover"
             />
           ) : (
