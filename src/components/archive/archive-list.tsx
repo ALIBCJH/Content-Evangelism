@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import type { ArchiveItem } from '@/lib/archive-items'
+import { spreadFields, type ArchiveItem } from '@/lib/archive-items'
 import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
@@ -11,7 +11,7 @@ import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
 import { LeadCard } from '@/components/archive/lead-card'
-import { TeachingIndex } from '@/components/archive/teaching-index'
+import { PieceRow } from '@/components/archive/piece-row'
 import { TopicChips, TopicsRail } from '@/components/archive/topics-rail'
 
 /**
@@ -213,8 +213,24 @@ export function ArchiveList({
           standing between a reader and the teaching, so the order is
           reversed there and restored at lg: the piece first, the rest of
           the archive second, and what the archive holds last. */}
-      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-2 sm:pt-5 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_340px] xl:gap-x-12">
-        <aside className="order-3 lg:order-none lg:row-span-2 xl:row-span-1">
+      {/* Two tracks, at every width that has room for two.
+
+          There were three from `xl`: the rail, the lead, and the archive
+          in a 340px column beside it. That column was cut for a numbered
+          index — a line of text each, which is compact enough to read at
+          that width — and the rows that stand there now are not. A
+          headline beside a 152px picture in 340px of track wraps to five
+          lines, while the lead card's own column, having nothing under
+          it, ran seven hundred pixels of empty page down the middle of
+          the screen.
+
+          So the archive goes back under the lead where it belongs, the
+          two share one measure, and the pair is centred — the same shape
+          the article page uses, for the same reason: the slack on a wide
+          screen should be a margin on both sides rather than a void on
+          one. */}
+      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-2 sm:pt-5 lg:grid-cols-[236px_minmax(0,44rem)] lg:justify-center lg:gap-x-14">
+        <aside className="order-3 lg:order-none lg:row-span-2">
           <TopicsRail
             counts={counts}
             total={items.length}
@@ -309,19 +325,35 @@ export function ArchiveList({
         </div>
 
         {rest.length > 0 && (
-          <div className="order-2 min-w-0 lg:order-none">
+          <div className="order-2 min-w-0 lg:order-none lg:col-start-2">
             <h2 className="sr-only">The rest of the archive</h2>
-            {/* An index, and one column at every width. These were rows
-                with a picture each, two across from `sm` — and for most
-                of the archive the picture was the section's own generated
-                field, so a column of them was one coloured band repeated
-                and every headline was a third narrower for it. What is
-                different from row to row is the day and the position, so
-                those are what the column is built out of.
-                One column because the day headings are a chronology, and
-                a chronology poured down two columns is read in the wrong
+            {/* Rows with a picture each, one column at every width.
+
+                This listing has been three things. Rows with a picture,
+                two across — dropped because for most of the archive the
+                picture was the section's own field, so a column of them
+                was one colour repeated and every headline was a third
+                narrower for it. Then a numbered index with day headings
+                and no pictures at all, which fixed that by giving the eye
+                nothing to land on: fourteen headlines in one grey block.
+
+                This is the first version where the objection to the first
+                one does not hold. A teaching's picture is now looked for
+                in three places rather than one — its listing crop, its
+                poster, and the figures inside its own body, which is
+                where the only photographs most of this archive has ever
+                had were sitting unseen — and where there is genuinely
+                none, the field is keyed to the teaching rather than to
+                its section, so eight pieces filed under Teachings are
+                eight different colours instead of one olive band drawn
+                eight times. See `bodyFigure` and `paletteFor`.
+
+                One column because the archive is a chronology, and a
+                chronology poured down two columns is read in the wrong
                 order by anybody who reads it across. */}
-            <TeachingIndex items={rest} startAt={2} dated={!query.trim()} />
+            {spreadFields(rest).map((item) => (
+              <PieceRow key={item.slug} item={item} />
+            ))}
           </div>
         )}
       </div>
