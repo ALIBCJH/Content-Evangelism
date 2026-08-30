@@ -1,4 +1,4 @@
-import { parseBody } from '@/lib/article-body'
+import { parseBody, type Block } from '@/lib/article-body'
 import { scriptureRefs } from '@/lib/scripture'
 import { dateline } from '@/lib/search-docs'
 import type { RealRow } from '@/lib/rows'
@@ -106,6 +106,103 @@ export function leadQuote(body: string | undefined): { text: string; cite?: stri
   return { text, ...(quote.cite ? { cite: quote.cite } : {}) }
 }
 
+/**
+ * The picture a listing row shows when the teaching was never given a
+ * poster of its own — taken out of the writing itself.
+ *
+ * Two of the fourteen teachings on this site have artwork attached. The
+ * rest were written before anybody was attaching any, and one of them
+ * carries photographs inside the body that no listing has ever shown: a
+ * row of women in the dress-code teaching, sitting three screens down a
+ * page nobody has opened yet, while the row that would make them open it
+ * drew a coloured field instead.
+ *
+ * So a body figure is the third thing tried, after the listing crop and
+ * the poster. It is the teaching's own picture either way; the only
+ * difference is that nobody has cropped this one for a thumbnail.
+ *
+ * Which is why the widest is taken rather than the first. A listing row
+ * is 16:10 and `object-cover` fills it by cutting whatever does not fit,
+ * so a 526x701 portrait loses its top and bottom — a face, usually —
+ * while a 1635x962 landscape loses almost nothing. The dress-code
+ * teaching carries exactly that pair, in exactly that order, and taking
+ * the first would have taken the wrong one. A figure that declares no
+ * dimensions is treated as square: better than a portrait, worse than a
+ * known landscape.
+ */
+type Figure = Extract<Block, { kind: 'figure' }>
+
+export function bodyFigure(body: string | undefined): { src: string; alt: string } | undefined {
+  if (!body) return undefined
+  const figures = parseBody(body).filter((block): block is Figure => block.kind === 'figure')
+  if (figures.length === 0) return undefined
+
+  const widest = figures.reduce((best, figure) => {
+    const ratio = (f: Figure) => (f.width && f.height ? f.width / f.height : 1)
+    return ratio(figure) > ratio(best) ? figure : best
+  })
+  return { src: widest.src, alt: widest.alt }
+}
+
+/**
+ * The palette a teaching's field is drawn in when it has no picture.
+ *
+ * `categoryArt` gives one palette per section, which is the right answer
+ * for a badge and the wrong one for a column: eight of this archive's
+ * fourteen teachings are filed under Teachings, so a listing drawn from
+ * the section alone is eight identical olive bands stacked on top of each
+ * other — which is the exact objection that took pictures out of this
+ * listing the last time, and it was a fair one.
+ *
+ * The section is already written in words directly above the headline, so
+ * the colour is not needed to carry it and is free to do the other job:
+ * telling one row from the next. Keyed on the slug, so a teaching's field
+ * is the same colour every time anybody loads the page, and stable across
+ * a rebuild.
+ */
+const PALETTES = ['dawn', 'flame', 'olive', 'wine', 'orchid', 'midnight', 'harvest'] as const
+
+export function paletteFor(slug: string): ArticleArt['palette'] {
+  let hash = 0
+  for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0
+  return PALETTES[hash % PALETTES.length]
+}
+
+/**
+ * The same items, with no two fields in a row drawn in the same colour.
+ *
+ * `paletteFor` keys the colour to the slug, which keeps a teaching the
+ * same colour wherever it appears — but seven palettes over eleven
+ * pieces without artwork means collisions are certain, and the only
+ * collision a reader can actually see is two of them touching. On the
+ * front page as it stands the first two rows both came out orchid, which
+ * reads as a mistake rather than as a scheme.
+ *
+ * So the hash decides, and this only steps in where the hash has put two
+ * of the same colour next to each other: the second one rotates to the
+ * next palette that is not its neighbour's. Rows with a photograph are
+ * skipped and do not break a run — what matters is consecutive *fields*,
+ * since a picture between two olive fields already separates them.
+ *
+ * The cost is that filtering the archive can change a field's colour, by
+ * changing which pieces are adjacent. That is the right way round: the
+ * colour is here to tell one row from the next, which is a fact about the
+ * column, and nobody is memorising it.
+ */
+export function spreadFields(items: ArchiveItem[]): ArchiveItem[] {
+  let previous: string | null = null
+  return items.map((item) => {
+    if (item.thumbnail) return item
+    let palette = item.art.palette
+    if (palette === previous) {
+      const at = PALETTES.indexOf(palette as (typeof PALETTES)[number])
+      palette = PALETTES[(at + 1) % PALETTES.length]
+    }
+    previous = palette
+    return palette === item.art.palette ? item : { ...item, art: { ...item.art, palette } }
+  })
+}
+
 const CHIPPED = 3
 
 export function toArchiveItems(
@@ -126,7 +223,9 @@ export function toArchiveItems(
       dek: row.dek,
       category: row.category,
       authorName: row.authorName,
-      art: row.art,
+      /* The section's own art, with the palette re-keyed to the piece —
+         see `paletteFor`. The icon is untouched; nothing draws it. */
+      art: { ...row.art, palette: paletteFor(row.slug) },
       publishedAt: row.publishedAt,
       dated: dateline(row.publishedAt),
       readMinutes: row.readMinutes,
@@ -141,9 +240,14 @@ export function toArchiveItems(
          cropped poster is still better than an empty box — but see
          PostedArticle.thumbnailUrl for why a crop is the worse of the
          two on this ministry's artwork. */
-      ...(row.thumbnailUrl || row.imageUrl
-        ? { thumbnail: { src: (row.thumbnailUrl ?? row.imageUrl)!, alt: row.imageAlt ?? '' } }
-        : {}),
+      ...(() => {
+        const attached =
+          row.thumbnailUrl || row.imageUrl
+            ? { src: (row.thumbnailUrl ?? row.imageUrl)!, alt: row.imageAlt ?? '' }
+            : undefined
+        const thumbnail = attached ?? bodyFigure(row.body)
+        return thumbnail ? { thumbnail } : {}
+      })(),
       quote: leadQuote(row.body),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
       views: views[row.href] ?? 0,
