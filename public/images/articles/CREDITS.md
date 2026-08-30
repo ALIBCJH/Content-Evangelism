@@ -3,17 +3,29 @@
 Openly-licensed photographs used as article cover images.
 CC BY / CC BY-SA images require this attribution to remain with the project.
 
-> **Six files here are the ministry's own work** and are not covered by
+> **Eight files here are the ministry's own work** and are not covered by
 > the licences below: `rapture-of-the-church.webp`,
-> `unforgivable-sin.webp`, `why-jesus-died-on-the-cross.webp` and the
-> three `-wide.webp` crops taken from them. They were supplied by the
-> Ministry of Repentance and Holiness. The `-wide` files are wordless
-> regions of the same artwork, cut for listing rows — see `thumbnailUrl`
-> in `src/lib/posted.ts` for why a listing cannot use the poster itself.
+> `unforgivable-sin.webp`, `why-jesus-died-on-the-cross.webp`,
+> `prophetic-timeline.webp` and the four `-wide.webp` crops taken from
+> them. They were supplied by the Ministry of Repentance and Holiness.
+> The `-wide` files are cut for listing rows — see `thumbnailUrl` in
+> `src/lib/posted.ts` for why a listing cannot use the poster itself.
 >
 > `why-jesus-died-on-the-cross-wide.webp` is the region to the right of
 > the headline and above the torn banner: the praying figure and the
 > cross, with no type in it.
+>
+> **`prophetic-timeline-wide.webp` is the exception to the wordless
+> rule, deliberately.** That poster is a diagram, not a photograph: it is
+> type and coloured bars from edge to edge, and it has no wordless region
+> that means anything — the only one is the lit cross, which says nothing
+> about a timeline and duplicates the artwork on the teaching about the
+> cross. So the crop is the chart itself, below the headline, letterboxed
+> to 16:10 in the poster's own ground so the padding does not show. At a
+> listing row's size the coloured bands and the cross read clearly and the
+> small labels do not. That is a worse thumbnail than a photograph and a
+> better one than either alternative; the rule is about not shipping a
+> smear of type, and a chart that reads as a chart is not one.
 
 > **One image here is not openly licensed.** `holiness-puzzle.webp` is a
 > watermarked stock-library preview, published at the ministry's
