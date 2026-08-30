@@ -3,17 +3,23 @@
 Openly-licensed photographs used as article cover images.
 CC BY / CC BY-SA images require this attribution to remain with the project.
 
-> **Eight files here are the ministry's own work** and are not covered by
+> **Ten files here are the ministry's own work** and are not covered by
 > the licences below: `rapture-of-the-church.webp`,
 > `unforgivable-sin.webp`, `why-jesus-died-on-the-cross.webp`,
-> `prophetic-timeline.webp` and the four `-wide.webp` crops taken from
-> them. They were supplied by the Ministry of Repentance and Holiness.
+> `prophetic-timeline.webp`, `importance-of-repentance.webp` and the five
+> `-wide.webp` crops taken from them. They were supplied by the Ministry of Repentance and Holiness.
 > The `-wide` files are cut for listing rows — see `thumbnailUrl` in
 > `src/lib/posted.ts` for why a listing cannot use the poster itself.
 >
 > `why-jesus-died-on-the-cross-wide.webp` is the region to the right of
 > the headline and above the torn banner: the praying figure and the
 > cross, with no type in it.
+>
+> `importance-of-repentance-wide.webp` is the photograph on the poster's
+> left, cut at the widest point that stays clear of the overlay type —
+> 485px, measured rather than judged by eye, because 500 still carried
+> eight hundred pixels of the gold headline. The lettering left in it is
+> the signpost standing in the scene, not the poster's own words.
 >
 > **`prophetic-timeline-wide.webp` is the exception to the wordless
 > rule, deliberately.** That poster is a diagram, not a photograph: it is
