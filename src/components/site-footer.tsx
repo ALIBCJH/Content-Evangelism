@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { FollowChannel } from '@/components/follow-channel'
 import { RadioTower } from 'lucide-react'
 import { WhatsAppIcon, YouTubeIcon } from '@/components/brand-icons'
-import { channels, footerColumns, siteInfo } from '@/lib/content'
+import { channels, siteInfo } from '@/lib/content'
 
 const channelIcons = {
   radio: RadioTower,
@@ -13,12 +13,15 @@ const channelIcons = {
 } as const
 
 /**
- * The footer: the gold rule, the seal and what the site is, five columns
- * of where to go, the three official channels, and the legal bar.
+ * The footer: the gold rule, the seal and what the site is, the three
+ * official channels, and the legal bar.
  *
- * The columns are the site's own internal linking — without them the
- * masthead is the only route onward from any page, and link equity has
- * nowhere to circulate.
+ * There were five columns of links here, then three, and now none. They
+ * were the site's own internal linking, and losing them is worth naming
+ * rather than glossing: this is where a reader who has reached the bottom
+ * of a page is offered somewhere else to go, and the offer is now the
+ * legal bar and the masthead. Every destination they held is still
+ * reachable — see the note over `footerColumns`' grave in content.ts.
  *
  * It is set on `raised`, the same surface the masthead is set on, so the
  * two bookend the page and both turn over with the theme. It used to be
@@ -33,10 +36,11 @@ export function SiteFooter() {
     <footer className="mt-auto bg-raised text-ink-700">
       <div className="gold-rule" />
 
-      {/* The brand block, then one track per column in `footerColumns` —
-          three of them now, and the number here has to move with that
-          list or the row ends in empty tracks. */}
-      <div className="shell grid gap-10 pb-10 pt-16 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
+      {/* The brand block, and nothing beside it. This was a grid of the
+          block plus one track per column of links; with the columns gone
+          a grid would be one child in the first of four tracks, so it is
+          a block again. */}
+      <div className="shell pb-10 pt-16">
         <div>
           <div className="mb-4 flex items-center gap-3">
             <Image
@@ -83,35 +87,6 @@ export function SiteFooter() {
             })}
           </ul>
         </div>
-
-        {footerColumns.map((column) => (
-          <nav key={column.title} aria-label={column.title}>
-            <p className="kicker mb-4 text-gold-ink">{column.title}</p>
-            <ul className="flex flex-col gap-2.5">
-              {column.links.map((link) => (
-                <li key={`${column.title}-${link.label}`}>
-                  {link.href.startsWith('http') ? (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="focus-ring text-[0.8125rem] text-ink-700 transition-colors hover:text-gold-ink"
-                    >
-                      {link.label}
-                    </a>
-                  ) : (
-                    <Link
-                      href={link.href}
-                      className="focus-ring text-[0.8125rem] text-ink-700 transition-colors hover:text-gold-ink"
-                    >
-                      {link.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
       </div>
 
       <div className="shell flex flex-wrap items-center justify-between gap-6 border-t border-rule pb-10 pt-6">
