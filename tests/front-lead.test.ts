@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { LEAD_MIN_WIDTH, canLead, pickLead } from '@/lib/archive-items'
+import { LEAD_MIN_WIDTH, canLead, pickLead, pickMostRead } from '@/lib/archive-items'
 import type { ArchiveItem } from '@/lib/archive-items'
 import { artSizes } from '@/lib/art-sizes'
 
@@ -100,5 +100,39 @@ describe('the archive as it stands', () => {
     expect(() =>
       execFileSync('node', ['scripts/art-sizes.mjs', '--check'], { stdio: 'pipe' })
     ).not.toThrow()
+  })
+})
+
+describe('the teaching drawn under the lead', () => {
+  const read = (slug: string, views: number) => ({ ...item({ slug }), views }) as ArchiveItem
+
+  it('takes the busiest piece that is not the lead', () => {
+    const rows = [read('lead', 99), read('quiet', 2), read('busy', 40)]
+    expect(pickMostRead(rows, 0)).toBe(2)
+  })
+
+  it('never offers the lead back', () => {
+    /* A front page that recommends the thing directly above it is not
+       recommending anything. */
+    const rows = [read('lead', 99), read('a', 5), read('b', 3)]
+    expect(pickMostRead(rows, 0)).toBe(1)
+  })
+
+  it('draws nothing where nothing has been read', () => {
+    /* Not a quiet week — a deployment with no counters attached, where
+       every piece sits on zero. "Most read" over that is a claim. */
+    expect(pickMostRead([read('a', 0), read('b', 0)], 0)).toBe(-1)
+    expect(pickMostRead([], -1)).toBe(-1)
+  })
+
+  it('skips the unread ones rather than ranking them', () => {
+    const rows = [read('lead', 99), read('unread', 0), read('one', 1)]
+    expect(pickMostRead(rows, 0)).toBe(2)
+  })
+
+  it('gives a tie to the newer piece', () => {
+    /* Items arrive newest first, so the first of an equal pair wins. */
+    const rows = [read('lead', 99), read('newer', 7), read('older', 7)]
+    expect(pickMostRead(rows, 0)).toBe(1)
   })
 })

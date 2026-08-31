@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { pickLead, spreadFields, type ArchiveItem } from '@/lib/archive-items'
+import { pickLead, pickMostRead, spreadFields, type ArchiveItem } from '@/lib/archive-items'
 import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
@@ -10,6 +10,7 @@ import { unfinished as stillReading, useReadingProgress } from '@/lib/reading-pr
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
+import { MostRead } from '@/components/archive/most-read'
 import { PieceRow } from '@/components/archive/piece-row'
 import { TopicsRail } from '@/components/archive/topics-rail'
 
@@ -172,6 +173,14 @@ export function ArchiveList({
   const leadAt = React.useMemo(
     () => (query.trim() || rows.length < LEAD_NEEDS_ROWS ? -1 : pickLead(rows)),
     [rows, query]
+  )
+
+  /* The busiest teaching that is not the lead, drawn under it at `xl`.
+     -1 where there is no lead to sit under, or where nothing has been
+     read — see `pickMostRead` for why a count of zero disqualifies. */
+  const mostReadAt = React.useMemo(
+    () => (leadAt === -1 ? -1 : pickMostRead(rows, leadAt)),
+    [rows, leadAt]
   )
 
   return (
@@ -352,19 +361,42 @@ export function ArchiveList({
                   and it does not change because a wide screen draws one
                   of them large. See `PieceRow`. */}
               <div className="xl:grid xl:grid-cols-2 xl:items-start xl:gap-x-10">
-                {rows.map((item, index) => (
+                {rows.map((item, index) => {
                   /* Whichever row is above the fold is the one the
                      browser is told to fetch first rather than to
                      lazy-load: the lead where there is one, and the top
                      of the column where there is not. */
-                  <PieceRow
-                    key={item.slug}
-                    item={item}
-                    lead={index === leadAt}
-                    beside={rows.length - 1}
-                    priority={index === (leadAt === -1 ? 0 : leadAt)}
-                  />
-                ))}
+                  const row = (
+                    <PieceRow
+                      item={item}
+                      lead={index === leadAt}
+                      priority={index === (leadAt === -1 ? 0 : leadAt)}
+                    />
+                  )
+                  if (index !== leadAt) return <React.Fragment key={item.slug}>{row}</React.Fragment>
+
+                  /* The lead and the piece under it are one column, so
+                     they are one grid item — which is the whole reason
+                     this wrapper exists. Spanning the rows individually
+                     made the browser stretch whichever rows the taller
+                     of the two happened to cover, and the column of rows
+                     beside them came out with uneven gaps in it.
+
+                     `contents` below `xl`: the wrapper is not a box
+                     there, so the lead stays a sibling of every other
+                     row in one flat column, in the order it was written.
+                     Nothing about a phone changes. */
+                  return (
+                    <div
+                      key={item.slug}
+                      className="contents xl:col-start-1 xl:block xl:self-start"
+                      style={{ gridRow: `1 / span ${Math.max(1, rows.length - 1)}` }}
+                    >
+                      {row}
+                      {mostReadAt !== -1 && <MostRead item={rows[mostReadAt]} />}
+                    </div>
+                  )
+                })}
               </div>
             </>
           )}
