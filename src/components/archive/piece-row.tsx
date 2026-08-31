@@ -65,7 +65,6 @@ export function PieceRow({
   item,
   priority = false,
   lead = false,
-  beside = 0,
 }: {
   item: ArchiveItem
   priority?: boolean
@@ -75,42 +74,17 @@ export function PieceRow({
    * nothing here checks.
    */
   lead?: boolean
-  /**
-   * How many rows stand in the second column beside the lead, which is
-   * how many grid rows the lead has to span to sit against all of them.
-   * Ignored on every row but the lead, and inert at every width where
-   * the listing is not a grid.
-   */
-  beside?: number
 }) {
   return (
-    /* Where the row sits at `xl`, which is the whole of the two-column
-       front. The lead is pinned to the first column and spans it; every
-       other row is put in the second. Below `xl` neither class applies
-       and the rows are the single column they have always been.
-
-       Flat, rather than a wrapper round the lead and another round the
-       rest: the rows stay siblings, so `last:border-b-0` still finds the
-       last row of the page instead of the last row of a wrapper. */
+    /* Where the row sits at `xl`. Every row but the lead goes in the
+       second column; the lead is placed by the wrapper around it in
+       `ArchiveList`, which it shares with the piece drawn underneath it.
+       Below `xl` neither applies and the rows are the single column they
+       have always been. */
     <article
       className={`group relative border-b border-rule py-5 last:border-b-0 ${
-        lead
-          ? 'xl:sticky xl:top-24 xl:col-start-1 xl:self-start xl:border-b-0 xl:pb-0 xl:pt-0'
-          : 'xl:col-start-2'
+        lead ? 'xl:border-b-0 xl:pb-0 xl:pt-0' : 'xl:col-start-2'
       }`}
-      /* The lead's grid area, counted rather than guessed. It has to
-         start at the first row and end after the last one in the column
-         beside it: given a span shorter than that the rows below it have
-         nowhere to go, and given a longer one the browser stretches the
-         rows it does not reach — which drew a five-hundred-pixel hole
-         under the first headline the first time this was tried with a
-         round number.
-
-         Inline because the number is only known at render, and harmless
-         inline because `grid-row` means nothing to an element that is
-         not in a grid: below `xl` this listing is a plain column and the
-         property is never consulted. */
-      style={lead && beside > 0 ? { gridRow: `1 / span ${beside}` } : undefined}
     >
       <div
         className={`flex items-start justify-between gap-4 sm:gap-6 ${

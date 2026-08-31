@@ -261,6 +261,28 @@ export function pickLead(items: ArchiveItem[]): number {
   return items.findIndex(canLead)
 }
 
+/**
+ * The teaching to put under the lead, or -1 for none.
+ *
+ * The busiest piece the reader is not already being shown. Two exclusions
+ * and both matter: the lead, because a front page that recommends the
+ * thing directly above it is not recommending anything; and anything with
+ * no counted reads at all, because "most read" over an archive nobody has
+ * opened is a claim rather than a fact — and a deployment with no
+ * counters attached reads as exactly that, every piece on zero.
+ *
+ * Ties go to the newer piece, since `items` arrives newest first and
+ * `reduce` only replaces on a strict improvement.
+ */
+export function pickMostRead(items: ArchiveItem[], exclude: number): number {
+  let best = -1
+  items.forEach((item, index) => {
+    if (index === exclude || item.views <= 0) return
+    if (best === -1 || item.views > items[best].views) best = index
+  })
+  return best
+}
+
 const CHIPPED = 3
 
 export function toArchiveItems(
