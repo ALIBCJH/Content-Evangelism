@@ -156,5 +156,17 @@
     "width": 1288,
     "height": 767,
     "query": null
+  },
+  "requirements-to-enter-heaven": {
+    "title": "What are the requirements to enter heaven?",
+    "creator": "Ministry of Repentance and Holiness",
+    "license": "ministry-supplied",
+    "license_url": null,
+    "source_page": null,
+    "provider": "supplied by the ministry",
+    "note": "Carries no type at all, unlike the ministry posters — so the -wide file is a straight 16:10 crop of the full frame, centred on the doorway, rather than a region cut clear of a headline.",
+    "width": 1200,
+    "height": 630,
+    "query": null
   }
 }
