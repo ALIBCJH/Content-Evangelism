@@ -4,14 +4,15 @@ import * as React from 'react'
 import Link from 'next/link'
 import type { Category } from '@/lib/content'
 import { clock, type SpeechState } from '@/lib/speech'
-import type { TimelineAlert } from '@/lib/prophecies'
 
 /**
- * The rail beside the archive: what is in it, what the ministry has put
- * on record, and what is being read to you.
+ * The rail beside the archive: what is in it, what the ministry is
+ * watching, and what is being read to you.
  *
- * Each of the three only appears when it has something to say. A rail
- * that announces it is empty is a rail asking to be ignored.
+ * The first and the last only appear when they have something to say — a
+ * rail that announces it is empty is a rail asking to be ignored. The
+ * middle one is the exception, and deliberately: it is a heading held
+ * open over content that has not been written yet.
  */
 
 function Divider() {
@@ -23,7 +24,6 @@ export function TopicsRail({
   total,
   active,
   onPick,
-  alerts,
   speech,
   onPause,
   onResume,
@@ -33,8 +33,6 @@ export function TopicsRail({
   total: number
   active: Category | null
   onPick: (category: Category | null) => void
-  /** Dated ministry records, for the block at the foot of the rail. */
-  alerts: TimelineAlert[]
   speech: SpeechState
   onPause: () => void
   onResume: () => void
@@ -85,48 +83,33 @@ export function TopicsRail({
       </div>
       </div>
 
-      {alerts.length > 0 && (
-        <>
-          <Divider />
-          {/* What the ministry has put on record, dated, beside the
-              archive a reader is already in.
+      {/* The prophetic timeline of God.
 
-              This replaced the shelf of half-read teachings that used to
-              stand here. That shelf is not lost — `ReadingHistory` at the
-              foot of the page carries the whole history, finished and
-              unfinished, which is the better place for it: it is a thing
-              a reader goes looking for, not a thing they need in view
-              while choosing what to read next.
+          Empty on purpose. The heading is here and the records are not,
+          because the ministry is still writing what belongs under it —
+          and a heading standing over nothing is the honest way to hold a
+          place open. It is not a bug and should not be "fixed" by
+          filling it with something else that happens to be to hand;
+          `timelineAlerts` in `lib/prophecies.ts` is the projection that
+          was drawing the prophecy archive here, kept ready for the day
+          this section has its own content.
 
-              Four lines each and no more. A record carries the ministry's
-              own designation of whether a word was fulfilled, its
-              interpretation, and any independent documentation — and a
-              margin has no room to say which of those is which. So the
-              rail carries the date, the title and the place, and the
-              record itself is where the distinctions are drawn. See
-              `TimelineAlert`. */}
-          <p className="kicker text-ink-subtle">Alerts on the prophetic timeline of God</p>
-          <ul className="mt-3 flex flex-col gap-4">
-            {alerts.map((alert) => (
-              <li key={alert.id}>
-                <Link href={alert.href} className="focus-ring group block">
-                  <span className="kicker block text-gold-ink">{alert.date}</span>
-                  <span className="mt-1.5 block text-pretty text-[0.9375rem] font-semibold leading-[1.35] text-navy transition-colors group-hover:text-gold-ink">
-                    {alert.title}
-                  </span>
-                  <span className="kicker mt-1.5 block text-ink-subtle">{alert.location}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/prophecies"
-            className="focus-ring kicker mt-4 inline-block text-navy transition-colors hover:text-gold"
-          >
-            The whole archive →
-          </Link>
-        </>
-      )}
+          Set the way the ministry's own headings are set — the display
+          face, navy, with the gold bar under it — rather than as another
+          grey kicker like Topics above. The two are not the same kind of
+          thing: one labels a filter, the other names what the ministry
+          is watching, and it should look like the more important of the
+          two even while it is empty. */}
+      <Divider />
+      <section aria-labelledby="prophetic-timeline">
+        <h2
+          id="prophetic-timeline"
+          className="text-pretty font-display text-[1.375rem] font-semibold leading-[1.15] tracking-[-0.012em] text-navy"
+        >
+          The prophetic timeline of God
+        </h2>
+        <span aria-hidden className="mt-3.5 block h-[3px] w-12 rounded-full bg-gold" />
+      </section>
 
       {speech.piece && (
         /* Below lg this is at the bottom of the page and the fixed bar
