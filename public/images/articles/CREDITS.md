@@ -3,12 +3,12 @@
 Openly-licensed photographs used as article cover images.
 CC BY / CC BY-SA images require this attribution to remain with the project.
 
-> **Twelve files here are the ministry's own work** and are not covered by
+> **Fourteen files here are the ministry's own work** and are not covered by
 > the licences below: `rapture-of-the-church.webp`,
 > `unforgivable-sin.webp`, `why-jesus-died-on-the-cross.webp`,
 > `prophetic-timeline.webp`, `importance-of-repentance.webp`,
-> `requirements-to-enter-heaven.webp` and the six
-> `-wide.webp` crops taken from them. They were supplied by the Ministry of Repentance and Holiness.
+> `requirements-to-enter-heaven.webp`, `repentance-and-holiness.webp`
+> and the seven `-wide.webp` crops taken from them. They were supplied by the Ministry of Repentance and Holiness.
 > The `-wide` files are cut for listing rows — see `thumbnailUrl` in
 > `src/lib/posted.ts` for why a listing cannot use the poster itself.
 >
@@ -29,6 +29,11 @@ CC BY / CC BY-SA images require this attribution to remain with the project.
 > 16:10 the frame allows, 1008x630, centred on the doorway. Nothing had
 > to be cut clear of a headline, and at 1008px it is the second picture
 > on the site wide enough to run as the front page's lead.
+>
+> `repentance-and-holiness-wide.webp` is the same case and the third such
+> lead-capable picture: a photograph with no type in it, cropped to the
+> widest 16:10 its 1376x768 frame allows — 1228x768, centred, which keeps
+> the whole of the figure and the shaft of light above him.
 >
 > **`prophetic-timeline-wide.webp` is the exception to the wordless
 > rule, deliberately.** That poster is a diagram, not a photograph: it is
