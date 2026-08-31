@@ -22,9 +22,9 @@ export function FollowChannel({ className = '' }: { className?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       data-track="follow-channel"
-      className={`focus-ring group inline-flex items-center gap-2.5 rounded-chip border border-rule bg-card px-4 py-2.5 text-[0.9375rem] text-ink transition-colors hover:border-[#25D366]/60 hover:text-[#128C7E] ${className}`}
+      className={`focus-ring group inline-flex items-center gap-1.5 text-xs text-ink-500 transition-colors hover:text-[#128C7E] ${className}`}
     >
-      <WhatsAppIcon className="h-4 w-4 shrink-0 text-[#25D366]" />
+      <WhatsAppIcon className="h-3.5 w-3.5 shrink-0 text-[#25D366]" />
       <span>
         New teachings on WhatsApp
       </span>

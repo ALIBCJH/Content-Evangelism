@@ -1,5 +1,4 @@
 import * as React from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { FollowChannel } from '@/components/follow-channel'
 import { RadioTower } from 'lucide-react'
@@ -13,15 +12,24 @@ const channelIcons = {
 } as const
 
 /**
- * The footer: the gold rule, the seal and what the site is, the three
- * official channels, and the legal bar.
+ * The footer: a gold rule and one bar.
  *
- * There were five columns of links here, then three, and now none. They
- * were the site's own internal linking, and losing them is worth naming
- * rather than glossing: this is where a reader who has reached the bottom
- * of a page is offered somewhere else to go, and the offer is now the
- * legal bar and the masthead. Every destination they held is still
- * reachable — see the note over `footerColumns`' grave in content.ts.
+ * There were five columns of links here, then three, then none, and then
+ * a seal, the ministry's name, a sentence about the site and a stack of
+ * channel buttons standing on their own above the legal bar. That stack
+ * was the last thing left to cut, and cutting it is the point: the
+ * masthead already carries the seal and the name on every page, so the
+ * footer was introducing the publication to a reader who had just read
+ * one of its teachings.
+ *
+ * What survives is what a footer is actually for — where a reader who
+ * has reached the bottom can still go — and every one of those is here
+ * because it is the *only* way to somewhere. The three channels are the
+ * site's only route off it to the ministry's own broadcasts. Saved is the
+ * only way back to what a reader kept on a desktop, where there is no
+ * menu sheet to hold it. RSS and the sitemap are addressed to machines
+ * and belong nowhere else. Nothing here is decoration, which is why
+ * there is nothing here to cut.
  *
  * It is set on `raised`, the same surface the masthead is set on, so the
  * two bookend the page and both turn over with the theme. It used to be
@@ -36,35 +44,17 @@ export function SiteFooter() {
     <footer className="mt-auto bg-raised text-ink-700">
       <div className="gold-rule" />
 
-      {/* The brand block, and nothing beside it. This was a grid of the
-          block plus one track per column of links; with the columns gone
-          a grid would be one child in the first of four tracks, so it is
-          a block again. */}
-      <div className="shell pb-10 pt-16">
-        <div>
-          <div className="mb-4 flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt=""
-              width={34}
-              height={34}
-              className="h-[34px] w-[34px] rounded-full"
-            />
-            <span className="block max-w-[160px] font-display text-[0.9375rem] font-semibold leading-[1.15] text-navy">
-              Ministry of Repentance &amp; Holiness
-            </span>
-          </div>
-          <p className="max-w-[260px] text-[0.8125rem] leading-relaxed text-ink-500">
-            The ministry&rsquo;s digital record of what it believes, teaches, has preached,
-            and has documented.
-          </p>
+      <div className="shell flex flex-wrap items-center justify-between gap-x-8 gap-y-5 py-7">
+        <span className="text-xs text-ink-500">
+          © {new Date().getFullYear()} {siteInfo.ministry}. All rights reserved.
+        </span>
 
-          {/* On every page, since a reader may decide to follow at any of
-              them. Absent until a channel is configured. */}
-          <FollowChannel className="mt-5" />
-
-          {/* The three official channels. */}
-          <ul className="mt-6 flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          {/* The three official channels, in the bar rather than above
+              it. They were 44px tiles in a block of their own; as marks
+              on the same line as the links they are the same three
+              destinations taking a tenth of the room. */}
+          <ul className="flex items-center gap-3.5">
             {channels.map((channel) => {
               const Icon = channelIcons[channel.key]
               return (
@@ -74,9 +64,9 @@ export function SiteFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     title={channel.tagline}
-                    className="focus-ring flex h-11 w-11 items-center justify-center rounded-tile border border-rule bg-card text-ink-700 transition-colors hover:border-gold hover:text-gold-ink"
+                    className="focus-ring block rounded-sm text-ink-500 transition-colors hover:text-gold-ink"
                   >
-                    <Icon aria-hidden className="h-5 w-5" />
+                    <Icon aria-hidden className="h-[1.0625rem] w-[1.0625rem]" />
                     <span className="sr-only">
                       {channel.name}
                       {channel.live ? ' — live now' : ''}
@@ -86,14 +76,14 @@ export function SiteFooter() {
               )
             })}
           </ul>
-        </div>
-      </div>
 
-      <div className="shell flex flex-wrap items-center justify-between gap-6 border-t border-rule pb-10 pt-6">
-        <span className="text-xs text-ink-500">
-          © {new Date().getFullYear()} {siteInfo.ministry}. All rights reserved.
-        </span>
-        <div className="flex flex-wrap gap-5 text-xs">
+          <div className="flex flex-wrap gap-5 text-xs">
+            {/* A text link now rather than a bordered pill. It is a
+                different destination from the WhatsApp mark beside it —
+                that is the ministry's number, this is the channel new
+                teachings are announced on — so it stays, at the weight a
+                footer link should be. */}
+            <FollowChannel />
           <Link href="/about" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
             About
           </Link>
@@ -109,9 +99,10 @@ export function SiteFooter() {
           <a href="/feed.xml" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
             RSS
           </a>
-          <a href="/sitemap.xml" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
-            Sitemap
-          </a>
+            <a href="/sitemap.xml" className="focus-ring text-ink-500 transition-colors hover:text-gold-ink">
+              Sitemap
+            </a>
+          </div>
         </div>
       </div>
     </footer>
