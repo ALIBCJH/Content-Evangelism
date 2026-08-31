@@ -1,12 +1,13 @@
 'use client'
 
 import * as React from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ImageUp, Loader2 } from 'lucide-react'
 import { scriptureRefs } from '@/lib/scripture'
 import { extractHeadings } from '@/lib/toc'
 import { wordCount } from '@/lib/article-body'
 import { ArticleProse } from '@/components/article-prose'
 import { applySnippet, GRAMMAR, SNIPPETS, type Snippet } from '@/lib/markup-snippets'
+import { uploadPicture } from '@/lib/shrink-image'
 
 /**
  * Where a teaching is actually written.
@@ -29,6 +30,11 @@ import { applySnippet, GRAMMAR, SNIPPETS, type Snippet } from '@/lib/markup-snip
  * reader gets.
  */
 
+/** Left selected in the figure so the writer types over it. Alt text is
+    the one field here nothing else can fill, and a figure without it is
+    read as a paragraph rather than published half-made. */
+const ALT_PLACEHOLDER = 'what this picture shows'
+
 export function BodyEditor({
   value,
   onChange,
@@ -39,8 +45,11 @@ export function BodyEditor({
   className?: string
 }) {
   const area = React.useRef<HTMLTextAreaElement>(null)
+  const picture = React.useRef<HTMLInputElement>(null)
   const [preview, setPreview] = React.useState(false)
   const [grammar, setGrammar] = React.useState(false)
+  const [uploading, setUploading] = React.useState(false)
+  const [uploadError, setUploadError] = React.useState('')
 
   /* Put the snippet in at the cursor, keep any selected text inside it,
      and leave the cursor where the writing continues. */
@@ -53,6 +62,48 @@ export function BodyEditor({
       node.focus()
       node.setSelectionRange(caret, caret)
     })
+  }
+
+  /* A finished block dropped in at the cursor, with one word of it left
+     selected for the writer to type over. Used by the picture button
+     below: the figure arrives complete except for the alt text, which is
+     the one part of it no machine can write. */
+  const drop = (block: string, select?: string) => {
+    const node = area.current
+    if (!node) return
+    const before = value.slice(0, node.selectionStart).replace(/\n*$/, '')
+    const after = value.slice(node.selectionEnd).replace(/^\n*/, '')
+    const head = before ? `${before}\n\n` : ''
+    const text = `${head}${block}${after ? `\n\n${after}` : '\n'}`
+    onChange(text)
+    const at = head.length + (select ? block.indexOf(select) : block.length)
+    window.requestAnimationFrame(() => {
+      node.focus()
+      node.setSelectionRange(at, at + (select ? select.length : 0))
+    })
+  }
+
+  /* Upload a picture and write the figure that shows it.
+
+     The `@figure` button beside this one inserts the empty opener for a
+     writer who already has a path. This one is for the ordinary case:
+     the picture is on the phone in their hand, and every step between
+     that and a paragraph is a step at which the teaching goes out
+     without it. The dimensions come back from the upload, so the page
+     reserves the right space before the picture loads rather than
+     jumping when it arrives. */
+  const addPicture = async (file: File) => {
+    setUploadError('')
+    setUploading(true)
+    try {
+      const { url, width, height } = await uploadPicture(file)
+      const size = width && height ? ` ${width}x${height}` : ''
+      drop(`@figure ${url}${size} | ${ALT_PLACEHOLDER} | `, ALT_PLACEHOLDER)
+    } catch (thrown) {
+      setUploadError(thrown instanceof Error ? thrown.message : 'That upload failed.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const words = value.trim() ? wordCount(value) : 0
@@ -104,7 +155,42 @@ export function BodyEditor({
             {snippet.label}
           </button>
         ))}
+
+        {/* Not an opener but a picture, so it is set apart from them. */}
+        <button
+          type="button"
+          title="Upload a picture and write the figure for it"
+          disabled={uploading}
+          onClick={() => picture.current?.click()}
+          className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-gold/40 bg-surface px-2.5 py-1.5 font-mono text-[0.75rem] text-gold transition-colors hover:border-gold disabled:opacity-60"
+        >
+          {uploading ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <ImageUp className="h-3.5 w-3.5" />
+          )}
+          {uploading ? 'uploading…' : 'picture'}
+        </button>
+        <input
+          ref={picture}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            /* Cleared so the same file can be chosen twice — after a
+               failure, picking it again is the obvious thing to try. */
+            event.target.value = ''
+            if (file) void addPicture(file)
+          }}
+        />
       </div>
+
+      {uploadError && (
+        <p role="alert" className="mt-2 font-sans text-xs text-status-danger">
+          {uploadError}
+        </p>
+      )}
 
       {grammar && (
         <dl className="mt-3 grid gap-x-6 gap-y-3 rounded-2xl border border-hairline bg-surface px-4 py-4 sm:grid-cols-2">

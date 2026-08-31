@@ -66,7 +66,18 @@ const PAGE_LIMIT = 40
 
 /* What may be served from cache without a thought: everything under it is
    content-hashed by the build, so a stale copy is not a possibility. */
-const IMMUTABLE = [/^\/_next\/static\//, /^\/images\//, /^\/logo\.png$/, /^\/icons\//]
+const IMMUTABLE = [
+  /^\/_next\/static\//,
+  /^\/images\//,
+  /* A picture uploaded at the desk. Its filename is a hash of its own
+     bytes, so it is immutable in the strictest sense available: a
+     different picture cannot arrive at the same address. Listed here so
+     a teaching illustrated from the desk is not the one page that goes
+     blank on a journey with no signal. */
+  /^\/uploads\//,
+  /^\/logo\.png$/,
+  /^\/icons\//,
+]
 
 /* Never the desk, never the counters, never an answer from the model. */
 const NEVER = [/^\/admin/, /^\/api\//]
