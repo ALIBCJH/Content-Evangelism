@@ -4,15 +4,14 @@ import * as React from 'react'
 import Link from 'next/link'
 import type { Category } from '@/lib/content'
 import { clock, type SpeechState } from '@/lib/speech'
-import { minutesLeft, percentRead, type ReadingMark } from '@/lib/reading-progress'
+import type { TimelineAlert } from '@/lib/prophecies'
 
 /**
- * The rail beside the archive: what is in it, what you were reading, and
- * what is being read to you.
+ * The rail beside the archive: what is in it, what the ministry has put
+ * on record, and what is being read to you.
  *
- * Each of the three only appears when it has something to say. A reader
- * who has never opened a teaching has no reading to continue, and a rail
- * that says so is a rail asking to be ignored.
+ * Each of the three only appears when it has something to say. A rail
+ * that announces it is empty is a rail asking to be ignored.
  */
 
 function Divider() {
@@ -24,7 +23,7 @@ export function TopicsRail({
   total,
   active,
   onPick,
-  unfinished,
+  alerts,
   speech,
   onPause,
   onResume,
@@ -34,7 +33,8 @@ export function TopicsRail({
   total: number
   active: Category | null
   onPick: (category: Category | null) => void
-  unfinished: ReadingMark[]
+  /** Dated ministry records, for the block at the foot of the rail. */
+  alerts: TimelineAlert[]
   speech: SpeechState
   onPause: () => void
   onResume: () => void
@@ -85,40 +85,46 @@ export function TopicsRail({
       </div>
       </div>
 
-      {unfinished.length > 0 && (
+      {alerts.length > 0 && (
         <>
           <Divider />
-          {/* Everything begun and not finished, most recent first. A
-              reader who put a teaching down halfway through should not
-              have to remember which one it was, or hunt the archive for
-              it — the shelf they left it on is here. */}
-          <p className="kicker text-ink-subtle">
-            {unfinished.length === 1 ? 'Continue reading' : 'Still reading'}
-          </p>
+          {/* What the ministry has put on record, dated, beside the
+              archive a reader is already in.
+
+              This replaced the shelf of half-read teachings that used to
+              stand here. That shelf is not lost — `ReadingHistory` at the
+              foot of the page carries the whole history, finished and
+              unfinished, which is the better place for it: it is a thing
+              a reader goes looking for, not a thing they need in view
+              while choosing what to read next.
+
+              Four lines each and no more. A record carries the ministry's
+              own designation of whether a word was fulfilled, its
+              interpretation, and any independent documentation — and a
+              margin has no room to say which of those is which. So the
+              rail carries the date, the title and the place, and the
+              record itself is where the distinctions are drawn. See
+              `TimelineAlert`. */}
+          <p className="kicker text-ink-subtle">Alerts on the prophetic timeline of God</p>
           <ul className="mt-3 flex flex-col gap-4">
-            {unfinished.map((held) => (
-              <li key={held.slug}>
-                <Link href={held.href} className="focus-ring group block">
-                  <span className="block text-[0.9375rem] font-semibold leading-[1.35] text-navy transition-colors group-hover:text-gold-ink">
-                    {held.title}
+            {alerts.map((alert) => (
+              <li key={alert.id}>
+                <Link href={alert.href} className="focus-ring group block">
+                  <span className="kicker block text-gold-ink">{alert.date}</span>
+                  <span className="mt-1.5 block text-pretty text-[0.9375rem] font-semibold leading-[1.35] text-navy transition-colors group-hover:text-gold-ink">
+                    {alert.title}
                   </span>
-                  <span
-                    aria-hidden
-                    className="mt-2.5 block h-[3px] w-full overflow-hidden rounded-full bg-rule"
-                  >
-                    <span
-                      className="block h-full rounded-full bg-gold"
-                      style={{ width: `${percentRead(held)}%` }}
-                    />
-                  </span>
-                  <span className="kicker mt-2 block text-ink-subtle">
-                    <span className="tabular">{percentRead(held)}%</span> ·{' '}
-                    <span className="tabular">{minutesLeft(held)}</span> min left
-                  </span>
+                  <span className="kicker mt-1.5 block text-ink-subtle">{alert.location}</span>
                 </Link>
               </li>
             ))}
           </ul>
+          <Link
+            href="/prophecies"
+            className="focus-ring kicker mt-4 inline-block text-navy transition-colors hover:text-gold"
+          >
+            The whole archive →
+          </Link>
         </>
       )}
 

@@ -7,6 +7,7 @@ import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { toArchiveItems } from '@/lib/archive-items'
 import { readInsight } from '@/lib/insight'
+import { timelineAlerts } from '@/lib/prophecies'
 import { ArchiveList } from '@/components/archive/archive-list'
 
 /**
@@ -160,7 +161,16 @@ export async function ArchiveView({
            search bar and closing band are all lighter than it, which put
            the furniture in front of the writing. */
         <div className="reading-front">
-          <ArchiveList items={toArchiveItems(rows, views)} header={header} quietTitle={quietTitle} />
+          <ArchiveList
+            items={toArchiveItems(rows, views)}
+            header={header}
+            /* Read here rather than imported into the rail: the rail is a
+               client component, and the whole prophecy archive — every
+               summary, every timeline entry — would cross to the browser
+               to draw four lines of it. */
+            alerts={timelineAlerts()}
+            quietTitle={quietTitle}
+          />
         </div>
       )}
 

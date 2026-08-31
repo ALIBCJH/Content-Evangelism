@@ -91,7 +91,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               `.reading-front` and the rule now drawn under every one,
               the headline is the loudest thing on the row, which is what
               a listing is for. */}
-          <h3 className="text-pretty font-article text-[1.1875rem] font-bold leading-[1.25] tracking-[-0.006em] text-navy sm:text-[1.3125rem] xl:text-[1.5rem] xl:leading-[1.22] xl:tracking-[-0.01em]">
+          <h3 className="text-pretty font-article text-[1.1875rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy sm:text-[1.3125rem] xl:text-[1.5rem] xl:leading-[1.22] xl:tracking-[-0.012em]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place. */}
@@ -123,12 +123,12 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               already on every item for the search to score, so drawing
               it costs the page nothing it was not already sending. */}
           {item.dek && (
-            <p className="mt-2.5 hidden font-reading text-[1rem] leading-[1.55] text-ink-muted xl:line-clamp-2">
+            <p className="mt-2.5 hidden font-reading text-[1rem] leading-[1.55] text-ink-700 xl:line-clamp-2">
               {item.dek}
             </p>
           )}
 
-          <p className="kicker mt-2 leading-[1.5] text-ink-subtle xl:mt-3.5">
+          <p className="kicker mt-2 leading-[1.5] text-ink-500 xl:mt-3.5">
             <Posted iso={item.publishedAt} dated={item.dated} />
             <span aria-hidden className="mx-1.5">·</span>
             <span className="tabular">{item.readMinutes}</span> min
