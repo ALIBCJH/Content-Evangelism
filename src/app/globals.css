@@ -22,13 +22,39 @@
      screen — and the page a reader is handed should be one sheet of
      paper, not two. The rules and the bands do the separating that the
      tint used to do, which is what they were for. */
+  /* The greys are neutral, and that is the whole of what makes the white
+     above read as white.
+
+     They were cool — blue sat three above red in the raised surface and
+     *nineteen* above it in the hairline — and that was right when the
+     page was a cool grey too: the scale agreed with itself and with the
+     navy it was built around. It stopped being right when the page went
+     white. Put a blue-grey beside a pure white and simultaneous contrast
+     does the rest: the white takes on a warm cast and the grey looks
+     dirty, and the page reads as though its white were not quite white.
+     Nothing was wrong with the white. It was the company it kept.
+
+     There is a second reason, which is that this ministry's accent is a
+     warm gold. A cool grey next to warm gold is two temperatures
+     arguing quietly on every page; a neutral grey next to it is not.
+
+     Each value is the neutral grey of the *same relative luminance* as
+     the colour it replaces, solved rather than eyeballed — 226 for a
+     hairline that measured 76.2%, 210 for one that measured 64.2%, and
+     so on. So nothing on the page gets lighter or heavier: the only
+     thing that changes is the hue. None of these carries text either, so
+     no contrast ratio on the site moves by a hundredth.
+
+     `--chip-blue` and `--chip-gold` are left alone on purpose. They are
+     not furniture — they are the marks that say "Article" and
+     "Featured", and their colour is the whole of what they say. */
   --ground-rgb: 255 255 255;      /* the page */
-  --raised-rgb: 249 250 252;      /* header, bands, quote figures */
+  --raised-rgb: 250 250 250;      /* header, bands, quote figures */
   --card-rgb: 255 255 255;        /* cards, tables, panels */
-  --rule-rgb: 219 227 238;        /* hairline */
-  --rule-soft-rgb: 232 238 246;   /* inner rules, list separators */
-  --rule-strong-rgb: 199 211 226;
-  --chip-rgb: 237 241 248;        /* tags and subject pills */
+  --rule-rgb: 226 226 226;        /* hairline */
+  --rule-soft-rgb: 237 237 237;   /* inner rules, list separators */
+  --rule-strong-rgb: 210 210 210;
+  --chip-rgb: 241 241 241;        /* tags and subject pills */
   --chip-blue-rgb: 230 238 249;   /* the "Article" kind pill */
   --chip-gold-rgb: 245 235 212;   /* "Featured" and "Primary Source" */
 
