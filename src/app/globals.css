@@ -1027,6 +1027,34 @@ option {
   .headline-link:hover { background-size: 100% 1px; }
 }
 
+/* The same rule, drawn from the start rather than on hover.
+
+   A sweep that appears under the cursor tells a reader which headline
+   they are on. It cannot tell them that the headlines are links, because
+   until the pointer arrives there is nothing to see — and on a phone the
+   pointer never arrives at all, so the archive is a column of bold navy
+   text with no indication that any of it can be opened.
+
+   So the listing draws the line and leaves it there. It is set in the
+   headline's own colour at 40% rather than in full: a rule under every
+   line of a fourteen-row column is a lot of ink, and the line only has
+   to say "this is a link", which it does at a weight that does not
+   compete with the words above it. Hover then takes it to full strength,
+   so the pointer still answers "which one". */
+.headline-link--drawn {
+  background-image: linear-gradient(
+    color-mix(in srgb, currentColor 40%, transparent),
+    color-mix(in srgb, currentColor 40%, transparent)
+  );
+  background-size: 100% 1px;
+}
+@media (hover: hover) {
+  a:hover .headline-link--drawn,
+  .headline-link--drawn:hover {
+    background-image: linear-gradient(currentColor, currentColor);
+  }
+}
+
 /* Horizontal scroll rows. */
 .scroll-row {
   scrollbar-width: none;
