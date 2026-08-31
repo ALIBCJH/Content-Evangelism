@@ -82,7 +82,7 @@ export function MostRead({ item }: { item: ArchiveItem }) {
             things the same size on one page are two leads, and the reader
             is then told twice that something is the most important thing
             here. */}
-        <h3 className="mt-5 text-pretty font-article text-[1.5rem] font-semibold leading-[1.18] tracking-[-0.01em] text-navy">
+        <h3 className="mt-5 text-pretty font-article text-[1.4375rem] font-bold leading-[1.2] tracking-[-0.01em] text-navy">
           <Link href={item.href} data-track="read-most-read" className="focus-ring">
             <span aria-hidden className="absolute inset-0" />
             <span className="headline-link headline-link--drawn">{item.title}</span>

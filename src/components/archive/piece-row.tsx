@@ -130,8 +130,8 @@ export function PieceRow({
               the headline is the loudest thing on the row, which is what
               a listing is for. */}
           <h3
-            className={`text-pretty font-article text-[1.1875rem] font-semibold leading-[1.25] tracking-[-0.004em] text-navy sm:text-[1.3125rem] ${
-              lead ? 'xl:text-[2.125rem] xl:font-semibold xl:leading-[1.12] xl:tracking-[-0.014em]' : ''
+            className={`text-pretty font-article text-[1.1875rem] font-bold leading-[1.25] tracking-[-0.006em] text-navy sm:text-[1.3125rem] ${
+              lead ? 'xl:text-[2rem] xl:leading-[1.13] xl:tracking-[-0.016em]' : ''
             }`}
           >
             <Link href={item.href} data-track="read-article" className="focus-ring">
