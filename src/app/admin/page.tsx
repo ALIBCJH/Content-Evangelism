@@ -8,6 +8,7 @@ import { postedWhen } from '@/lib/when'
 import { ArticleProse } from '@/components/article-prose'
 import { Button } from '@/components/ui/button'
 import { BodyEditor } from '@/components/admin/body-editor'
+import { ImagePicker } from '@/components/admin/image-picker'
 import { clearDraft, readDraft, useDraftAutosave, worthKeeping, type Draft } from '@/lib/draft'
 import { Input } from '@/components/ui/input'
 import { WriterProfile, type MeWriter } from '@/components/admin/writer-profile'
@@ -664,35 +665,35 @@ export default function AdminPage() {
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="a-image" className={fieldLabel}>Image URL (optional)</label>
-                  <Input
-                    id="a-image" value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://… or /images/…" className="mt-2"
-                  />
-                  <p className="mt-2 font-sans text-xs text-ink-subtle">
-                    Shown at the head of the teaching, whole and uncropped — a portrait poster is
-                    fine here.
-                  </p>
-                </div>
-                <div>
-                  <label htmlFor="a-thumb" className={fieldLabel}>
-                    Listing crop (optional)
-                  </label>
-                  <Input
-                    id="a-thumb" value={thumbnailUrl}
-                    onChange={(e) => setThumbnailUrl(e.target.value)}
-                    placeholder="/images/…-wide.jpg" className="mt-2"
-                  />
-                  {/* The poster is the wrong shape for a row and carries
-                      its headline inside it; cropped to a hundred-pixel
-                      band that becomes a smear of type. */}
-                  <p className="mt-2 font-sans text-xs text-ink-subtle">
-                    A wide crop with no words in it, for the archive rows. Left empty, the listing
-                    uses the image above, and failing that the section&apos;s own mark.
-                  </p>
-                </div>
+                {/* Both were URL fields, which is the one form in which
+                    a writer does not have their photograph — it is on
+                    their phone. See `ImagePicker`: the file goes straight
+                    in, and the address underneath stays editable for a
+                    picture that genuinely is already on the internet. */}
+                <ImagePicker
+                  id="a-image"
+                  label="Picture (optional)"
+                  value={imageUrl}
+                  onChange={setImageUrl}
+                  placeholder="https://… or /images/…"
+                  hint="Shown at the head of the teaching, whole and uncropped — a portrait poster is fine here."
+                />
+                {/* The poster is the wrong shape for a row and carries
+                    its headline inside it; cropped to a hundred-pixel
+                    band that becomes a smear of type. */}
+                <ImagePicker
+                  id="a-thumb"
+                  label="Listing crop (optional)"
+                  value={thumbnailUrl}
+                  onChange={setThumbnailUrl}
+                  placeholder="/images/…-wide.webp"
+                  hint={
+                    <>
+                      A wide crop with no words in it, for the archive rows. Left empty, the listing
+                      uses the picture above, and failing that the section&apos;s own mark.
+                    </>
+                  }
+                />
                 <div>
                   <label htmlFor="a-image-alt" className={fieldLabel}>What the image shows</label>
                   <Input

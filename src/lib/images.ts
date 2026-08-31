@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { absoluteUrl } from '@/lib/seo'
+import { uploadShape } from '@/lib/uploads'
 
 /**
  * Structured-data image objects.
@@ -23,6 +24,14 @@ async function localDimensions(
   imageUrl: string
 ): Promise<{ width: number; height: number } | null> {
   if (!imageUrl.startsWith('/')) return null
+
+  /* A picture uploaded at the desk is not in `public/` — it is in the
+     store, with its shape recorded beside it. Without this, every
+     teaching illustrated from the desk would quietly lose the large
+     search preview that the dimensions below exist to earn. */
+  const uploaded = await uploadShape(imageUrl)
+  if (uploaded) return uploaded
+
   try {
     // Imported lazily so the client bundle never pulls sharp in.
     const sharp = (await import('sharp')).default
