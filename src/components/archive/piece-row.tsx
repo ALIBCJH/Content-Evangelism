@@ -130,9 +130,34 @@ export function PieceRow({
               headline — and the two places a reader can act on a section
               are the topics rail and the topic pages, both of which are
               still there. */}
+          {/* Set in the teaching's own face, not the desk's.
+
+              These headlines were `font-apparatus` — IBM Plex Sans, the
+              face this site reserves for meta, rails, citations and
+              questions. It is the right face for a dateline and the
+              wrong one for the only words on the row that have to stop
+              somebody, and it meant a reader scanning the archive was
+              reading the apparatus and clicking through to a teaching
+              set in something else entirely.
+
+              `font-article` is Newsreader, which is what a teaching's
+              own headline is set in — so the words a reader chooses look
+              like the words they land on. It is already loaded and
+              already preloaded, so the face this changes to costs the
+              page nothing; a seventh family would have cost real
+              kilobytes, and the note in `layout.tsx` records what that
+              was measured at.
+
+              Larger, because a serif at a sans's size reads smaller: the
+              stems are thinner and the x-height is lower, so holding the
+              pixel size would have made the column quieter rather than
+              louder. Between the size, the darker ink of
+              `.reading-front` and the rule now drawn under every one,
+              the headline is the loudest thing on the row, which is what
+              a listing is for. */}
           <h3
-            className={`text-pretty font-apparatus text-[1.0625rem] font-bold leading-[1.3] tracking-[-0.011em] text-navy sm:text-[1.125rem] ${
-              lead ? 'xl:text-[1.75rem] xl:leading-[1.15] xl:tracking-[-0.02em]' : ''
+            className={`text-pretty font-article text-[1.1875rem] font-semibold leading-[1.25] tracking-[-0.004em] text-navy sm:text-[1.3125rem] ${
+              lead ? 'xl:text-[2.125rem] xl:font-semibold xl:leading-[1.12] xl:tracking-[-0.014em]' : ''
             }`}
           >
             <Link href={item.href} data-track="read-article" className="focus-ring">
