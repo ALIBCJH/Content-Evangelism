@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { pickLead, pickMostRead, spreadFields, type ArchiveItem } from '@/lib/archive-items'
+import { spreadFields, type ArchiveItem } from '@/lib/archive-items'
 import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
@@ -10,7 +10,6 @@ import { unfinished as stillReading, useReadingProgress } from '@/lib/reading-pr
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
-import { MostRead } from '@/components/archive/most-read'
 import { PieceRow } from '@/components/archive/piece-row'
 import { TopicsRail } from '@/components/archive/topics-rail'
 
@@ -58,13 +57,6 @@ import { TopicsRail } from '@/components/archive/topics-rail'
    goes is the asking. */
 const byNewest = (a: ArchiveItem, b: ArchiveItem) =>
   b.publishedAt.localeCompare(a.publishedAt)
-
-/* How many rows the page needs before one of them is drawn as the lead.
-   The lead occupies the first column for the whole height of the second,
-   so a listing of three is a half-page photograph with two headlines
-   beside it and a great deal of nothing under them. Six is the point at
-   which the second column is taller than the picture. */
-const LEAD_NEEDS_ROWS = 6
 
 export function ArchiveList({
   items,
@@ -160,28 +152,6 @@ export function ArchiveList({
   )
 
   const rows = React.useMemo(() => spreadFields(shown), [shown])
-
-  /* Which row is drawn large at `xl`, and -1 for none.
-     A lead is what a front page opens with, so it is withdrawn the
-     moment the page stops being one: while a reader is searching, the
-     rows are answers in rank order and promoting the first of them to a
-     half-page picture says something about it that is not true.
-     It also needs a column of rows beside it to sit against — the lead
-     spans the first column for the height of the second, and over two
-     rows that is a tall picture next to almost nothing. Below the floor
-     the page is the plain listing, which is a page in its own right. */
-  const leadAt = React.useMemo(
-    () => (query.trim() || rows.length < LEAD_NEEDS_ROWS ? -1 : pickLead(rows)),
-    [rows, query]
-  )
-
-  /* The busiest teaching that is not the lead, drawn under it at `xl`.
-     -1 where there is no lead to sit under, or where nothing has been
-     read — see `pickMostRead` for why a count of zero disqualifies. */
-  const mostReadAt = React.useMemo(
-    () => (leadAt === -1 ? -1 : pickMostRead(rows, leadAt)),
-    [rows, leadAt]
-  )
 
   return (
     <>
@@ -362,53 +332,21 @@ export function ArchiveList({
                 One column because the archive is a chronology, and a
                 chronology poured down two columns is read in the wrong
                 order by anybody who reads it across. */}
-              {/* Two columns from `xl`, one below it.
+              {/* One column at every width.
 
-                  The rows are one flat list at every width — the lead is
-                  placed into the first column and the rest into the
-                  second by grid placement rather than by being moved in
-                  the markup. That is the point: the order a phone reads
-                  them in is the order they are written in, newest first,
-                  and it does not change because a wide screen draws one
-                  of them large. See `PieceRow`. */}
-              <div className="xl:grid xl:grid-cols-2 xl:items-start xl:gap-x-10">
-                {rows.map((item, index) => {
-                  /* Whichever row is above the fold is the one the
-                     browser is told to fetch first rather than to
-                     lazy-load: the lead where there is one, and the top
-                     of the column where there is not. */
-                  const row = (
-                    <PieceRow
-                      item={item}
-                      lead={index === leadAt}
-                      priority={index === (leadAt === -1 ? 0 : leadAt)}
-                    />
-                  )
-                  if (index !== leadAt) return <React.Fragment key={item.slug}>{row}</React.Fragment>
-
-                  /* The lead and the piece under it are one column, so
-                     they are one grid item — which is the whole reason
-                     this wrapper exists. Spanning the rows individually
-                     made the browser stretch whichever rows the taller
-                     of the two happened to cover, and the column of rows
-                     beside them came out with uneven gaps in it.
-
-                     `contents` below `xl`: the wrapper is not a box
-                     there, so the lead stays a sibling of every other
-                     row in one flat column, in the order it was written.
-                     Nothing about a phone changes. */
-                  return (
-                    <div
-                      key={item.slug}
-                      className="contents xl:col-start-1 xl:block xl:self-start"
-                      style={{ gridRow: `1 / span ${Math.max(1, rows.length - 1)}` }}
-                    >
-                      {row}
-                      {mostReadAt !== -1 && <MostRead item={rows[mostReadAt]} />}
-                    </div>
-                  )
-                })}
-              </div>
+                  It was two from `xl` — a lead drawn large with a
+                  most-read card under it, and the rest of the archive in
+                  a column beside them. That is a newspaper front, and a
+                  feed is a different thing: one column of equal items,
+                  where the reader decides what is worth their time
+                  rather than being told which piece matters most. What
+                  `xl` changes now is the room, not the shape. */}
+              {rows.map((item, index) => (
+                /* The first row is the only picture above the fold, so
+                   it is the one the browser is told to fetch first
+                   rather than to lazy-load. */
+                <PieceRow key={item.slug} item={item} priority={index === 0} />
+              ))}
             </>
           )}
         </div>
