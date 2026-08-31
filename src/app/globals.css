@@ -29,6 +29,29 @@
   /* ── Navy: the ink a heading is set in ─────────────────────────── */
   --navy-rgb: 18 59 93;
 
+  /* ── The reading front ─────────────────────────────────────────────
+     The listing a reader meets first, lifted off the rest of the page.
+
+     The archive sat on `--ground`, between a masthead, a search band and
+     a closing band that are all `--raised` — so the one part of the page
+     carrying the writing was the *darkest* part of it, with the
+     furniture around it lighter. That is the wrong way round: paper is
+     what a reader is being handed, and the frame should sit under it.
+
+     Lighter is not only a look. `--ink-400` is the dateline under every
+     headline, ten pixels, and it was hard won at 4.71:1 against
+     `--ground` — the note by that token records what it took. On this
+     ground it measures 5.11:1, so the smallest type on the site gets
+     easier to read as a consequence of the same change.
+
+     The ink goes the other way. A headline at 13.07:1 rather than 10.33
+     is not a legibility fix — both clear AA several times over — it is a
+     weight fix: a serif at listing size has thinner stems than the sans
+     it replaced, and the darker navy buys that back so the column reads
+     as strongly as it did. */
+  --front-ground-rgb: 250 251 253;
+  --front-navy-rgb: 12 42 68;
+
   /* ── Plate: the ministry's navy panel, dark in both themes ─────── */
   --plate-rgb: 18 59 93;
   --plate-deep-rgb: 13 44 70;
@@ -248,6 +271,11 @@
 
   --ground-rgb: 10 26 47;
   --raised-rgb: 14 35 65;
+  /* The same lift, which in a dark publication means a shade nearer the
+     light rather than further from it — the paper still comes forward.
+     The ink is a heading's near-white, taken a little cleaner. */
+  --front-ground-rgb: 13 33 57;
+  --front-navy-rgb: 244 248 253;
   --card-rgb: 18 41 74;
   --rule-rgb: 34 64 95;
   --rule-soft-rgb: 27 53 82;
@@ -1053,6 +1081,20 @@ option {
   .headline-link--drawn:hover {
     background-image: linear-gradient(currentColor, currentColor);
   }
+}
+
+/* The reading front: the band the archive listing is set on.
+
+   Two custom properties rather than a background and a colour, because
+   everything inside — the ground, the headline ink, and the `--surface`
+   tints derived from the navy — then follows from them without a single
+   component having to know it is on this band. Redefining an inherited
+   custom property is the one way to change a region's palette without
+   threading a prop through every element in it. */
+.reading-front {
+  --ground-rgb: var(--front-ground-rgb);
+  --navy-rgb: var(--front-navy-rgb);
+  background-color: rgb(var(--ground-rgb));
 }
 
 /* Horizontal scroll rows. */

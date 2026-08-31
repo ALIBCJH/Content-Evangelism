@@ -155,7 +155,13 @@ export async function ArchiveView({
           </div>
         </>
       ) : (
-        <ArchiveList items={toArchiveItems(rows, views)} header={header} quietTitle={quietTitle} />
+        /* The listing gets its own band — see `.reading-front`. The
+           archive used to be the darkest strip on a page whose masthead,
+           search bar and closing band are all lighter than it, which put
+           the furniture in front of the writing. */
+        <div className="reading-front">
+          <ArchiveList items={toArchiveItems(rows, views)} header={header} quietTitle={quietTitle} />
+        </div>
       )}
 
       {/* The other archive. It used to be a panel in a sidebar, which on a
