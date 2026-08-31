@@ -16,8 +16,14 @@
   color-scheme: light;
 
   /* ── Paper ─────────────────────────────────────────────────────── */
-  --ground-rgb: 238 242 248;      /* the page */
-  --raised-rgb: 247 249 252;      /* header, bands, quote figures */
+  /* White, since the sections became a rail down the left of every page.
+     The rail sits in the page's own ground, so any tint at all drew a
+     grey column beside a white one with a seam down the middle of the
+     screen — and the page a reader is handed should be one sheet of
+     paper, not two. The rules and the bands do the separating that the
+     tint used to do, which is what they were for. */
+  --ground-rgb: 255 255 255;      /* the page */
+  --raised-rgb: 249 250 252;      /* header, bands, quote figures */
   --card-rgb: 255 255 255;        /* cards, tables, panels */
   --rule-rgb: 219 227 238;        /* hairline */
   --rule-soft-rgb: 232 238 246;   /* inner rules, list separators */
@@ -32,25 +38,20 @@
   /* ── The reading front ─────────────────────────────────────────────
      The listing a reader meets first, lifted off the rest of the page.
 
-     The archive sat on `--ground`, between a masthead, a search band and
-     a closing band that are all `--raised` — so the one part of the page
-     carrying the writing was the *darkest* part of it, with the
-     furniture around it lighter. That is the wrong way round: paper is
-     what a reader is being handed, and the frame should sit under it.
+     It began as a lift: the archive sat on a tinted `--ground` while the
+     furniture around it was lighter, which is the wrong way round. The
+     whole page is white now, so there is nothing left to lift it off —
+     `--front-ground` matches `--ground` in both themes and is kept only
+     so the band has a ground to name.
 
-     Lighter is not only a look. `--ink-400` is the dateline under every
-     headline, ten pixels, and it was hard won at 4.71:1 against
-     `--ground` — the note by that token records what it took. On this
-     ground it measures 5.11:1, so the smallest type on the site gets
-     easier to read as a consequence of the same change.
-
-     The ink goes the other way. A headline at 13.07:1 rather than 10.33
+     What the band still carries is the ink, and that goes the other
+     way. A headline at 13.07:1 rather than 10.33
      is not a legibility fix — both clear AA several times over — it is a
      weight fix: a serif at listing size has thinner stems than the sans
      it replaced, and the darker navy buys that back so the column reads
      as strongly as it did. */
-  --front-ground-rgb: 250 251 253;
-  --front-navy-rgb: 12 42 68;
+  --front-ground-rgb: 255 255 255;
+  --front-navy-rgb: 10 38 62;
 
   /* ── Plate: the ministry's navy panel, dark in both themes ─────── */
   --plate-rgb: 18 59 93;
@@ -271,10 +272,9 @@
 
   --ground-rgb: 10 26 47;
   --raised-rgb: 14 35 65;
-  /* The same lift, which in a dark publication means a shade nearer the
-     light rather than further from it — the paper still comes forward.
-     The ink is a heading's near-white, taken a little cleaner. */
-  --front-ground-rgb: 13 33 57;
+  /* No lift here either — see the light theme. What is left of the band
+     in both is the ink. */
+  --front-ground-rgb: 10 26 47;
   --front-navy-rgb: 244 248 253;
   --card-rgb: 18 41 74;
   --rule-rgb: 34 64 95;

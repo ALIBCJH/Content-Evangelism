@@ -191,7 +191,11 @@ export function ArchiveList({
           already in the menu sheet as "Search the archive" — so what it
           costs a reader is one tap, and what it buys back is the top of
           the teaching. */}
-      <section className="hidden border-b border-rule bg-raised sm:block">
+      {/* Gone again at `xl`, where the masthead carries a search field of
+          its own and two boxes on one screen is two answers to the same
+          question. What this band held besides the box — the Saved
+          filter — is reachable from the legal bar at that width. */}
+      <section className="hidden border-b border-rule bg-raised sm:block xl:hidden">
         <div className="shell flex flex-wrap items-center gap-x-4 gap-y-2.5 py-2.5 sm:gap-x-8">
           <label className="relative w-full min-w-0 sm:ml-auto sm:w-auto sm:min-w-[20rem] sm:max-w-[26rem] sm:flex-1">
             <span className="sr-only">Search articles and verses</span>
@@ -257,8 +261,15 @@ export function ArchiveList({
       {/* The listing widens at `xl` to make room for the second column —
           see the lead below. Below `xl` the tracks are exactly what they
           were: the rail, and a 44rem column of rows, centred. */}
-      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-2 sm:pt-5 lg:grid-cols-[236px_minmax(0,44rem)] lg:justify-center lg:gap-x-14 xl:grid-cols-[236px_minmax(0,68rem)]">
-        <aside className="order-2 lg:order-none">
+      {/* The rail changes sides at `xl`, and it has to. From there the
+          sections stand in a column of their own down the left of every
+          page, and a topics rail beside them would be two rails on the
+          same edge — four columns on a page that has room for three. So
+          topics cross to the right, which is also where they belong once
+          the left is navigation: the left says where you can go, the
+          right says what this page holds. */}
+      <div className="shell grid gap-x-10 gap-y-10 pb-24 pt-2 sm:pt-5 lg:grid-cols-[236px_minmax(0,44rem)] lg:justify-center lg:gap-x-14 xl:grid-cols-[minmax(0,1fr)_270px] xl:justify-stretch">
+        <aside className="order-2 lg:order-none xl:col-start-2 xl:row-start-1">
           <TopicsRail
             counts={counts}
             total={items.length}
@@ -272,7 +283,7 @@ export function ArchiveList({
           />
         </aside>
 
-        <div className="order-1 min-w-0 lg:order-none">
+        <div className="order-1 min-w-0 lg:order-none xl:col-start-1 xl:row-start-1">
           {/* On a phone the heading over a listing is a word describing a
               page the reader can already see, so it is read out and given
               to a crawler without being drawn — which is the whole of
