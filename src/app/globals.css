@@ -108,7 +108,14 @@
      speaking rather than more of the page — and it turns over with the
      theme like everything else. In the dark theme it is the plate again,
      so nothing there moves. */
-  --care-bg-rgb: 251 247 236;
+  /* White, with the page. The band was a warm cream, which was the right
+     answer when the page around it was a cool grey and the ministry's own
+     voice wanted marking off from the site's. The page is white now, and
+     a cream band across it reads as a panel that has not been updated
+     rather than as a change of speaker. What marks it instead is what
+     always did the real work: the gold kicker, the rule under the
+     heading, and the warm border the tiles keep. */
+  --care-bg-rgb: 255 255 255;
   --care-rule-rgb: 232 222 194;
   --care-tile-rgb: 255 255 255;
   --care-head-rgb: 18 59 93;      /* navy */

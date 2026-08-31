@@ -26,11 +26,6 @@ export function PastoralCare() {
       className="border-t border-care-rule bg-care"
     >
       <div className="shell relative isolate overflow-hidden py-14 sm:py-16">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-32 -z-10 h-80 w-80 rounded-full bg-gold/[0.10] blur-3xl"
-        />
-
         <p className="kicker mb-4 text-care-mark">{pastoralCare.kicker}</p>
         <h2
           id="pastoral-care"
