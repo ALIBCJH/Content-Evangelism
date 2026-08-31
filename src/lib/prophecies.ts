@@ -216,7 +216,13 @@ export const recordScriptures = [
 ]
 
 /**
- * The prophetic record as a short alert, for the rail beside the archive.
+ * The prophetic record as a short alert.
+ *
+ * Nothing draws this at the moment. It fed the rail beside the archive
+ * until the ministry decided that section should carry its own writing
+ * rather than a projection of the prophecy archive, and it is kept
+ * against the day that writing wants a shape — the reasoning below is
+ * the part that would be expensive to work out twice.
  *
  * Deliberately narrow. A record carries the ministry's own designation of
  * whether a word was fulfilled, its interpretation, and any independent

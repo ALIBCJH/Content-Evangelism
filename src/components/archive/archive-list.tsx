@@ -3,7 +3,6 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { spreadFields, type ArchiveItem } from '@/lib/archive-items'
-import type { TimelineAlert } from '@/lib/prophecies'
 import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
@@ -62,12 +61,9 @@ const byNewest = (a: ArchiveItem, b: ArchiveItem) =>
 export function ArchiveList({
   items,
   header,
-  alerts,
   quietTitle = false,
 }: {
   items: ArchiveItem[]
-  /** Dated ministry records for the rail — read on the server. */
-  alerts: TimelineAlert[]
   /** The band's title block, rendered on the server and passed in. */
   header?: React.ReactNode
   /**
@@ -236,7 +232,6 @@ export function ArchiveList({
             total={items.length}
             active={topic}
             onPick={setTopic}
-            alerts={alerts}
             speech={speech}
             onPause={speech.pause}
             onResume={speech.resume}
