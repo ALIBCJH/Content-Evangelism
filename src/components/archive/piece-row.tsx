@@ -139,7 +139,11 @@ export function PieceRow({
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place. */}
               <span aria-hidden className="absolute inset-0" />
-              <span className="headline-link">{item.title}</span>
+              {/* Drawn rather than swept: on a phone there is no pointer
+                  to reveal a hover underline, so without this the archive
+                  is a column of bold navy text with nothing saying any of
+                  it opens. See `.headline-link--drawn`. */}
+              <span className="headline-link headline-link--drawn">{item.title}</span>
             </Link>
           </h3>
 
