@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { report } from '@/lib/insight-report'
+import { IDLE_AFTER_MS, hasFinished } from '@/lib/reading-rule'
 
 /**
  * Counting a teaching that is read where it was not published.
@@ -21,15 +22,17 @@ import { report } from '@/lib/insight-report'
  *     scrolls that far has not read anything;
  *   - engaged seconds, counted only while the teaching is in view, the
  *     tab is visible, and the reader has done something recently;
- *   - finished, when nine tenths of it has passed the fold.
+ *   - finished, when nine tenths of it has passed the fold *and* the
+ *     reader has spent long enough in it to have read it. Depth alone
+ *     counted a three-second flick as a reading — see
+ *     `lib/reading-rule.ts` for the rule and why it is shared with the
+ *     reader's own shelf rather than written twice.
  *
  * Nothing here identifies anybody, because there is nothing here to
  * identify anybody with: it is three integers and a path.
  */
 
-const IDLE_AFTER_MS = 2 * 60 * 1000
 const FLUSH_EVERY_MS = 30 * 1000
-const FINISHED_AT = 0.9
 
 /** How far through an element the page has been scrolled, 0 to 1. */
 export function progressThrough(
@@ -51,7 +54,7 @@ export function inView(box: { top: number; height: number }, viewport: number): 
 
 export function useReadInsight(
   region: React.RefObject<HTMLElement>,
-  piece: { slug: string } | null,
+  piece: { slug: string; readMinutes: number } | null,
   ready: boolean
 ): void {
   /* The slug and not the object. The caller builds that object inline, so
@@ -60,6 +63,10 @@ export function useReadInsight(
      would tear this down and re-arm it each time, and every re-arm counts
      another reading of a teaching nobody opened twice. */
   const slug = piece?.slug ?? null
+  /* Read out for the same reason the slug is: the caller rebuilds the
+     object every render, and watching it would re-arm this twice a
+     second while a teaching is being read aloud. */
+  const readMinutes = piece?.readMinutes ?? 0
 
   React.useEffect(() => {
     const element = region.current
@@ -73,6 +80,9 @@ export function useReadInsight(
     let done = false
     let lastActive = Date.now()
     let lastTick = Date.now()
+    /* `seconds` is emptied on every flush, so it cannot answer "how long
+       in total". This can, and the finish test needs it to. */
+    let engaged = 0
 
     const send = (useBeacon: boolean) => {
       if (!views && !seconds && !finished) return
@@ -98,8 +108,28 @@ export function useReadInsight(
       if (now - lastActive > IDLE_AFTER_MS) return
       const box = measure()
       if (!box || !inView(box, window.innerHeight)) return
-      seconds += Math.max(0, Math.min(elapsed, 10))
+      const counted = Math.max(0, Math.min(elapsed, 10))
+      seconds += counted
+      engaged += counted
+      /* The end of the body may already be behind a reader who is still
+         reading — somebody who scrolled through once and came back up.
+         So the finish is tested on the clock here as well as on scroll,
+         or it could only ever be reached by scrolling again. */
+      finish()
     }, 1000)
+
+    /* Read: to the end of the body, and for long enough to have read it.
+       Depth alone called a three-second flick a finished teaching, and on
+       a phone that flick happens by accident. See `lib/reading-rule.ts`. */
+    const finish = () => {
+      if (done) return
+      const box = measure()
+      if (!box) return
+      const depth = progressThrough(box, window.scrollY, window.innerHeight)
+      if (!hasFinished(depth, engaged, readMinutes)) return
+      done = true
+      finished = 1
+    }
 
     const onScroll = () => {
       lastActive = Date.now()
@@ -111,10 +141,7 @@ export function useReadInsight(
         counted = true
         views = 1
       }
-      if (!done && progressThrough(box, window.scrollY, window.innerHeight) > FINISHED_AT) {
-        done = true
-        finished = 1
-      }
+      finish()
     }
 
     const onActivity = () => {
@@ -148,5 +175,5 @@ export function useReadInsight(
     }
     /* Re-armed when the piece under the card changes, which is what makes
        the second teaching a reader scrolls to its own reading. */
-  }, [region, slug, ready])
+  }, [region, slug, readMinutes, ready])
 }
