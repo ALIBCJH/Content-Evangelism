@@ -61,6 +61,12 @@ export interface ArchiveItem {
    * with no store attached, or a piece published this morning.
    */
   views: number
+  /**
+   * How many readers said it helped them. Zero until somebody does, and
+   * the row prints nothing at zero — a heart beside a nought says the
+   * teaching was offered and refused, which is not what it means.
+   */
+  likes: number
 }
 
 /**
@@ -288,7 +294,9 @@ const CHIPPED = 3
 export function toArchiveItems(
   rows: RealRow[],
   /** Views by path, from the insight counters. */
-  views: Record<string, number> = {}
+  views: Record<string, number> = {},
+  /** Likes by slug, from the likes store. */
+  likes: Record<string, number> = {}
 ): ArchiveItem[] {
   return rows.map((row) => {
     /* Uncapped: this is a count, and a cap would make every teaching
@@ -338,6 +346,7 @@ export function toArchiveItems(
       quote: leadQuote(row.body),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
       views: views[row.href] ?? 0,
+      likes: likes[row.slug] ?? 0,
     }
   })
 }

@@ -7,6 +7,7 @@ import { Breadcrumbs, type Crumb } from '@/components/breadcrumbs'
 import { JsonLd } from '@/components/json-ld'
 import { toArchiveItems } from '@/lib/archive-items'
 import { readInsight } from '@/lib/insight'
+import { readLikes } from '@/lib/likes'
 import { ArchiveList } from '@/components/archive/archive-list'
 
 /**
@@ -71,6 +72,17 @@ export async function ArchiveView({
     for (const page of await readInsight()) views[page.path] = page.views
   } catch {
     /* Counters are a nicety here; the archive is not held up for them. */
+  }
+
+  /* What readers said helped them, for the hearts on the rows. Read here
+     rather than in the listing because the listing is a client component
+     and this is a server store — and, like the counters above, a listing
+     that cannot reach it simply prints no hearts. */
+  let likes: Record<string, number> = {}
+  try {
+    likes = await readLikes()
+  } catch {
+    /* Same rule. A page with no hearts on it is a page. */
   }
   const rows = filter ? source.filter(filter) : source
 
@@ -161,7 +173,7 @@ export async function ArchiveView({
            the furniture in front of the writing. */
         <div className="reading-front">
           <ArchiveList
-            items={toArchiveItems(rows, views)}
+            items={toArchiveItems(rows, views, likes)}
             header={header}
             quietTitle={quietTitle}
           />

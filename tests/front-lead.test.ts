@@ -35,6 +35,7 @@ const item = (over: Partial<ArchiveItem> = {}): ArchiveItem =>
     art: { palette: 'olive', icon: 'shepherd' },
     haystack: '',
     views: 0,
+    likes: 0,
     ...over,
   }) as ArchiveItem
 

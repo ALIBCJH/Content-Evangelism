@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Link from 'next/link'
+import { ReadingPrompt } from '@/components/reading-prompt'
 import { siteUrl, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
 import type { Verse } from '@/lib/scripture-index'
@@ -203,6 +204,14 @@ export function ArticleLayout({
                 writing has finished the teaching whether or not they go
                 on to scroll through it. */}
             <div id={READING_TARGET}>{children}</div>
+
+            {/* One question, at the end of the writing and before the
+                apparatus — which is where a reader is when they have
+                finished, and where an offer to keep it for later is
+                still an offer rather than an interruption. Which
+                question depends on how the reading went; see
+                `ReadingPrompt`. */}
+            <ReadingPrompt slug={slug} readMinutes={readMinutes} targetId={READING_TARGET} />
 
             <div className="mt-16 border-t border-rule pt-8">
               {refs.length > 0 && (

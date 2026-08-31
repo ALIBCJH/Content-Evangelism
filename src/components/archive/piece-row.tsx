@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Heart } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
 import { Posted } from '@/components/posted'
 import { TeachingArt } from '@/components/archive/teaching-art'
@@ -128,10 +129,26 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
             </p>
           )}
 
-          <p className="kicker mt-2 leading-[1.5] text-ink-500 xl:mt-3.5">
+          <p className="kicker mt-2 flex flex-wrap items-center leading-[1.5] text-ink-500 xl:mt-3.5">
             <Posted iso={item.publishedAt} dated={item.dated} />
             <span aria-hidden className="mx-1.5">·</span>
-            <span className="tabular">{item.readMinutes}</span> min
+            <span className="tabular">{item.readMinutes}</span>&nbsp;min
+            {/* Only where somebody has actually said so. A heart beside a
+                nought reads as a teaching offered and refused, which is
+                not what an empty count means — it means nobody has been
+                asked yet. */}
+            {item.likes > 0 && (
+              <>
+                <span aria-hidden className="mx-1.5">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Heart aria-hidden className="h-3 w-3" strokeWidth={2.2} />
+                  <span className="tabular">{item.likes}</span>
+                  <span className="sr-only">
+                    {item.likes === 1 ? 'reader said this helped them' : 'readers said this helped them'}
+                  </span>
+                </span>
+              </>
+            )}
           </p>
         </div>
 
