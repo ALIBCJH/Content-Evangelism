@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { mark } from '@/lib/reading-progress'
+import { IDLE_AFTER_MS } from '@/lib/reading-rule'
 
 /**
  * Thin gold reading-progress bar pinned to the very top of the viewport.
@@ -153,13 +154,49 @@ export function ReadingProgress({
      second. `pagehide` fires where `beforeunload` does not on a phone. */
   const latest = React.useRef(progress)
   latest.current = progress
+
+  /* Engaged seconds, on the same terms the ministry's own counters use:
+     time while the tab is visible and the reader has done something
+     recently, and no other time at all. A tab left open overnight adds
+     nothing, which is the whole reason this is not a wall clock.
+
+     `saved` is a ledger of what has already been written, so each second
+     is sent to the shelf exactly once — `mark` adds what it is given to
+     what it holds, and this effect can save three times on the way out
+     of a page. */
+  const engaged = React.useRef(0)
+  const saved = React.useRef(0)
+
   React.useEffect(() => {
     if (!piece) return
-    const save = () => mark({ ...piece, progress: latest.current })
+    let lastActive = Date.now()
+    const stir = () => {
+      lastActive = Date.now()
+    }
+
+    const tick = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      if (Date.now() - lastActive > IDLE_AFTER_MS) return
+      engaged.current += 1
+    }, 1000)
+
+    const save = () => {
+      const unsent = Math.max(0, engaged.current - saved.current)
+      saved.current = engaged.current
+      mark({ ...piece, progress: latest.current, seconds: unsent })
+    }
+
+    window.addEventListener('scroll', stir, { passive: true })
+    window.addEventListener('pointerdown', stir, { passive: true })
+    window.addEventListener('keydown', stir)
     window.addEventListener('pagehide', save)
     document.addEventListener('visibilitychange', save)
     return () => {
       save()
+      window.clearInterval(tick)
+      window.removeEventListener('scroll', stir)
+      window.removeEventListener('pointerdown', stir)
+      window.removeEventListener('keydown', stir)
       window.removeEventListener('pagehide', save)
       document.removeEventListener('visibilitychange', save)
     }

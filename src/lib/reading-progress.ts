@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { BEGIN_DEPTH, hasBegun, hasFinished } from '@/lib/reading-rule'
 
 /**
  * Where a reader got to, and in what.
@@ -36,10 +37,6 @@ const KEY = 'reading-progress'
    one localStorage key, and an unbounded list in one is how a browser
    store becomes a problem nobody notices until it is full. */
 const KEEP = 24
-const BEGUN = 0.08
-
-/** At or past this, a reader has read the piece. */
-export const FINISHED = 0.95
 
 export interface ReadingMark {
   slug: string
@@ -47,6 +44,14 @@ export interface ReadingMark {
   href: string
   /** 0–1. */
   progress: number
+  /**
+   * Engaged seconds spent in this teaching, across every visit.
+   *
+   * Absent on a mark written before there was a clock in this — see
+   * `isFinished`, which grandfathers those rather than telling a reader
+   * they have not read something they have.
+   */
+  seconds?: number
   /** What the piece takes end to end, for working out what is left. */
   readMinutes: number
   /** When it was last open, so the rail can offer the most recent. */
@@ -82,6 +87,12 @@ function write(marks: ReadingMark[]): void {
  * merely opened is not. The furthest point reached is what is kept, so
  * scrolling back up to re-read a paragraph on the way out does not undo
  * the reading — and a teaching once finished stays finished.
+ *
+ * `seconds` arrives as the engaged time since this mark was last
+ * written, not as a total, and is added to what is already held. A
+ * reader who takes a teaching in three sittings has read it once. The
+ * caller is responsible for sending each second only once; see the
+ * `saved` ledger in `ProgressBar`.
  */
 export function mark(entry: Omit<ReadingMark, 'at'>): void {
   if (typeof window === 'undefined') return
@@ -89,17 +100,33 @@ export function mark(entry: Omit<ReadingMark, 'at'>): void {
   const standing = held.find((candidate) => candidate.slug === entry.slug)
   const rest = held.filter((candidate) => candidate.slug !== entry.slug)
   const progress = Math.min(1, Math.max(entry.progress, standing?.progress ?? 0))
+  const seconds = Math.max(0, standing?.seconds ?? 0) + Math.max(0, entry.seconds ?? 0)
 
-  if (progress < BEGUN) {
-    write(rest)
+  /* Depth alone no longer opens the shelf: a page opened and nudged is
+     not a teaching begun. */
+  if (!hasBegun(progress, seconds)) {
+    /* Still worth keeping what was already there — a reader who comes
+       back for two seconds has not un-begun the teaching. */
+    if (standing) write([{ ...standing, progress, seconds, at: Date.now() }, ...rest])
+    else write(rest)
     return
   }
-  write([{ ...entry, progress, at: Date.now() }, ...rest])
+  write([{ ...entry, progress, seconds, at: Date.now() }, ...rest])
 }
 
-/** Read to the end. */
-export function isFinished(entry: Pick<ReadingMark, 'progress'>): boolean {
-  return entry.progress >= FINISHED
+/**
+ * Read to the end, and for long enough to have read it. See
+ * `lib/reading-rule.ts` for why depth on its own will not do.
+ *
+ * A mark with no `seconds` was written before there was a clock in this,
+ * and is judged the way it was judged when it was made. The alternative
+ * is telling a reader on their next visit that they have not read four
+ * teachings they know they read, which is a worse answer than a slightly
+ * generous one about a handful of old marks.
+ */
+export function isFinished(entry: Pick<ReadingMark, 'progress' | 'seconds' | 'readMinutes'>): boolean {
+  if (entry.seconds === undefined) return entry.progress >= 0.95
+  return hasFinished(entry.progress, entry.seconds, entry.readMinutes)
 }
 
 /**
@@ -155,12 +182,13 @@ export function minutesLeft(entry: Pick<ReadingMark, 'progress' | 'readMinutes'>
 /**
  * The percentage as it is printed.
  *
- * Only a piece actually read to the end prints 100. Everything else is
- * rounded and left where it falls — which, since the finishing line is at
- * 95%, tops out at 95 and cannot round up into a claim. A shelf that says
- * 100% beside a teaching a reader knows they did not finish is a shelf
- * they stop believing.
+ * Only a piece that satisfies `isFinished` prints 100 — and since that
+ * now asks for time as well as depth, a teaching flicked to the bottom
+ * prints its depth rather than a hundred. Everything else is rounded and
+ * left where it falls, capped just under a hundred so it cannot round up
+ * into a claim. A shelf that says 100% beside a teaching a reader knows
+ * they did not finish is a shelf they stop believing.
  */
-export function percentRead(entry: Pick<ReadingMark, 'progress'>): number {
-  return isFinished(entry) ? 100 : Math.round(entry.progress * 100)
+export function percentRead(entry: Pick<ReadingMark, 'progress' | 'seconds' | 'readMinutes'>): number {
+  return isFinished(entry) ? 100 : Math.min(99, Math.round(entry.progress * 100))
 }
