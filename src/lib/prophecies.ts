@@ -214,3 +214,32 @@ export const recordScriptures = [
     ref: 'Amos 3:7',
   },
 ]
+
+/**
+ * The prophetic record as a short alert, for the rail beside the archive.
+ *
+ * Deliberately narrow. A record carries the ministry's own designation of
+ * whether a word was fulfilled, its interpretation, and any independent
+ * documentation — and none of those belong in four lines in a margin,
+ * where there is no room to say which is which. What crosses is the date,
+ * the title, and where it concerned: enough to know an alert exists, and
+ * a link to the record where the distinctions are drawn properly.
+ */
+export interface TimelineAlert {
+  id: string
+  href: string
+  /** "JULY 16, 2026", or "DATE TO CONFIRM" — never guessed. */
+  date: string
+  title: string
+  location: string
+}
+
+export function timelineAlerts(limit = 4): TimelineAlert[] {
+  return prophecyRecords.slice(0, limit).map((record) => ({
+    id: record.id,
+    href: `/prophecies/${record.id}`,
+    date: record.date,
+    title: record.title,
+    location: record.location,
+  }))
+}

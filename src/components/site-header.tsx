@@ -227,7 +227,7 @@ export function SiteHeader() {
           <button
             type="button"
             onClick={openSearch}
-            className="focus-ring ml-8 hidden h-10 min-w-[15rem] items-center gap-2.5 rounded-full border border-rule bg-card px-4 text-left text-ink-subtle transition-colors hover:border-rule-strong xl:flex"
+            className="focus-ring ml-8 hidden h-10 min-w-[15rem] items-center gap-2.5 rounded-full border border-rule bg-card px-4 text-left text-ink-subtle transition-colors hover:border-rule-strong xl:ml-auto xl:flex"
           >
             <Search aria-hidden className="h-[1.0625rem] w-[1.0625rem] shrink-0" strokeWidth={1.8} />
             <span className="font-sans text-[0.9375rem]">Search articles and verses</span>

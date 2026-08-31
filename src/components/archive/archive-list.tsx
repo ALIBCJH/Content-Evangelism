@@ -3,10 +3,11 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { spreadFields, type ArchiveItem } from '@/lib/archive-items'
+import type { TimelineAlert } from '@/lib/prophecies'
 import type { Category } from '@/lib/content'
 import { byScore, score } from '@/lib/search-docs'
 import { useSaved } from '@/lib/saved'
-import { unfinished as stillReading, useReadingProgress } from '@/lib/reading-progress'
+import { useReadingProgress } from '@/lib/reading-progress'
 import { useSpeech } from '@/lib/speech'
 import { AudioBar } from '@/components/archive/audio-bar'
 import { ReadingHistory } from '@/components/archive/reading-history'
@@ -61,9 +62,12 @@ const byNewest = (a: ArchiveItem, b: ArchiveItem) =>
 export function ArchiveList({
   items,
   header,
+  alerts,
   quietTitle = false,
 }: {
   items: ArchiveItem[]
+  /** Dated ministry records for the rail — read on the server. */
+  alerts: TimelineAlert[]
   /** The band's title block, rendered on the server and passed in. */
   header?: React.ReactNode
   /**
@@ -129,19 +133,6 @@ export function ArchiveList({
   const history = React.useMemo(
     () => marks.filter((held) => items.some((item) => item.slug === held.slug)),
     [marks, items]
-  )
-
-  /* The rail offers the one to come back to, which is a different list
-     from the shelf: only what is unfinished, and never the piece open
-     under the card, since the reader is in it rather than away from it.
-     The shelf at the foot of the page carries the whole history — what
-     was finished as well as what was not — because that is the question
-     it exists to answer. */
-  const inTheRail = React.useMemo(
-    /* No lead any more, so nothing to exclude: there is no piece the
-       reader is "in" rather than away from. */
-    () => stillReading(history).slice(0, 1),
-    [history]
   )
 
   /* The section each piece belongs to, which the mark itself does not
@@ -245,7 +236,7 @@ export function ArchiveList({
             total={items.length}
             active={topic}
             onPick={setTopic}
-            unfinished={inTheRail}
+            alerts={alerts}
             speech={speech}
             onPause={speech.pause}
             onResume={speech.resume}
