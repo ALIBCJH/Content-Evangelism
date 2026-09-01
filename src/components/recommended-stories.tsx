@@ -4,8 +4,8 @@ import type { RealRow } from '@/lib/rows'
 /**
  * What to read next, offered part-way through rather than at the end.
  *
- * The site already offers this — at the foot of the piece, under
- * `ContinueReading`. The trouble with the foot is that a reader has to
+ * The site already offers this — at the foot of the piece, on the
+ * `ExploreMore` shelf. The trouble with the foot is that a reader has to
  * finish to reach it, and a third of them do; the rest leave from
  * somewhere in the middle having been offered nothing at all. This is
  * the same idea placed where people actually are.

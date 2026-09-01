@@ -135,7 +135,7 @@ export type ProseLink = { href: string; title: string; dek: string }
  * reader was taking anyway. The one nearest the middle, so it is not the
  * first thing a reader meets and not so late that the people who leave
  * early never see it — which is the whole reason it is not simply at the
- * foot, where `ContinueReading` already sits.
+ * foot, where the `ExploreMore` shelf already sits.
  *
  * Nothing is inserted into a teaching with fewer than four headings.
  * There is no middle to speak of, and the foot is close enough.

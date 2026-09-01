@@ -10,6 +10,7 @@ import {
 import { findAuthorOfPiece } from '@/lib/authors'
 import { readLikes } from '@/lib/likes'
 import { getPostedArticle, listPostedArticles } from '@/lib/posted'
+import { toArchiveItems } from '@/lib/archive-items'
 import { listRealRows, relatedRows } from '@/lib/rows'
 import { bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
 import { buildScriptureIndex, versesFor } from '@/lib/scripture-index'
@@ -83,12 +84,13 @@ export default async function PostedArticlePage({ params }: Params) {
      at the foot opens with a number rather than filling one in after
      hydration — and, like the counters, a store that cannot be reached
      simply means no number rather than no page. */
-  let likes = 0
+  let likeCounts: Record<string, number> = {}
   try {
-    likes = (await readLikes())[article.slug] ?? 0
+    likeCounts = await readLikes()
   } catch {
     /* A teaching with no count on it is a teaching. */
   }
+  const likes = likeCounts[article.slug] ?? 0
 
   /* What the rail offers: the archive minus this piece and minus what the
      close of it already carries, newest first. Five, because a rail is
@@ -98,6 +100,16 @@ export default async function PostedArticlePage({ params }: Params) {
       (row) => row.slug !== article.slug && !related.some((near) => near.slug === row.slug)
     )
     .slice(0, 5)
+  /* The shelf at the foot: the whole archive minus this piece, its own
+     section first — the same order `related` is picked in, taken further.
+     Built in the archive's own shape so the cards carry the picture, the
+     section and the counts a listing row carries. */
+  const explore = toArchiveItems(
+    relatedRows(rows, article.slug, article.category, 8),
+    {},
+    likeCounts
+  )
+
   const links = Object.fromEntries(
     rows.map((row) => [row.slug, { href: row.href, title: row.title, dek: row.dek }])
   )
@@ -200,8 +212,8 @@ export default async function PostedArticlePage({ params }: Params) {
         verified={article.verified}
         headings={headings}
         verses={verses}
-        related={related}
         more={more}
+        explore={explore}
         body={article.body}
         likes={likes}
       >
