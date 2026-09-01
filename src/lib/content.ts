@@ -320,11 +320,11 @@ export const siteInfo = {
   head: 'Prophet Dr. David Owuor',
   tagline: 'Wisdom · Hope · Truth',
   mission: 'The publication desk of the Ministry of Repentance and Holiness — teachings, prophecies, and oracles, faithfully told.',
-  /* The whole of what this site is, in four lines, for a reader who has
-     arrived from a search result and has never heard of the ministry. It
-     stands in the rail beside the archive and is the ministry's own
-     wording. Kept here rather than in the component so the About page and
-     the rail cannot drift apart. */
+  /* The whole of what this site is, in four lines, in the ministry's own
+     wording — the canonical short description, for anywhere that has to
+     introduce the site to someone who has never heard of the ministry.
+     Nothing renders it today; it is here so that when something does, it
+     does not invent a fifth way of saying this. */
   summary:
     'Repent and Prepare the Way publishes the teaching of the Ministry of Repentance and Holiness — a Kenyan ministry led by Prophet Dr. David Owuor, preaching repentance, holiness, and preparation for the return of Jesus Christ. Every article answers one question from Scripture.',
   readers: '84,000',
