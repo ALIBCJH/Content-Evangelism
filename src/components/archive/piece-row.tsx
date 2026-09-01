@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart } from 'lucide-react'
+import { Heart, Share2 } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
 import { Posted } from '@/components/posted'
 import { TeachingArt } from '@/components/archive/teaching-art'
@@ -133,22 +133,34 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
             <Posted iso={item.publishedAt} dated={item.dated} />
             <span aria-hidden className="mx-1.5">·</span>
             <span className="tabular">{item.readMinutes}</span>&nbsp;min
-            {/* Only where somebody has actually said so. A heart beside a
-                nought reads as a teaching offered and refused, which is
-                not what an empty count means — it means nobody has been
-                asked yet. */}
-            {item.likes > 0 && (
-              <>
-                <span aria-hidden className="mx-1.5">·</span>
-                <span className="inline-flex items-center gap-1">
-                  <Heart aria-hidden className="h-3 w-3" strokeWidth={2.2} />
-                  <span className="tabular">{item.likes}</span>
-                  <span className="sr-only">
-                    {item.likes === 1 ? 'reader said this helped them' : 'readers said this helped them'}
-                  </span>
-                </span>
-              </>
-            )}
+            {/* What readers have done with it, on the same line as what
+                it costs them — a heart and a share are facts about the
+                teaching of the same kind as how long it takes to read.
+
+                The marks are always drawn and the numbers are not. A
+                teaching nobody has answered for yet shows the two marks
+                and no figures, which says "this can be answered for";
+                printing a nought instead would say "it was offered and
+                refused", and that is a different and untrue thing. */}
+            <span aria-hidden className="mx-1.5">·</span>
+            <span className="inline-flex items-center gap-1">
+              <Heart aria-hidden className="h-3 w-3" strokeWidth={2.2} />
+              {item.likes > 0 && <span className="tabular">{item.likes}</span>}
+              <span className="sr-only">
+                {item.likes === 0
+                  ? 'No reader has said yet whether this helped them'
+                  : item.likes === 1
+                    ? '1 reader said this helped them'
+                    : `${item.likes} readers said this helped them`}
+              </span>
+            </span>
+            <span className="ml-2.5 inline-flex items-center gap-1">
+              <Share2 aria-hidden className="h-3 w-3" strokeWidth={2.2} />
+              {item.shares > 0 && <span className="tabular">{item.shares}</span>}
+              <span className="sr-only">
+                {item.shares === 0 ? 'Not shared yet' : `Shared ${item.shares} times`}
+              </span>
+            </span>
           </p>
         </div>
 

@@ -89,6 +89,8 @@ export interface ArticleLayoutProps {
    * two hats.
    */
   more: RealRow[]
+  /** How many readers have said this teaching helped them. */
+  likes?: number
   /** The body of the teaching. */
   children: React.ReactNode
 }
@@ -124,6 +126,7 @@ export function ArticleLayout({
   scriptures,
   verses,
   colophon,
+  likes = 0,
   children,
 }: ArticleLayoutProps) {
   const refs = scriptures ?? scriptureRefs(body, 12)
@@ -229,7 +232,10 @@ export function ArticleLayout({
               <div className="ornament mx-auto mt-8 max-w-xs">
                 <span aria-hidden className="text-base leading-none">✦</span>
               </div>
-              <ShareRow title={title} className="mt-8" />
+              {/* The whole row a reader can act with: say it helped,
+                  keep it, and send it on. It carries the slug, which is
+                  what turns the share bar into that — see `ShareRow`. */}
+              <ShareRow title={title} slug={slug} likes={likes} className="mt-8" />
               {/* Asked at the end of a teaching, which is the moment
                   somebody is most likely to want the next one. */}
               <p className="mt-6 text-center">

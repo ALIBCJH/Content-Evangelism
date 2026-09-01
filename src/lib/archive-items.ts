@@ -67,6 +67,13 @@ export interface ArchiveItem {
    * teaching was offered and refused, which is not what it means.
    */
   likes: number
+  /**
+   * How many times somebody pressed a share control on it, from the same
+   * click counters the desk reads. Not how many times it was actually
+   * sent — nothing can know that — which is why the row prints the
+   * number without a word claiming otherwise.
+   */
+  shares: number
 }
 
 /**
@@ -296,7 +303,9 @@ export function toArchiveItems(
   /** Views by path, from the insight counters. */
   views: Record<string, number> = {},
   /** Likes by slug, from the likes store. */
-  likes: Record<string, number> = {}
+  likes: Record<string, number> = {},
+  /** Share presses by slug, from the click counters. */
+  shares: Record<string, number> = {}
 ): ArchiveItem[] {
   return rows.map((row) => {
     /* Uncapped: this is a count, and a cap would make every teaching
@@ -347,6 +356,7 @@ export function toArchiveItems(
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),
       views: views[row.href] ?? 0,
       likes: likes[row.slug] ?? 0,
+      shares: shares[row.slug] ?? 0,
     }
   })
 }

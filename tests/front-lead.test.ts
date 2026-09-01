@@ -36,6 +36,7 @@ const item = (over: Partial<ArchiveItem> = {}): ArchiveItem =>
     haystack: '',
     views: 0,
     likes: 0,
+    shares: 0,
     ...over,
   }) as ArchiveItem
 

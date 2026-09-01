@@ -96,6 +96,7 @@ const item = (slug: string, palette: string, withPhoto = false): ArchiveItem =>
     haystack: slug,
     views: 0,
     likes: 0,
+    shares: 0,
     ...(withPhoto ? { thumbnail: { src: '/images/x.jpg', alt: '' } } : {}),
   }) as ArchiveItem
 

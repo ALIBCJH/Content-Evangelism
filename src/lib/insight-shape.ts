@@ -24,6 +24,13 @@ export const CLICK_LABELS = [
   'hero-primary',
   'hero-secondary',
   'prophecy-archive',
+  /* The reader acting on a teaching rather than moving through the site.
+     `share-article` is the one the listing prints; the other two are kept
+     because a like that never reaches the store and a save that nobody
+     can see are both worth knowing about from the desk. */
+  'like-article',
+  'share-article',
+  'save-article',
 ] as const
 export type ClickLabel = (typeof CLICK_LABELS)[number]
 
