@@ -78,10 +78,43 @@ export const FINISH_SHARE = 0.35
 /** However short the teaching, this many seconds at least. */
 export const FINISH_FLOOR_SECONDS = 20
 
+/**
+ * What the prompt at the foot of a teaching asks for, which is much less.
+ *
+ * These are two different questions and it took getting them confused
+ * once to see it. `hasFinished` decides what the archive *records* — the
+ * shelf that says "read", the counter the desk reads — and it has to be
+ * strict, because a number that counts flicks as readings is a number
+ * that lies to the ministry about its own work.
+ *
+ * `reachedTheEnd` decides whether to *offer somebody a heart*. Getting
+ * that wrong costs nothing: the worst case is a reader who skimmed is
+ * asked whether it helped them, and answers no or ignores it. The worst
+ * case of being strict is a reader who read the whole thing at speed and
+ * is never asked — which is a real reader silently refused.
+ *
+ * So the offer follows the scrollbar and the statistics follow the
+ * clock. Twelve seconds is only there to keep a three-second flick out;
+ * anybody who has genuinely scrolled through a teaching clears it
+ * without noticing.
+ */
+export const PROMPT_SECONDS = 12
+
 /** The engaged seconds a given teaching asks for before it counts as read. */
 export function secondsToFinish(readMinutes: number): number {
   const share = Math.round(Math.max(0, readMinutes) * 60 * FINISH_SHARE)
   return Math.max(FINISH_FLOOR_SECONDS, share)
+}
+
+/**
+ * Far enough through to be offered the question at the foot.
+ *
+ * Deliberately not `hasFinished` — see `PROMPT_SECONDS`. This is the end
+ * of the writing plus enough seconds to rule out a thumb, and nothing
+ * more. It never feeds a count.
+ */
+export function reachedTheEnd(depth: number, engagedSeconds: number): boolean {
+  return depth >= FINISH_DEPTH && engagedSeconds >= PROMPT_SECONDS
 }
 
 /** Far enough in, and long enough there, to be reading rather than looking. */

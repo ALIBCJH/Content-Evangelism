@@ -3,8 +3,10 @@ import {
   BEGIN_DEPTH,
   BEGIN_SECONDS,
   FINISH_DEPTH,
+  PROMPT_SECONDS,
   hasBegun,
   hasFinished,
+  reachedTheEnd,
   secondsToFinish,
 } from '@/lib/reading-rule'
 
@@ -70,5 +72,32 @@ describe('begun: far enough in, and long enough there', () => {
   it('takes a reader who is actually into it', () => {
     expect(hasBegun(BEGIN_DEPTH, BEGIN_SECONDS)).toBe(true)
     expect(hasBegun(0.4, 60)).toBe(true)
+  })
+})
+
+describe('what the prompt asks for, which is much less', () => {
+  /* Two different questions. `hasFinished` decides what the archive
+     records and has to be strict, because a count that treats flicks as
+     readings lies to the ministry about its own work. This decides
+     whether to offer somebody a heart, where being strict costs a fast
+     reader the only moment they had to say yes and being generous costs
+     nothing at all. */
+
+  it('offers the question to anyone who has scrolled through', () => {
+    /* Twelve minutes of teaching, read at speed in ninety seconds. The
+       counter will not call this finished, and it should not — but the
+       reader still reached the end and should still be asked. */
+    expect(reachedTheEnd(1, 90)).toBe(true)
+    expect(hasFinished(1, 90, 12)).toBe(false)
+  })
+
+  it('still keeps a thumb out', () => {
+    expect(reachedTheEnd(1, 3)).toBe(false)
+    expect(reachedTheEnd(1, PROMPT_SECONDS - 1)).toBe(false)
+    expect(reachedTheEnd(1, PROMPT_SECONDS)).toBe(true)
+  })
+
+  it('asks nothing of a reader who has not reached the end', () => {
+    expect(reachedTheEnd(FINISH_DEPTH - 0.01, 3600)).toBe(false)
   })
 })
