@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { PublishContents } from '@/components/publish-contents'
 import { ReadingPrompt } from '@/components/reading-prompt'
 import { siteUrl, topicHref, type Category } from '@/lib/content'
+import type { ArchiveItem } from '@/lib/archive-items'
 import type { RealRow } from '@/lib/rows'
 import type { Verse } from '@/lib/scripture-index'
 import { scriptureRefs } from '@/lib/scripture'
@@ -12,7 +13,8 @@ import { AskQuestion } from '@/components/ask-question'
 import { ChapterBar } from '@/components/chapter-bar'
 import { ScriptureList } from '@/components/article-rail'
 import { JsonLd } from '@/components/json-ld'
-import { ContinueReading } from '@/components/continue-reading'
+import { ExploreMore } from '@/components/explore-more'
+import { ExploreTopic } from '@/components/explore-topic'
 import { FollowChannel } from '@/components/follow-channel'
 import { MoreArticles } from '@/components/more-articles'
 import { ReadingProgress } from '@/components/progress-bar'
@@ -67,8 +69,6 @@ export interface ArticleLayoutProps {
   verified?: boolean
   /** Chapters, for the strip under the masthead. */
   headings: Heading[]
-  /** What to read next — see `relatedRows`. */
-  related: RealRow[]
   /**
    * The teaching's own text, so the rail can list the Scriptures it cites.
    * Omitted when the body is not plain text (the hand-set article).
@@ -90,6 +90,12 @@ export interface ArticleLayoutProps {
    * two hats.
    */
   more: RealRow[]
+  /**
+   * The rest of the archive, for the shelf at the foot — already in the
+   * archive's own shape, so the cards carry the same picture, section
+   * and counts a listing row does.
+   */
+  explore: ArchiveItem[]
   /** How many readers have said this teaching helped them. */
   likes?: number
   /** The body of the teaching. */
@@ -121,8 +127,8 @@ export function ArticleLayout({
   readMinutes,
   verified,
   headings,
-  related,
   more,
+  explore,
   body,
   scriptures,
   verses,
@@ -260,7 +266,7 @@ export function ArticleLayout({
               </p>
             </div>
 
-            <ContinueReading rows={related} category={category} />
+            <ExploreTopic category={category} />
           </article>
 
           {/* The one rail, from `lg`. It has carried three things that
@@ -276,6 +282,14 @@ export function ArticleLayout({
             <MoreArticles rows={more} />
           </aside>
         </div>
+
+        {/* The rest of the archive, at the foot and at full width — a
+            reader who has finished is asking whether there is a reason
+            to stay, and a shelf of pictures answers that where three
+            ruled rows of grey text did not. It sits outside the reading
+            column on purpose: the column is a measure for reading, and
+            this is not reading. */}
+        <ExploreMore items={explore} />
 
         <AskQuestion title={title} subject="this teaching" />
       </main>
