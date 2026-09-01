@@ -146,6 +146,9 @@ export function recommendAfter(blocks: ReturnType<typeof parseBody>): number | n
   return headings[Math.floor(headings.length / 2)]
 }
 
+/** The measure a figure sits in at the widest, 34rem, in pixels. */
+const COLUMN = 544
+
 export function ArticleProse({
   body,
   links = {},
@@ -418,14 +421,31 @@ export function ArticleProse({
             return (
               <figure
                 key={index}
-                className="my-9 overflow-hidden rounded-panel border border-rule bg-card"
+                className="mx-auto my-9 overflow-hidden rounded-panel border border-rule bg-card"
+                /* Never wider than the file actually is. A photograph
+                   stretched past its own pixels is a blurred photograph,
+                   and the column here is 34rem — wider than several of
+                   the pictures this archive has been given. Centred, so a
+                   small one sits in the measure rather than hard left. */
+                style={block.width ? { maxWidth: `${block.width}px` } : undefined}
               >
                 <Image
                   src={block.src}
                   alt={block.alt}
                   width={block.width ?? 1600}
                   height={block.height ?? 1067}
-                  sizes="(min-width: 1280px) 34rem, (min-width: 640px) 90vw, 100vw"
+                  /* A picture narrower than the column is never drawn
+                     wider than itself — see the cap above — so telling
+                     the browser it will fill 34rem makes it pick from a
+                     set of sizes that stop short of the box. It then
+                     fetches 233px for a 273px frame and the picture is
+                     upscaled by the browser after all the trouble taken
+                     not to upscale it. `COLUMN` is that 34rem in pixels. */
+                  sizes={
+                    block.width && block.width <= COLUMN
+                      ? `${block.width}px`
+                      : '(min-width: 1280px) 34rem, (min-width: 640px) 90vw, 100vw'
+                  }
                   className="h-auto w-full"
                 />
                 {block.caption && (
