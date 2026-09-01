@@ -4,7 +4,12 @@ import { authorOfPiece } from '@/lib/authors'
 import { recordHref, type ProphecyRecord } from '@/lib/prophecies'
 import type { RealRow } from '@/lib/rows'
 import { scriptureRefs } from '@/lib/scripture'
-import { teachingHref, type TeachingRecording } from '@/lib/teachings'
+import {
+  dateline,
+  isoDuration,
+  teachingHref,
+  type TeachingRecording,
+} from '@/lib/teachings'
 import { extractHeadings } from '@/lib/toc'
 import { watchHref } from '@/lib/youtube'
 import { LANGUAGE } from '@/lib/api/params'
@@ -169,9 +174,13 @@ export function teachingResource(recording: TeachingRecording) {
     id: recording.id,
     type: 'teaching-recording' as const,
     title: recording.title,
-    ...(recording.summary ? { summary: recording.summary } : {}),
-    dateline: recording.date,
-    ...(recording.year ? { year: recording.year } : {}),
+    summary: recording.summary,
+    dateline: dateline(recording),
+    dated: recording.dated,
+    year: recording.year,
+    durationSeconds: recording.seconds,
+    duration: isoDuration(recording.seconds),
+    published: recording.uploaded,
     ...(recording.place ? { place: recording.place } : {}),
     ...(recording.series ? { series: recording.series } : {}),
     ...(recording.scripture ? { scripture: recording.scripture } : {}),

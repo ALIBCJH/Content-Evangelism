@@ -5,6 +5,9 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { siteInfo, siteUrl } from '@/lib/content'
 import {
+  dateline,
+  isoDuration,
+  runtimeInWords,
   teachingById,
   teachingHref,
   teachingRecordings,
@@ -48,9 +51,7 @@ export function generateMetadata({ params }: Params): Metadata {
   const recording = teachingById(params.id)
   if (!recording) return { title: 'Teaching not found', robots: { index: false, follow: false } }
 
-  const description =
-    recording.summary ??
-    `A recorded teaching from the ${siteInfo.ministry}, preached by ${siteInfo.head}.`
+  const description = recording.summary
 
   return {
     title: recording.title,
@@ -69,7 +70,8 @@ export function generateMetadata({ params }: Params): Metadata {
 function statedRows(recording: TeachingRecording) {
   return [
     { k: 'Preached by', v: siteInfo.head },
-    { k: 'Date', v: recording.date },
+    { k: recording.dated === 'published' ? 'Published' : 'Preached', v: recording.date },
+    { k: 'Runtime', v: runtimeInWords(recording.seconds) },
     ...(recording.place ? [{ k: 'Where', v: recording.place }] : []),
     ...(recording.series ? [{ k: 'Series', v: recording.series }] : []),
     ...(recording.scripture ? [{ k: 'Scripture', v: recording.scripture }] : []),
@@ -91,9 +93,14 @@ export default function TeachingRecordPage({ params }: Params) {
           '@type': 'VideoObject',
           '@id': `${siteUrl}${teachingHref(recording)}#recording`,
           name: recording.title,
-          ...(recording.summary ? { description: recording.summary } : {}),
+          description: recording.summary,
           thumbnailUrl: posterSrc(recording.video),
           embedUrl: embedSrc(recording.video),
+          /* Both are what Google asks of a video before it will show it
+             as one. The runtime and the upload instant are the channel's
+             own, to the second. */
+          uploadDate: recording.uploaded,
+          duration: isoDuration(recording.seconds),
           publisher: { '@id': `${siteUrl}/#ministry` },
           inLanguage: 'en',
         }}
@@ -140,8 +147,9 @@ export default function TeachingRecordPage({ params }: Params) {
             {recording.title}
           </h1>
           <p className="font-mono text-[0.6875rem] tracking-[0.06em] text-gold-ink">
-            {recording.date}
-            {recording.place ? ` · ${recording.place.toUpperCase()}` : ''} · RECORDING
+            {dateline(recording)}
+            {recording.place ? ` · ${recording.place.toUpperCase()}` : ''} ·{' '}
+            {runtimeInWords(recording.seconds).toUpperCase()}
           </p>
         </header>
 
@@ -182,22 +190,18 @@ export default function TeachingRecordPage({ params }: Params) {
             About this teaching
           </h2>
           <RecordDescription
-            dateline={`${recording.date}${
+            dateline={`${dateline(recording)}${
               recording.place ? ` · ${recording.place.toUpperCase()}` : ''
-            } · RECORDING`}
-            summary={
-              recording.summary ??
-              `A recording published by the ministry on its own channel${
-                recording.place ? `, preached at ${recording.place}` : ''
-              }. What is stated about it is set out below; nothing that has not been checked against the source is stated at all.`
-            }
+            } · ${runtimeInWords(recording.seconds).toUpperCase()}`}
+            summary={recording.summary}
             meta={rows}
           >
-            {recording.date === 'DATE TO CONFIRM' && (
+            {recording.dated === 'published' && (
               <p className="mt-5 text-[0.8125rem] leading-[1.7] text-ink-muted">
-                The publication date of this recording has not yet been checked
-                against the source, so none is stated. It is left open rather
-                than guessed.
+                The ministry did not state the day this was preached, so the
+                date above is the day it published the recording on its own
+                channel — which is the earliest day it is known to exist, and
+                not the same claim. It is said plainly rather than guessed.
               </p>
             )}
 

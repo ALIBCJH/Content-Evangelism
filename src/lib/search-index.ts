@@ -64,7 +64,9 @@ export async function buildSearchIndex(): Promise<SearchDoc[]> {
     href: teachingHref(recording),
     date: recording.date,
     ref: [recording.place, recording.series].filter(Boolean).join(' · ') || 'Recording',
-    excerpt: recording.summary ?? 'A recording published by the ministry on its own channel.',
+    /* The runtime is a fact readers search on — "short", and the
+       difference between a clip and a conference. */
+    excerpt: recording.summary,
     text: [
       recording.title,
       recording.summary,

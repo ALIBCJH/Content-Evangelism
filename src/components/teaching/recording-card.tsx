@@ -1,10 +1,15 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import type { TeachingRecording } from '@/lib/teachings'
+import {
+  dateline,
+  runtime,
+  runtimeInWords,
+  teachingHref,
+  type TeachingRecording,
+} from '@/lib/teachings'
 import Link from 'next/link'
-import { teachingHref } from '@/lib/teachings'
-import { embedSrc, posterSrc, watchHref } from '@/lib/youtube'
+import { embedSrc, posterSrc } from '@/lib/youtube'
 
 /**
  * One recorded teaching, set as a card on the dated rail — the same
@@ -23,32 +28,45 @@ import { embedSrc, posterSrc, watchHref } from '@/lib/youtube'
  * 260px thumbnail slot is not watchable, so the row layout gives way to a
  * stacked one for as long as the player is open.
  *
- * The player is the no-cookie host, as every embed on this site is, and
- * the link out to YouTube stays in the footer for a reader who would
- * rather watch it there.
+ * There are two ways in and they are two different things: the poster
+ * plays the teaching where it stands, the headline opens its record.
+ * There used to be a third — a "PLAY HERE" link beside them — which did
+ * exactly what the poster above it already did, and a fourth out to
+ * YouTube. Both are gone. The poster is the largest target on the card
+ * and it is a play button; a second one in 11px type was not helping
+ * anybody, and the way out to YouTube belongs on the record, where a
+ * reader who wants the source goes looking for it.
  */
 export function RecordingCard({
   recording,
   playing,
   onPlay,
+  /** The newest teaching leads the shelf: poster over text, at full width. */
+  lead = false,
 }: {
   recording: TeachingRecording
   playing: boolean
   onPlay: () => void
+  lead?: boolean
 }) {
-  const meta = [recording.series, recording.place, recording.scripture].filter(Boolean)
+  /* One line of stated fact, in the order a reader wants it: when, then
+     where, then which conference, then the passage. These were chips
+     below a rule at the foot of the card — the most searchable facts
+     about a sermon, in the last place anyone looks. */
+  const meta = [recording.place, recording.series, recording.scripture].filter(Boolean) as string[]
 
   return (
     <div
       className={cn(
         'card my-3 flex flex-col items-start gap-6 p-5 sm:ml-8 sm:p-8',
-        !playing && 'card-interactive lg:flex-row lg:gap-7'
+        !playing && !lead && 'card-interactive lg:flex-row lg:gap-7',
+        !playing && lead && 'card-interactive'
       )}
     >
       <div
         className={cn(
           'relative w-full shrink-0 overflow-hidden rounded-tile border border-rule bg-navy-deep',
-          playing ? 'aspect-video' : 'aspect-[16/9] lg:w-[260px]'
+          playing || lead ? 'aspect-video' : 'aspect-[16/9] lg:w-[260px]'
         )}
       >
         {playing ? (
@@ -71,81 +89,84 @@ export function RecordingCard({
               src={posterSrc(recording.video)}
               alt=""
               fill
-              sizes="(min-width: 1024px) 260px, 100vw"
+              priority={lead}
+              sizes={lead ? '(min-width: 1024px) 1000px, 100vw' : '(min-width: 1024px) 260px, 100vw'}
               className="object-cover"
             />
             <span
               aria-hidden
-              className="absolute left-1/2 top-1/2 flex h-[46px] w-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-plate-deep/80 transition-colors group-hover/play:bg-plate-deep"
+              className={cn(
+                'absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-plate-deep/80 transition-colors group-hover/play:bg-plate-deep',
+                lead ? 'h-[68px] w-[68px]' : 'h-[46px] w-[46px]'
+              )}
             >
-              <svg width="13" height="16" viewBox="0 0 20 24" fill="#F7F4EC">
+              <svg
+                width={lead ? 19 : 13}
+                height={lead ? 23 : 16}
+                viewBox="0 0 20 24"
+                fill="#F7F4EC"
+              >
                 <path d="M2 2l16 10L2 22z" />
               </svg>
+            </span>
+
+            {/* How long this is, where every player on earth puts it.
+                It is the first question a reader asks of a sermon and
+                the page had no answer: it is what tells a four-hour
+                conference apart from a six-minute message. */}
+            <span
+              aria-hidden
+              className="absolute bottom-2 right-2 rounded-[4px] bg-black/80 px-1.5 py-0.5 font-mono text-[0.6875rem] leading-none tracking-[0.04em] text-white"
+            >
+              {runtime(recording.seconds)}
             </span>
           </button>
         )}
       </div>
 
       <div className="block min-w-0 flex-1">
-        <p className="mb-3.5 flex flex-wrap items-center gap-3">
-          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-navy">
-            {recording.date}
-          </span>
-          <span className="kicker rounded-chip border border-gold-pale/70 px-2.5 py-1 text-gold">
-            Recording
-          </span>
+        <p className="mb-3 font-mono text-[0.6875rem] leading-[1.6] tracking-[0.06em]">
+          <span className="text-gold-ink">{dateline(recording)}</span>
+          {meta.length > 0 && (
+            <span className="text-ink-muted"> · {meta.join(' · ').toUpperCase()}</span>
+          )}
+          {/* The badge on the poster is drawn, not spoken. */}
+          <span className="sr-only"> · {runtimeInWords(recording.seconds)} long</span>
         </p>
 
-        {/* Two ways in, and they are different things: the poster plays
-            the teaching where it stands, the headline opens its record. */}
-        <h3 className="mb-3.5 text-balance font-display text-[1.375rem] font-medium leading-[1.15] text-navy sm:text-[1.75rem]">
+        <h3
+          className={cn(
+            'mb-3.5 text-balance font-display font-medium leading-[1.15] text-navy',
+            lead
+              ? 'text-[1.625rem] sm:text-[2.125rem]'
+              : 'text-[1.375rem] sm:text-[1.75rem]'
+          )}
+        >
           <Link href={teachingHref(recording)} className="focus-ring">
             <span className="headline-link">{recording.title}</span>
           </Link>
         </h3>
 
-        {recording.summary && (
-          <p className="mb-4 max-w-[720px] text-[0.9375rem] leading-[1.7] text-ink-muted">
-            {recording.summary}
-          </p>
-        )}
+        {/* Set like the deks on the archive front: the reading serif,
+            in the heavier ink the listing was moved to. A summary in
+            light grey is the thing a reader's eye skips, and this one is
+            the whole reason the card is worth stopping at. */}
+        <p
+          className={cn(
+            'max-w-[720px] font-reading leading-[1.6] text-ink-700',
+            lead ? 'text-[1.125rem]' : 'text-[1rem]'
+          )}
+        >
+          {recording.summary}
+        </p>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-rule-soft pt-4">
-          <span className="flex flex-wrap gap-2">
-            {meta.map((item) => (
-              <span key={item} className="rounded-chip bg-chip px-3 py-1.5 text-xs text-ink-700">
-                {item}
-              </span>
-            ))}
-          </span>
-          <span className="flex flex-wrap items-center gap-4">
-            {!playing && (
-              <button
-                type="button"
-                onClick={onPlay}
-                className="focus-ring whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
-              >
-                ▶ PLAY HERE
-              </button>
-            )}
-            <Link
-              href={teachingHref(recording)}
-              data-track="open-record"
-              className="focus-ring whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
-            >
-              THE RECORD →
-            </Link>
-            <a
-              href={watchHref(recording.video)}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-track="watch-youtube"
-              className="focus-ring whitespace-nowrap font-mono text-[0.6875rem] text-ink-subtle transition-colors hover:text-gold"
-            >
-              YOUTUBE ↗
-            </a>
-          </span>
-        </div>
+        <Link
+          href={teachingHref(recording)}
+          data-track="open-record"
+          className="focus-ring mt-5 inline-block whitespace-nowrap font-mono text-[0.6875rem] text-navy transition-colors hover:text-gold"
+        >
+          THE RECORD →
+        </Link>
       </div>
     </div>
   )
