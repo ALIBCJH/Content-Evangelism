@@ -180,5 +180,41 @@
     "width": 1376,
     "height": 768,
     "query": null
+  },
+  "how-christians-dress": {
+    "creator": "Ministry of Repentance and Holiness",
+    "license": "ministry-supplied",
+    "license_url": null,
+    "source_page": null,
+    "provider": "supplied by the ministry",
+    "query": null,
+    "title": "How should Christians dress?",
+    "note": "The teaching's poster and listing crop. A stock-style question image supplied by the publisher; carries no type.",
+    "width": 1376,
+    "height": 768
+  },
+  "christian-dress-man": {
+    "creator": "Ministry of Repentance and Holiness",
+    "license": "ministry-supplied",
+    "license_url": null,
+    "source_page": null,
+    "provider": "supplied by the ministry",
+    "query": null,
+    "title": "How should Christians dress? — a man dressed for a service",
+    "note": "A body figure, not a listing crop. 275px wide as supplied, which is narrower than the article column — see the maxWidth on the figure in article-prose.tsx.",
+    "width": 275,
+    "height": 757
+  },
+  "christian-dress-ministry": {
+    "creator": "Ministry of Repentance and Holiness",
+    "license": "ministry-supplied",
+    "license_url": null,
+    "source_page": null,
+    "provider": "supplied by the ministry",
+    "query": null,
+    "title": "How should Christians dress? — the ministry's own practice",
+    "note": "A body figure showing the ministry's customary daily dress. 367px wide as supplied.",
+    "width": 367,
+    "height": 615
   }
 }
