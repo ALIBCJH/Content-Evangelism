@@ -1,10 +1,17 @@
 import * as React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CATEGORIES, articleSubjects, categoryBlurb, siteUrl, topicHref } from '@/lib/content'
+import {
+  CATEGORIES,
+  articleSubjects,
+  categoryBlurb,
+  siteInfo,
+  siteUrl,
+  topicHref,
+} from '@/lib/content'
 import { listRealRows } from '@/lib/rows'
 import { rssAlternate } from '@/lib/seo'
-import { teachingRecordings } from '@/lib/teachings'
+import { teachingHref, teachingRecordings } from '@/lib/teachings'
 import { RecordingList } from '@/components/teaching/recording-list'
 import { JsonLd } from '@/components/json-ld'
 
@@ -12,15 +19,17 @@ import { JsonLd } from '@/components/json-ld'
  * The teaching library, arranged by subject rather than by date.
  *
  * The archive answers "what was published"; this page answers "what is
- * taught". Sections that actually hold something link to their own page;
- * the subjects beneath them hand off to search, which is the honest thing
- * to do until a subject has a pillar page of its own.
+ * taught". It holds two kinds of thing and says so: the recordings, which
+ * are the teaching as it was preached, and under them a way into the
+ * written archive by subject. Sections that actually hold something link
+ * to their own page; the subjects beneath them hand off to search, which
+ * is the honest thing to do until a subject has a pillar page of its own.
  */
 
 export const metadata: Metadata = {
   title: 'Teachings',
   description:
-    'The teaching library of the Ministry of Repentance and Holiness, arranged by subject — repentance, holiness, the rapture, the second coming, and the preparation of the Church.',
+    'Recorded teachings of the Ministry of Repentance and Holiness, preached by Prophet Dr. David Owuor — conferences, live teachings and short messages, each with its date and runtime — and the written archive by subject.',
   alternates: { canonical: '/teachings', types: rssAlternate },
 }
 
@@ -46,6 +55,20 @@ export default async function TeachingsPage() {
             'The teaching library of the Ministry of Repentance and Holiness, arranged by subject.',
           isPartOf: { '@id': `${siteUrl}/#website` },
           inLanguage: 'en',
+          /* What is actually on the shelf, in the order it is shown.
+             Each recording's own page carries the VideoObject with its
+             runtime and upload date; this only says the shelf holds
+             them, and in what order. */
+          mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: teachingRecordings.length,
+            itemListElement: teachingRecordings.map((recording, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              url: `${siteUrl}${teachingHref(recording)}`,
+              name: recording.title,
+            })),
+          },
         }}
       />
 
@@ -76,13 +99,41 @@ export default async function TeachingsPage() {
       <RecordingList
         recordings={teachingRecordings}
         header={
-          <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
-            Teachings
-          </h1>
+          <div>
+            <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.015em] text-navy sm:text-[2.375rem]">
+              Teachings
+            </h1>
+            {/* Who this is and how much of it there is. Most people who
+                reach this page arrive from a search result and have never
+                heard of the ministry; a heading on its own tells them
+                nothing about what they have found. */}
+            <p className="mt-1.5 text-[0.9375rem] leading-[1.6] text-ink-700">
+              {teachingRecordings.length} recordings preached by {siteInfo.head},
+              published by the ministry on its own channel.
+            </p>
+          </div>
         }
       />
 
-      <div className="shell pb-24 pt-16">
+      {/* Everything above this line is recordings; everything below it is
+          a way into the written archive. They are two different kinds of
+          thing under one heading, and the page used to slide from one to
+          the other with nothing to mark the change — a reader scrolling
+          past the last sermon simply found themselves somewhere else. The
+          band and the heading are the seam, said out loud. */}
+      <section className="border-y border-rule bg-raised">
+        <div className="shell py-9">
+          <h2 className="font-display text-[1.375rem] font-medium leading-[1.15] text-navy sm:text-[1.625rem]">
+            Written teaching, by subject
+          </h2>
+          <p className="mt-2 max-w-[62ch] text-[0.9375rem] leading-[1.7] text-ink-700">
+            The recordings above are preached. What follows is the written
+            archive, arranged by what it is about.
+          </p>
+        </div>
+      </section>
+
+      <div className="shell pb-24 pt-14">
         {sections.length > 0 && (
           <>
             <h2 className="rule-heading mb-7 font-display text-[0.9375rem] font-medium uppercase tracking-[0.12em] text-navy">

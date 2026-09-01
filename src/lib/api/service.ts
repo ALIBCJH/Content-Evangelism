@@ -195,7 +195,7 @@ export function searchAll(
         { text: recording.title, weight: 10, name: 'title' },
         { text: recording.scripture ?? '', weight: 7, name: 'scripture' },
         { text: `${recording.series ?? ''} ${recording.place ?? ''}`, weight: 5, name: 'occasion' },
-        { text: recording.summary ?? '', weight: 4, name: 'summary' },
+        { text: recording.summary, weight: 4, name: 'summary' },
         { text: recording.date, weight: 2, name: 'date' },
       ])
       if (score > 0) {

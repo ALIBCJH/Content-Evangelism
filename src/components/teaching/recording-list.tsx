@@ -16,14 +16,18 @@ import { RecordingCard } from '@/components/teaching/recording-card'
  * one closes the last.
  *
  * The rail itself is unchanged from the prophecy archive's — the year
- * prints only where it changes, and a recording whose date is still to be
- * confirmed leaves its marker unlabelled rather than claiming one.
+ * prints only where it changes, so a run of entries from one year reads
+ * as one block instead of repeating itself.
  *
  * It also carries the box that searches the recordings, in the band above
  * them, for the same reason the other two archives do: a reader standing
  * on this shelf should not have to leave it to find what is on it. The
  * conference, the place, the passage and the date are all searchable, not
  * only the title.
+ *
+ * The first card leads at full width. Seven identical cards down a page
+ * say that nothing here matters more than anything else, which is not
+ * true of a shelf whose newest entry is the ministry's central teaching.
  */
 export function RecordingList({
   recordings,
@@ -45,7 +49,7 @@ export function RecordingList({
         { text: recording.series ?? '', weight: 7 },
         { text: recording.scripture ?? '', weight: 7 },
         { text: recording.date, weight: 5 },
-        { text: recording.summary ?? '', weight: 3 },
+        { text: recording.summary, weight: 3 },
       ])
     )
   }, [recordings, query])
@@ -82,13 +86,17 @@ export function RecordingList({
     <DatedRail>
       {shown.map((recording, index) => {
         const previous = shown[index - 1]
-        const first = recording.year !== null && previous?.year !== recording.year
+        const first = previous?.year !== recording.year
         return (
           <DatedRailItem key={recording.id} year={first ? recording.year : null}>
             <RecordingCard
               recording={recording}
               playing={playingId === recording.id}
               onPlay={() => setPlayingId(recording.id)}
+              /* The newest teaching leads, at full width. Not while a
+                 search is running: the first thing a query matched is a
+                 result, not the shelf's headline act. */
+              lead={index === 0 && !query.trim()}
             />
           </DatedRailItem>
         )

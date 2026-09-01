@@ -3,7 +3,7 @@ import { siteUrl } from '@/lib/content'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
 import type { RealRow } from '@/lib/rows'
 import { explain } from '@/lib/search-docs'
-import { teachingHref, teachingRecordings } from '@/lib/teachings'
+import { runtimeInWords, teachingHref, teachingRecordings } from '@/lib/teachings'
 import { headingId } from '@/lib/toc'
 
 /**
@@ -102,11 +102,14 @@ export function allPassages(rows: RealRow[]): Passage[] {
     kind: 'teaching-recording',
     text: trim(
       [
-        recording.summary ?? '',
+        recording.summary,
         recording.scripture ? `Preached from ${recording.scripture}.` : '',
         recording.place ? `At ${recording.place}.` : '',
         recording.series ? `Part of ${recording.series}.` : '',
-        `Recorded ${recording.date}.`,
+        recording.dated === 'published'
+          ? `Published by the ministry on ${recording.date}.`
+          : `Preached ${recording.date}.`,
+        `It runs ${runtimeInWords(recording.seconds)}.`,
       ]
         .filter(Boolean)
         .join(' ')
