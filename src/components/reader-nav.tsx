@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BookOpen, GraduationCap, Info, RadioTower } from 'lucide-react'
 import { useActiveHeading, useContents } from '@/lib/article-contents'
-import { siteInfo } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
 /**
@@ -13,9 +12,9 @@ import { cn } from '@/lib/utils'
  * different thing depending on where the reader is.
  *
  * On the archive and everywhere else it is the sections — where you can
- * go — with a short word underneath about who publishes here, because
- * most people arriving at this site have come from a search result and
- * have never heard of the ministry.
+ * go, and nothing else. About is one of them, and a reader who wants to
+ * know whose teaching this is can take it; the column does not need to
+ * answer the question before it has been asked.
  *
  * Inside a teaching it is the teaching's own chapters. A reader who is
  * already in a piece of writing does not need to be told the site has an
@@ -83,24 +82,6 @@ export function ReaderNav() {
           )
         })}
       </ul>
-
-      {/* Who publishes here, in four lines.
-
-          The rail had three entries and a great deal of nothing under
-          them, and this site's own Search Console says most of the people
-          who see it have never heard of the ministry. A reader who lands
-          on a teaching from a search result and wants to know whose
-          teaching it is should not have to go looking. */}
-      <div className="mt-8 border-t border-rule pt-6 pl-3 pr-1">
-        <p className="kicker text-ink-subtle">About</p>
-        <p className="mt-3 text-[0.8125rem] leading-[1.65] text-ink-700">{siteInfo.summary}</p>
-        <Link
-          href="/about"
-          className="focus-ring kicker mt-3 inline-block text-navy transition-colors hover:text-gold"
-        >
-          More about the ministry →
-        </Link>
-      </div>
     </nav>
   )
 }
