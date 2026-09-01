@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Link from 'next/link'
+import { PublishContents } from '@/components/publish-contents'
 import { ReadingPrompt } from '@/components/reading-prompt'
 import { siteUrl, topicHref, type Category } from '@/lib/content'
 import type { RealRow } from '@/lib/rows'
@@ -159,6 +160,9 @@ export function ArticleLayout({
           The page tracker already counts the visit; this counts where the
           time inside it went. */}
       <SectionTimer path={`/articles/${slug}`} ids={headings.map((heading) => heading.id)} />
+      {/* Hands the chapters to the rail down the left, which belongs to
+          the layout and cannot see them from there. Draws nothing. */}
+      <PublishContents headings={headings} />
 
       <main>
         <ArticleMasthead
@@ -176,7 +180,12 @@ export function ArticleLayout({
             Outside the reading grid because it spans the window, and
             directly after the band because that is the moment it starts
             being an answer rather than a decoration. */}
-        <ChapterBar headings={headings} targetId={READING_TARGET} readMinutes={readMinutes} />
+        {/* Not at `xl`: from there the rail down the left carries the
+            same chapters with more room to say them, and two lists of
+            one teaching's parts on one screen is one list too many. */}
+        <div className="xl:hidden">
+          <ChapterBar headings={headings} targetId={READING_TARGET} readMinutes={readMinutes} />
+        </div>
 
         {/* ── The reading column ─────────────────────────────────── */}
         {/* Three columns where there is room for three: where you are in
