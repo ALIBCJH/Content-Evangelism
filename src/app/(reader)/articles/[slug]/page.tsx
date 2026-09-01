@@ -8,6 +8,7 @@ import {
   siteUrl,
 } from '@/lib/content'
 import { findAuthorOfPiece } from '@/lib/authors'
+import { readLikes } from '@/lib/likes'
 import { getPostedArticle, listPostedArticles } from '@/lib/posted'
 import { listRealRows, relatedRows } from '@/lib/rows'
 import { bodyToPlainText, extractFaqs, wordCount } from '@/lib/article-body'
@@ -77,6 +78,17 @@ export default async function PostedArticlePage({ params }: Params) {
      body, which resolve against the same list. */
   const rows = await listRealRows()
   const related = relatedRows(rows, article.slug, article.category)
+
+  /* What readers have said about this one. Read on the server so the row
+     at the foot opens with a number rather than filling one in after
+     hydration — and, like the counters, a store that cannot be reached
+     simply means no number rather than no page. */
+  let likes = 0
+  try {
+    likes = (await readLikes())[article.slug] ?? 0
+  } catch {
+    /* A teaching with no count on it is a teaching. */
+  }
 
   /* What the rail offers: the archive minus this piece and minus what the
      close of it already carries, newest first. Five, because a rail is
@@ -191,6 +203,7 @@ export default async function PostedArticlePage({ params }: Params) {
         related={related}
         more={more}
         body={article.body}
+        likes={likes}
       >
         <ArticleProse body={article.body} links={links} recommended={related.slice(0, 4)} />
       </ArticleLayout>

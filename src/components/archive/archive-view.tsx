@@ -68,8 +68,14 @@ export async function ArchiveView({
      deployment with no store attached returns nothing and the listing
      simply has no "most read" to offer. */
   const views: Record<string, number> = {}
+  const shares: Record<string, number> = {}
   try {
-    for (const page of await readInsight()) views[page.path] = page.views
+    for (const page of await readInsight()) {
+      views[page.path] = page.views
+      /* The counters are keyed by path; the rows are keyed by slug. */
+      const pressed = page.clicks['share-article']
+      if (pressed) shares[page.path.replace('/articles/', '')] = pressed
+    }
   } catch {
     /* Counters are a nicety here; the archive is not held up for them. */
   }
@@ -173,7 +179,7 @@ export async function ArchiveView({
            the furniture in front of the writing. */
         <div className="reading-front">
           <ArchiveList
-            items={toArchiveItems(rows, views, likes)}
+            items={toArchiveItems(rows, views, likes, shares)}
             header={header}
             quietTitle={quietTitle}
           />
