@@ -1,4 +1,4 @@
-import { parseBody } from '@/lib/article-body'
+import { parseBody, plainInline } from '@/lib/article-body'
 import type { RealRow } from '@/lib/rows'
 
 /**
@@ -53,7 +53,7 @@ export function buildScriptureIndex(rows: RealRow[]): Map<string, Verse> {
     for (const block of parseBody(row.body)) {
       if (block.kind !== 'quote' || !block.cite) continue
       const text = block.inlines
-        .map((inline) => inline.text)
+        .map(plainInline)
         .join('')
         .replace(/\s+/g, ' ')
         .trim()

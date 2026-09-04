@@ -1,5 +1,5 @@
 import { artSizes } from '@/lib/art-sizes'
-import { parseBody, type Block } from '@/lib/article-body'
+import { parseBody, plainInline, type Block } from '@/lib/article-body'
 import { scriptureRefs } from '@/lib/scripture'
 import { dateline } from '@/lib/search-docs'
 import type { RealRow } from '@/lib/rows'
@@ -89,10 +89,7 @@ export function openingLine(body: string | undefined, dek: string): string {
   if (!body) return dek
   const paragraph = parseBody(body).find((block) => block.kind === 'paragraph')
   if (!paragraph || paragraph.kind !== 'paragraph') return dek
-  const text = paragraph.inlines
-    .map((inline) => inline.text)
-    .join('')
-    .trim()
+  const text = paragraph.inlines.map(plainInline).join('').trim()
   return text || dek
 }
 
@@ -111,7 +108,7 @@ export function leadQuote(body: string | undefined): { text: string; cite?: stri
   const quote = parseBody(body).find((block) => block.kind === 'quote')
   if (!quote || quote.kind !== 'quote') return undefined
 
-  const full = quote.inlines.map((inline) => inline.text).join('').trim()
+  const full = quote.inlines.map(plainInline).join('').trim()
   if (!full) return undefined
   if (full.length <= QUOTE_MAX) return { text: full, ...(quote.cite ? { cite: quote.cite } : {}) }
 

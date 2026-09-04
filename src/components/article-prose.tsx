@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { ArticleDiagram } from '@/components/article-diagram'
 import { SharePassage } from '@/components/share-passage'
 import { platedQuotes } from '@/lib/scripture-rhythm'
+import { GlossaryTerm } from '@/components/glossary-term'
 import { RecommendedStories } from '@/components/recommended-stories'
 import type { RealRow } from '@/lib/rows'
 import { parseBody, type CalloutTone, type Inline } from '@/lib/article-body'
@@ -90,6 +91,24 @@ function Inlines({ inlines }: { inlines: Inline[] }) {
               </a>
             )
           }
+          case 'term':
+            return <GlossaryTerm key={index} text={inline.text} entry={inline.entry} />
+          case 'ref':
+            /* A pointer at the Sources list at the foot, set as a
+               reference is set in print. It is a link because the list
+               is a long way down a long page, and the number alone
+               would be a claim the reader cannot act on. */
+            return (
+              <sup key={index} className="ml-px">
+                <a
+                  href="#sources"
+                  className="focus-ring tabular text-[0.7em] text-gold-ink underline decoration-gold/50 underline-offset-2 transition-colors hover:text-gold"
+                >
+                  {inline.n}
+                  <span className="sr-only"> — see Sources</span>
+                </a>
+              </sup>
+            )
           default:
             return <React.Fragment key={index}>{inline.text}</React.Fragment>
         }
