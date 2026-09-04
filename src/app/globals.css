@@ -232,11 +232,42 @@
   --shell: 1460px;
   --measure: 760px;
 
-  /* The article's reading column. Narrower than --measure because it is
-     set in Gentium at 19px, and 34rem is roughly the 65 characters past
-     which the eye starts losing the line return. --measure stays as it
-     was for the pages that are not a long read. */
+  /* The article's reading column. Narrower than --measure because a long
+     read wants a shorter line than a listing does; --measure stays as it
+     was for the pages that are not one.
+
+     34rem is 66 characters in the face this is actually set in —
+     Newsreader at 19.5px, measured off the live page rather than
+     estimated. That is the middle of the 45–75 band and close to where
+     the eye reads fastest, so the line was never the problem it looked
+     like: on a 1900px screen a correct measure still reads as a strip
+     with a void either side of it, because the page around it is empty,
+     not because the column is wrong.
+
+     It steps up on a screen with the room for it, to the top of the band
+     rather than past it. Below 85rem the nav and the apparatus column
+     take what a wider measure would need, and the line stays where it
+     is. */
   --read: 34rem;
+
+  /* The apparatus column. It steps up with the measure — the slack on a
+     wide screen is better spent on the two columns than left as margin
+     either side of them. */
+  --rail: 280px;
+
+  /* Where the step lands, and what it is worth. 37rem is 72 characters —
+     the top of the comfortable band, not past it — and it takes a
+     fourteen-minute teaching from 22.8 screens of scrolling to 21.7.
+     That is one screen in twenty-three: worth having, and worth being
+     honest that the length of a long teaching is the length of the
+     teaching. 39rem was measured too, at 76 characters and 21.4 screens,
+     and buying a third of a screen by pushing the line past the band it
+     should sit in is not a trade this site should make.
+
+     85rem rather than `xl`, and that is arithmetic, not taste. At 1280
+     the shell has 984px inside its margin, and the stepped-up columns
+     want 992. At 1360 there are 1064 and 72px to spare, and it grows from
+     there. */
 
   /* The header plus its gold rule plus air: where every sticky
      sidebar and scroll-margin starts. */
@@ -423,9 +454,17 @@ option {
   color: var(--ink);
 }
 
+/* See --read: the measure steps up where the page has the room for it. */
+@media (min-width: 85rem) {
+  :root {
+    --read: 37rem;
+    --rail: 320px;
+  }
+}
+
 /* ── Layout primitives ────────────────────────────────────────────── */
 
-/* The shell: 1280px wide, 32px of margin, everywhere. */
+/* The shell: --shell wide, 32px of margin, everywhere. */
 .shell {
   width: 100%;
   max-width: var(--shell);

@@ -115,7 +115,7 @@ const READING_TARGET = 'the-teaching'
  * than a void on one.
  */
 const TRACKS =
-  'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_280px] lg:justify-center lg:gap-x-[72px] xl:gap-x-20'
+  'shell grid gap-12 lg:grid-cols-[minmax(0,var(--read))_var(--rail)] lg:justify-center lg:gap-x-[72px] xl:gap-x-20'
 
 export function ArticleLayout({
   slug,
@@ -198,10 +198,11 @@ export function ArticleLayout({
             the teaching on the left, the teaching itself in the middle at
             the measure it should be read at, and what it rests on to the
             right. The reading column is tracked at --read rather than 1fr
-            because 34rem is the measure whatever the screen does; what a
-            wider screen buys is not a longer line but somewhere to put the
-            apparatus, and a column that sits in the middle of the page
-            rather than against its left edge.
+            because the measure is the measure whatever the screen does —
+            it steps once, at 85rem, from 66 characters to 72, and no
+            further. What a wider screen buys is not a longer line but
+            somewhere to put the apparatus, and a column that sits in the
+            middle of the page rather than against its left edge.
 
             One screen down there is room for one rail, and it carries both
             halves stacked. Below that the rails fold into the contents
