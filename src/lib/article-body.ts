@@ -1,3 +1,4 @@
+import { lookUp, type GlossaryEntry } from '@/lib/glossary'
 import { headingId } from '@/lib/toc'
 
 /**
@@ -79,6 +80,16 @@ export type Inline =
   | { kind: 'em'; text: string }
   | { kind: 'strong'; text: string }
   | { kind: 'link'; text: string; href: string }
+  /**
+   * A technical term that explains itself where it stands. `{{Nrf2}}`
+   * looks the word up by its own text; `{{ERK2|mapk}}` points a
+   * different word at the same entry. A term with no entry behind it
+   * falls back to plain text at parse time, so a typo in the body can
+   * never draw a control that does nothing.
+   */
+  | { kind: 'term'; text: string; entry: GlossaryEntry }
+  /** `[^4]` — a superscript reference to the Sources list at the foot. */
+  | { kind: 'ref'; n: number }
 
 export type CalloutTone = 'statement' | 'source' | 'note'
 
@@ -102,7 +113,8 @@ export interface FaqItem {
 
 /* ── Inline ──────────────────────────────────────────────────────── */
 
-const INLINE = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g
+const INLINE =
+  /\{\{([^}|]+)(?:\|([^}]+))?\}\}|\[\^(\d{1,3})\]|\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g
 
 /**
  * Only site-relative paths and http(s)/mailto links are allowed through.
@@ -131,8 +143,18 @@ export function parseInline(text: string): Inline[] {
     const at = match.index
     if (at > cursor) inlines.push({ kind: 'text', text: text.slice(cursor, at) })
 
-    const [raw, linkText, linkHref, strong, star, underscore] = match
-    if (linkText && linkHref) {
+    const [raw, termText, termKey, refN, linkText, linkHref, strong, star, underscore] = match
+    if (termText) {
+      /* Unknown terms become their own words. The body is written by
+         people, and a glossary that silently drops a paragraph because
+         somebody mistyped a key would be worse than no glossary. */
+      const entry = lookUp(termKey ?? termText)
+      inlines.push(
+        entry ? { kind: 'term', text: termText, entry } : { kind: 'text', text: termText }
+      )
+    } else if (refN) {
+      inlines.push({ kind: 'ref', n: Number(refN) })
+    } else if (linkText && linkHref) {
       const href = safeHref(linkHref)
       inlines.push(href ? { kind: 'link', text: linkText, href } : { kind: 'text', text: linkText })
     } else if (strong) {
@@ -328,7 +350,13 @@ export function extractFaqs(body: string | undefined): FaqItem[] {
 
 /* ── Derived values for structured data and feeds ────────────────── */
 
-const inlineText = (inlines: Inline[]): string => inlines.map((i) => i.text).join('')
+/* A reference mark carries no words. It is a pointer at the Sources
+   list, and a bare "4" dropped into the middle of a sentence would end up
+   in the feed, the search haystack and the structured data as if the
+   writer had typed it. */
+export const plainInline = (inline: Inline): string => (inline.kind === 'ref' ? '' : inline.text)
+
+const inlineText = (inlines: Inline[]): string => inlines.map(plainInline).join('')
 
 /** The article as running prose — feeds `articleBody` and `wordCount`. */
 export function bodyToPlainText(body: string): string {
@@ -389,7 +417,7 @@ export function escapeXml(value: string): string {
 function inlineHtml(inlines: Inline[], origin: string): string {
   return inlines
     .map((inline) => {
-      const text = escapeXml(inline.text)
+      const text = escapeXml(plainInline(inline))
       switch (inline.kind) {
         case 'strong':
           return `<strong>${text}</strong>`
