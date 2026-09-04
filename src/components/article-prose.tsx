@@ -503,21 +503,39 @@ export function ArticleProse({
           default: {
             const isFirst = !firstParagraphSeen
             firstParagraphSeen = true
-            /* The opening paragraph is set a size larger and takes the
-               initial. A teaching opens with no picture — the artwork
-               earns its place in a listing, where it is what makes
-               somebody choose the piece, and is a thing to scroll past
-               once they have — so the page still needs somewhere for the
-               eye to start, and the answer a scripture-publishing house
-               has used for five hundred years is the illuminated letter.
-               See `.dropcap`, which withdraws it on a narrow phone. */
+
+            /* ## The answer, marked as the answer
+               Every headline on this site is a question, and the first
+               paragraph of nearly every teaching is the answer to it —
+               written that way, in forty to sixty words, long before
+               anything drew attention to the fact. It was set as running
+               text with an illuminated initial, which is a beautiful
+               thing to do to a paragraph and says nothing about what the
+               paragraph *is*.
+
+               Ruled instead. A reader who arrived from a search result
+               asking "what is the rapture" now gets the answer marked off
+               from the teaching that follows it, in one glance, before
+               deciding whether to read the rest — and a reader who wants
+               only the answer has it and can go. It is still the first
+               `<p>` of the document, which is what a search engine lifts
+               for a snippet, so nothing is traded for the look of it.
+
+               Only when it is genuinely the opening block. A teaching
+               that leads with a panel or a passage has already given the
+               eye somewhere to start, and a second device under it would
+               be two openings. Those keep the initial. */
+            const opensThePiece = isFirst && index === 0
+
             return (
               <p
                 key={index}
                 className={
-                  isFirst
-                    ? 'dropcap font-article text-pretty text-[1.15625rem] leading-[1.68] text-ink sm:text-[1.28125rem]'
-                    : `mt-5 ${RUNNING_TEXT}`
+                  opensThePiece
+                    ? 'opening-answer font-article text-pretty text-[1.1875rem] leading-[1.75] text-navy sm:text-[1.3125rem]'
+                    : isFirst
+                      ? 'dropcap font-article text-pretty text-[1.15625rem] leading-[1.68] text-ink sm:text-[1.28125rem]'
+                      : `mt-5 ${RUNNING_TEXT}`
                 }
               >
                 <Inlines inlines={block.inlines} />
