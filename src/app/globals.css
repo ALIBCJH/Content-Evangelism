@@ -867,6 +867,30 @@ option {
   margin-block-start: 0.06em;
   color: var(--gold-ink);
 }
+/* The answer to the headline's question, marked off from the teaching
+   that follows it.
+
+   No fill, because a filled panel is what this site's quoted Scripture
+   already is, and the two would compete at the top of every page. A rule
+   down the side and a step in from the measure is enough to say "this is
+   the answer" — the same thing a pull-quote does, in the opposite
+   direction. Set in the reading serif at the headline's ink, a size above
+   the running text.
+
+   It is a border on the paragraph rather than a wrapper around it so that
+   the paragraph stays the first element of the document, which is what a
+   search engine reads for a snippet. */
+.opening-answer {
+  border-inline-start: 3px solid var(--gold);
+  padding-inline-start: 1.5rem;
+  padding-block: 0.2rem;
+}
+@media (max-width: 24rem) {
+  .opening-answer {
+    padding-inline-start: 1.1rem;
+  }
+}
+
 /* Not on a narrow phone. At 360px a three-line initial takes a third of
    the measure and the four lines beside it break to two or three words
    each, which is harder to read than the plain paragraph it replaced. */

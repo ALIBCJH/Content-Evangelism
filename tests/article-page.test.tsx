@@ -165,14 +165,44 @@ const BODY = [
   'A third.',
 ].join('\n')
 
+/* A teaching that opens on a panel rather than on its own answer. The
+   panel has already given the eye somewhere to start. */
+const OPENS_ON_A_PANEL = [
+  ':: note If you are afraid you have done it',
+  ':: The fear itself is the evidence that you have not.',
+  '',
+  'The opening sentence of the teaching, which takes the initial.',
+  '',
+  '## Does suffering mean that God is not good?',
+  '',
+  'A second paragraph, which does not.',
+].join('\n')
+
 describe('the opening of a teaching', () => {
+  /* Every headline here is a question and the first paragraph is the
+     answer to it. Marking it off is the whole point: a reader who came
+     from a search result gets the answer before deciding whether to read
+     the teaching under it. */
+  it('sets the answer off with a rule, and only the opening paragraph', () => {
+    const html = renderToStaticMarkup(<ArticleProse body={BODY} />)
+    expect(html.match(/opening-answer/g) ?? []).toHaveLength(1)
+    expect(html.indexOf('opening-answer')).toBeLessThan(html.indexOf('A second paragraph'))
+  })
+
+  it('leaves the answer first in the document, where a snippet is read from', () => {
+    const html = renderToStaticMarkup(<ArticleProse body={BODY} />)
+    /* Ruled by a border on the paragraph, not wrapped in anything. */
+    expect(html).toMatch(/<div class="chapter-run"><p class="opening-answer/)
+  })
+
   /* The artwork earns its place in a listing, where it is what makes
      somebody choose the piece, and is a thing to scroll past once they
-     have. The page still needs somewhere for the eye to start. */
-  it('takes an illuminated initial, and only on the first paragraph', () => {
-    const html = renderToStaticMarkup(<ArticleProse body={BODY} />)
+     have. Where a teaching opens on its answer the rule is what starts
+     the eye; where it opens on something else, the initial still is. */
+  it('keeps the illuminated initial where the teaching opens on a panel', () => {
+    const html = renderToStaticMarkup(<ArticleProse body={OPENS_ON_A_PANEL} />)
+    expect(html).not.toContain('opening-answer')
     expect(html.match(/dropcap/g) ?? []).toHaveLength(1)
-    expect(html.indexOf('dropcap')).toBeLessThan(html.indexOf('A second paragraph'))
   })
 
   /* Counted in CSS rather than passed in as a prop, because the count is
