@@ -58,8 +58,10 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  */
 export function PieceRow({ item, priority = false }: { item: ArchiveItem; priority?: boolean }) {
   return (
-    <article className="group relative border-b border-rule py-5 last:border-b-0 xl:py-7">
-      <div className="flex items-start justify-between gap-4 sm:gap-6 xl:gap-10">
+    <article className="group relative border-b border-rule py-6 last:border-b-0 sm:py-5 xl:py-7">
+      {/* A card on a phone, a row from `sm` up. See the note on the
+          picture below for why the shape changes at all. */}
+      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 xl:gap-10">
         <div className="min-w-0 flex-1">
           {/* No section label. It stood here as a gold kicker and said
               "Teachings" on eight of fourteen rows, which is a word that
@@ -92,7 +94,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               `.reading-front` and the rule now drawn under every one,
               the headline is the loudest thing on the row, which is what
               a listing is for. */}
-          <h3 className="text-pretty font-article text-[1.1875rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy sm:text-[1.3125rem] xl:text-[1.5rem] xl:leading-[1.22] xl:tracking-[-0.012em]">
+          <h3 className="text-pretty font-article text-[1.3125rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy xl:text-[1.5rem] xl:leading-[1.22] xl:tracking-[-0.012em]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place. */}
@@ -172,9 +174,27 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
         {/* 16:10 at every size, and that is not a coincidence: every
             landscape crop in `public/images/articles` is cut to 16:10, so
             a row shows the whole of the picture somebody framed rather
-            than a taller slice with the ends taken off. */}
+            than a taller slice with the ends taken off.
+
+            ## Full width on a phone, and above the headline
+
+            A 120px thumbnail beside a headline is the right answer on a
+            screen with two columns of room. On a phone it is a stamp:
+            too small to be seen, and it takes a fifth of the only line
+            the headline has. The picture goes to the top and runs the
+            whole width of the display, which is what a phone is — one
+            column, held close, scrolled with a thumb.
+
+            `-mx-5` is the shell's own margin at this width, cancelled:
+            the picture reaches both edges of the screen while the words
+            stay on the measure. From `sm` the margin comes back and the
+            row is exactly what it was.
+
+            `order-first` rather than reordering the markup, so the
+            headline stays the first thing in the document — the picture
+            is `alt=""` and a screen reader passes straight over it. */}
         <span
-          className="relative aspect-[16/10] w-[7.5rem] shrink-0 overflow-hidden rounded-md bg-surface-2 sm:w-[9.5rem] xl:w-[12.5rem]"
+          className="relative -mx-5 order-first block aspect-[16/10] shrink-0 overflow-hidden bg-surface-2 sm:mx-0 sm:order-none sm:w-[9.5rem] sm:rounded-md xl:w-[12.5rem]"
           style={{ containerType: 'inline-size' }}
         >
           {item.thumbnail ? (
@@ -183,7 +203,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               alt=""
               fill
               priority={priority}
-              sizes="(max-width: 640px) 120px, (max-width: 1279px) 152px, 200px"
+              sizes="(max-width: 639px) 100vw, (max-width: 1279px) 152px, 200px"
               className="object-cover"
             />
           ) : (
