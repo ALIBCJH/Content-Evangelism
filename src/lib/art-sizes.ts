@@ -27,6 +27,8 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/importance-of-repentance.webp': [1288, 767],
   '/images/articles/owuor-faa-laboratory.webp': [1400, 1120],
   '/images/articles/owuor-faa-staff.webp': [1400, 933],
+  '/images/articles/owuor-grand-reception.webp': [1471, 720],
+  '/images/articles/owuor-pastors-conference.webp': [1251, 848],
   '/images/articles/praying-the-hours.jpg': [960, 640],
   '/images/articles/prophet-owuor-fiji-wide.webp': [1228, 768],
   '/images/articles/prophet-owuor-fiji.webp': [1100, 1301],
