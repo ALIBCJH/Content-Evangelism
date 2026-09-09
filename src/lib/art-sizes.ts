@@ -35,7 +35,7 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/requirements-to-enter-heaven.webp': [1200, 630],
   '/images/articles/shepherds-and-platforms.jpg': [1600, 1067],
   '/images/articles/testimony-nairobi-nights.jpg': [1024, 683],
-  '/images/articles/unforgivable-sin-wide.webp': [648, 406],
+  '/images/articles/unforgivable-sin-wide.webp': [1193, 746],
   '/images/articles/unforgivable-sin.webp': [1024, 1536],
   '/images/articles/watchmen-not-alarmists.jpg': [1024, 676],
   '/images/articles/wells-our-fathers-dug.jpg': [1600, 900],
