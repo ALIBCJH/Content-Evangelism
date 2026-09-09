@@ -29,7 +29,7 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/prophetic-timeline.webp': [1516, 998],
   '/images/articles/rapture-of-the-church-wide.webp': [1229, 768],
   '/images/articles/rapture-of-the-church.webp': [1024, 1536],
-  '/images/articles/repentance-and-holiness-wide.webp': [1228, 768],
+  '/images/articles/repentance-and-holiness-wide.webp': [1144, 715],
   '/images/articles/repentance-and-holiness.webp': [1376, 768],
   '/images/articles/requirements-to-enter-heaven-wide.webp': [1229, 768],
   '/images/articles/requirements-to-enter-heaven.webp': [1200, 630],
@@ -39,6 +39,6 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/unforgivable-sin.webp': [1024, 1536],
   '/images/articles/watchmen-not-alarmists.jpg': [1024, 676],
   '/images/articles/wells-our-fathers-dug.jpg': [1600, 900],
-  '/images/articles/why-jesus-died-on-the-cross-wide.webp': [896, 560],
+  '/images/articles/why-jesus-died-on-the-cross-wide.webp': [1264, 790],
   '/images/articles/why-jesus-died-on-the-cross.webp': [1536, 1024],
 }
