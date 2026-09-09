@@ -165,8 +165,8 @@ export function recommendAfter(blocks: ReturnType<typeof parseBody>): number | n
   return headings[Math.floor(headings.length / 2)]
 }
 
-/** The measure a figure sits in at the widest, 34rem, in pixels. */
-const COLUMN = 544
+/** The measure a figure sits in at the widest — 37rem since #202, in pixels. */
+const COLUMN = 592
 
 export function ArticleProse({
   body,
@@ -459,11 +459,18 @@ export function ArticleProse({
                      set of sizes that stop short of the box. It then
                      fetches 233px for a 273px frame and the picture is
                      upscaled by the browser after all the trouble taken
-                     not to upscale it. `COLUMN` is that 34rem in pixels. */
+                     not to upscale it. `COLUMN` is that measure in pixels.
+
+                     It steps, and this has to step with it: #202 took
+                     the reading column from 34rem to 37rem at 85rem, and
+                     this string went on saying 34rem — so a figure at
+                     the full measure was fetched for 544px and stretched
+                     across 592 by the browser, which is the exact fault
+                     the paragraph above is about. */
                   sizes={
                     block.width && block.width <= COLUMN
                       ? `${block.width}px`
-                      : '(min-width: 1280px) 34rem, (min-width: 640px) 90vw, 100vw'
+                      : '(min-width: 85rem) 37rem, (min-width: 1280px) 34rem, (min-width: 640px) 90vw, 100vw'
                   }
                   className="h-auto w-full"
                 />
