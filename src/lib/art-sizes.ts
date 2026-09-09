@@ -8,8 +8,8 @@
 export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/anatomy-of-a-blessing.jpg': [1024, 683],
   '/images/articles/bread-in-the-wilderness.jpg': [960, 640],
-  '/images/articles/christ-is-coming-wide.webp': [896, 560],
-  '/images/articles/christ-is-coming.webp': [896, 1200],
+  '/images/articles/christ-is-coming-wide.webp': [937, 586],
+  '/images/articles/christ-is-coming.webp': [937, 1136],
   '/images/articles/christian-dress-man.webp': [275, 757],
   '/images/articles/christian-dress-ministry.webp': [367, 615],
   '/images/articles/creeds-still-speak.jpg': [1024, 729],
