@@ -43,4 +43,6 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/wells-our-fathers-dug.jpg': [1600, 900],
   '/images/articles/why-jesus-died-on-the-cross-wide.webp': [1264, 790],
   '/images/articles/why-jesus-died-on-the-cross.webp': [1536, 1024],
+  '/images/articles/worship-with-us-wide.webp': [1177, 736],
+  '/images/articles/worship-with-us.webp': [1177, 912],
 }
