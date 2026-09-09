@@ -97,8 +97,28 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
           <h3 className="text-pretty font-article text-[1.3125rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy xl:text-[1.5rem] xl:leading-[1.22] xl:tracking-[-0.012em]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
-                  under it is not a second link to the same place. */}
-              <span aria-hidden className="absolute inset-0" />
+                  under it is not a second link to the same place.
+
+                  ## Two things this had wrong, both invisible in the markup
+
+                  `z-10`, because the picture was on top of it. Both are
+                  positioned, and the picture comes later in the document
+                  — it is only *visually* first, by `order-first` — so it
+                  painted over this and swallowed every press. On a phone
+                  that is 244 pixels of a 415-pixel card: more than half
+                  the thing, and the half a thumb goes for. Measured on
+                  the live site, a tap on the picture landed on the `img`
+                  and did nothing at all.
+
+                  `-inset-x-5`, because the picture bleeds to both edges
+                  of the screen and this did not follow it. The twenty
+                  pixels either side were picture that was not a link.
+                  Both come back to nothing at `sm`, where the picture is
+                  a thumbnail inside the margin again. */}
+              <span
+                aria-hidden
+                className="absolute -inset-x-5 inset-y-0 z-10 transition-colors active:bg-navy/[0.045] sm:inset-x-0"
+              />
               {/* Drawn rather than swept: on a phone there is no pointer
                   to reveal a hover underline, so without this the archive
                   is a column of bold navy text with nothing saying any of
