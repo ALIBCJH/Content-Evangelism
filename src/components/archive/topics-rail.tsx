@@ -83,34 +83,6 @@ export function TopicsRail({
       </div>
       </div>
 
-      {/* The prophetic timeline of God.
-
-          Empty on purpose. The heading is here and the records are not,
-          because the ministry is still writing what belongs under it —
-          and a heading standing over nothing is the honest way to hold a
-          place open. It is not a bug and should not be "fixed" by
-          filling it with something else that happens to be to hand;
-          `timelineAlerts` in `lib/prophecies.ts` is the projection that
-          was drawing the prophecy archive here, kept ready for the day
-          this section has its own content.
-
-          Set the way the ministry's own headings are set — the display
-          face, navy, with the gold bar under it — rather than as another
-          grey kicker like Topics above. The two are not the same kind of
-          thing: one labels a filter, the other names what the ministry
-          is watching, and it should look like the more important of the
-          two even while it is empty. */}
-      <Divider />
-      <section aria-labelledby="prophetic-timeline">
-        <h2
-          id="prophetic-timeline"
-          className="text-pretty font-display text-[1.375rem] font-semibold leading-[1.15] tracking-[-0.012em] text-navy"
-        >
-          The prophetic timeline of God
-        </h2>
-        <span aria-hidden className="mt-3.5 block h-[3px] w-12 rounded-full bg-gold" />
-      </section>
-
       {speech.piece && (
         /* Below lg this is at the bottom of the page and the fixed bar
            carries it instead — see audio-bar.tsx. */
