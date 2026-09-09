@@ -14,7 +14,7 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/discipline-of-waiting.jpg': [1024, 683],
   '/images/articles/dress-code-headscarves.jpg': [1635, 962],
   '/images/articles/dress-code-portrait.jpg': [526, 701],
-  '/images/articles/holiness-puzzle.webp': [992, 558],
+  '/images/articles/holiness-puzzle.webp': [1197, 748],
   '/images/articles/hope-is-a-discipline.jpg': [1024, 678],
   '/images/articles/how-christians-dress-wide.webp': [1228, 768],
   '/images/articles/how-christians-dress.webp': [1376, 768],
