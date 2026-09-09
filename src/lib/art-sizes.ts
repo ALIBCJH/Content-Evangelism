@@ -13,6 +13,7 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/christian-dress-man.webp': [275, 757],
   '/images/articles/christian-dress-ministry.webp': [367, 615],
   '/images/articles/creeds-still-speak.jpg': [1024, 729],
+  '/images/articles/daniels-seventy-weeks.webp': [1389, 768],
   '/images/articles/discipline-of-waiting.jpg': [1024, 683],
   '/images/articles/dress-code-headscarves.jpg': [1635, 962],
   '/images/articles/dress-code-portrait.jpg': [526, 701],
