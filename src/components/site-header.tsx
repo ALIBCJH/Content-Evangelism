@@ -4,7 +4,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bookmark, BookOpen, GraduationCap, Info, RadioTower, Search, X } from 'lucide-react'
+import { BookOpen, Bookmark, GraduationCap, Info, Newspaper, RadioTower, Search, X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { navSections, siteInfo } from '@/lib/content'
@@ -61,6 +61,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
  */
 const SECTION_ICON: Record<string, typeof BookOpen> = {
   '/': BookOpen,
+  '/magazine': Newspaper,
   '/prophecies': RadioTower,
   '/teachings': GraduationCap,
   '/about': Info,

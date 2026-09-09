@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, GraduationCap, Info, RadioTower } from 'lucide-react'
+import { BookOpen, GraduationCap, Info, Newspaper, RadioTower } from 'lucide-react'
 import { useActiveHeading, useContents } from '@/lib/article-contents'
 import { cn } from '@/lib/utils'
 
@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils'
 
 const SECTIONS = [
   { label: 'Articles', href: '/', icon: BookOpen },
+  { label: 'Magazine', href: '/magazine', icon: Newspaper },
   { label: 'Teachings', href: '/teachings', icon: GraduationCap },
   { label: 'Prophecies', href: '/prophecies', icon: RadioTower },
   { label: 'About', href: '/about', icon: Info },

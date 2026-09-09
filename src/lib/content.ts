@@ -150,6 +150,14 @@ export const navSections: NavSection[] = [
     ],
   },
   {
+    /* No `items`: neither the bar nor the sheet draws them, and inventing
+       seven headings for a magazine nobody has written yet would be
+       putting words in the ministry's mouth. */
+    label: 'Magazine',
+    href: '/magazine',
+    items: [],
+  },
+  {
     label: 'Prophecy Archive',
     href: '/prophecies',
     items: [
