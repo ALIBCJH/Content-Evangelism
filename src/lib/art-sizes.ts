@@ -31,7 +31,7 @@ export const artSizes: Record<string, readonly [number, number]> = {
   '/images/articles/rapture-of-the-church.webp': [1024, 1536],
   '/images/articles/repentance-and-holiness-wide.webp': [1228, 768],
   '/images/articles/repentance-and-holiness.webp': [1376, 768],
-  '/images/articles/requirements-to-enter-heaven-wide.webp': [1008, 630],
+  '/images/articles/requirements-to-enter-heaven-wide.webp': [1229, 768],
   '/images/articles/requirements-to-enter-heaven.webp': [1200, 630],
   '/images/articles/shepherds-and-platforms.jpg': [1600, 1067],
   '/images/articles/testimony-nairobi-nights.jpg': [1024, 683],
