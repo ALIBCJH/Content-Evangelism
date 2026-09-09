@@ -1,6 +1,8 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import type { Heading } from '@/lib/toc'
 import { minutesLeft, progressThrough, showsTimeLeft } from '@/components/progress-bar'
 
@@ -92,9 +94,11 @@ export function ChapterBar({
     }
   }, [headings, targetId])
 
-  /* A teaching with one chapter has no chapters. The strip would then be
-     a minutes-left counter with a decorative number beside it. */
-  if (headings.length < 2) return null
+  /* A teaching with one chapter has no chapters, so the strip carries no
+     chapter — but it still carries the way out, and that is not
+     conditional on anything. A control a reader can only find on some
+     pages is not a control they can find. */
+  const chapters = headings.length >= 2
 
   /* Before a reader has scrolled, the chapter they are in is the first
      one. Not "none": a strip that opened blank and filled itself in on
@@ -102,8 +106,36 @@ export function ChapterBar({
   const shownIndex = Math.max(activeIndex, 0)
 
   return (
-    <div className="sticky top-[72px] z-40 border-b border-rule bg-raised/95 backdrop-blur">
-      <details ref={list} className="group">
+    <div className="sticky top-[72px] z-40 border-b border-rule bg-raised/95 backdrop-blur xl:hidden">
+      {/* The way back out of a teaching.
+
+          There was none. The masthead dropped it deliberately — a gold
+          button in the top right competed with the headline and offered a
+          reader who had just arrived a way to leave — and the reasoning
+          was right about the *masthead*, which scrolls away. It left a
+          reader four thousand pixels into a teaching on a phone with the
+          browser's own back button and nothing else; the site's wordmark
+          goes to the archive but says nothing about it.
+
+          Here it travels with them, which is the whole point of a strip
+          that travels with them. Set as the apparatus, not as a button:
+          it is a way out, and it should be there without asking to be
+          used. */}
+      <div className="shell">
+        <div className="article-measure flex items-center">
+          <Link
+            href="/"
+            data-track="back-to-archive"
+            className="focus-ring -ml-1 flex items-center gap-1.5 rounded-md py-2 pl-1 pr-2 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-500 transition-colors hover:text-gold"
+          >
+            <ArrowLeft aria-hidden className="h-[0.9rem] w-[0.9rem] shrink-0" strokeWidth={2} />
+            All articles
+          </Link>
+        </div>
+      </div>
+
+      {chapters && (
+      <details ref={list} className="group border-t border-rule-soft">
         {/* The summary is the whole strip, and it is the first child of
             the details — anything between the two and the browser stops
             treating it as the disclosure and draws its own "Details"
@@ -189,6 +221,7 @@ export function ChapterBar({
           </ol>
         </nav>
       </details>
+      )}
     </div>
   )
 }
