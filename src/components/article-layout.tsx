@@ -189,9 +189,16 @@ export function ArticleLayout({
         {/* Not at `xl`: from there the rail down the left carries the
             same chapters with more room to say them, and two lists of
             one teaching's parts on one screen is one list too many. */}
-        <div className="xl:hidden">
-          <ChapterBar headings={headings} targetId={READING_TARGET} readMinutes={readMinutes} />
-        </div>
+        {/* No wrapper. There was a `<div className="xl:hidden">` here, and
+            it shrink-wrapped the strip: a sticky element sticks inside its
+            parent's box and nowhere else, so a 40px-tall parent bought it
+            forty pixels of stickiness and then let it scroll away with
+            everything else. The strip has therefore never once travelled
+            with a reader, on any screen, since it was written — measured
+            on the live site, where its top runs to -2033 at a scroll of
+            2500. The class moves on to the strip itself and its parent
+            becomes `<main>`, which is the whole teaching. */}
+        <ChapterBar headings={headings} targetId={READING_TARGET} readMinutes={readMinutes} />
 
         {/* ── The reading column ─────────────────────────────────── */}
         {/* Three columns where there is room for three: where you are in

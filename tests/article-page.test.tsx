@@ -109,17 +109,40 @@ describe('the chapter strip', () => {
     expect(html).toContain('Does suffering have a purpose?')
   })
 
-  /* A teaching with one chapter has no chapters, and the strip would be a
-     minutes-left counter with a decorative number beside it. */
-  it('is absent from a teaching that has no chapters', () => {
-    expect(
-      renderToStaticMarkup(<ChapterBar headings={[]} targetId="the-teaching" readMinutes={4} />)
-    ).toBe('')
-    expect(
-      renderToStaticMarkup(
-        <ChapterBar headings={headings.slice(0, 1)} targetId="the-teaching" readMinutes={4} />
+  /* A teaching with one chapter has no chapters, so the strip carries no
+     chapter — it used to render nothing at all, and now it still carries
+     the way out. A control a reader can only find on some pages is not a
+     control they can find. */
+  it('drops the chapter list from a teaching that has no chapters', () => {
+    for (const only of [[], headings.slice(0, 1)]) {
+      const html = renderToStaticMarkup(
+        <ChapterBar headings={only} targetId="the-teaching" readMinutes={4} />
       )
-    ).toBe('')
+      expect(html).not.toContain('<details')
+      expect(html).not.toContain('Every chapter')
+      expect(html).toContain('All articles')
+    }
+  })
+
+  /* The strip sticks inside its parent's box and nowhere else. It spent
+     its whole life inside a wrapper the height of itself, which bought it
+     forty pixels of stickiness — so it has to stay a direct child of the
+     element that spans the teaching, and it carries its own `xl:hidden`
+     rather than borrowing a wrapper's. */
+  it('is the thing that is hidden at xl, not a wrapper around it', () => {
+    const html = renderToStaticMarkup(
+      <ChapterBar headings={headings} targetId="the-teaching" readMinutes={4} />
+    )
+    expect(html.slice(0, 200)).toContain('sticky')
+    expect(html.slice(0, 200)).toContain('xl:hidden')
+  })
+
+  it('offers the way back to the archive while the reader is in a teaching', () => {
+    const html = renderToStaticMarkup(
+      <ChapterBar headings={headings} targetId="the-teaching" readMinutes={4} />
+    )
+    expect(html).toContain('href="/"')
+    expect(html).toContain('All articles')
   })
 
   /* The one thing the contents card it replaces got right. A chapter

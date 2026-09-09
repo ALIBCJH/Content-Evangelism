@@ -111,23 +111,28 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               not repeated here; what is left is when it was published and
               what it will cost to read, which is what a reader deciding
               between two teachings actually weighs. */}
-          {/* The standfirst, from `xl` and clamped to two lines.
+          {/* The teaching's own opening, clamped to two lines.
 
-              It is what turns a column of headlines into something a
-              reader can choose between: the headline says what the
-              teaching is called, this says what it answers. Two lines
-              because the full standfirst runs to four, and four lines on
-              every row of a fifteen-row column is a page of standfirsts
-              with headlines in it.
+              This was the standfirst, and only from `xl`. Two changes,
+              and they are the same change: a reader deciding whether to
+              open something wants a taste of the thing, not a summary of
+              it — and they want it on the screen they are actually
+              holding.
 
-              `xl` only, and deliberately: below that the rows are what
-              they were this morning, and a phone is a separate decision
-              from this one rather than a consequence of it. It is
-              already on every item for the search to score, so drawing
-              it costs the page nothing it was not already sending. */}
-          {item.dek && (
-            <p className="mt-2.5 hidden font-reading text-[1rem] leading-[1.55] text-ink-700 xl:line-clamp-2">
-              {item.dek}
+              The opening is the better taste because of how these are
+              written. Every headline here is a question and the first
+              paragraph is the answer to it, so the two lines under the
+              headline are the beginning of the answer, breaking off
+              exactly where a reader has to open the teaching to get the
+              rest. A standfirst says what the piece is about; this is
+              the piece. See `openingLine`.
+
+              Two lines, because the opening runs to five or six and six
+              lines under every headline in a ten-row column is a page of
+              openings with headlines in it. */}
+          {item.excerpt && (
+            <p className="mt-2 font-reading text-[0.9375rem] leading-[1.55] text-ink-700 line-clamp-2 xl:mt-2.5 xl:text-[1rem]">
+              {item.excerpt}
             </p>
           )}
 
