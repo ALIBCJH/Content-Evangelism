@@ -80,6 +80,34 @@ describe('the archive row on a phone', () => {
     expect(html).toContain('aspect-[16/10]')
   })
 
+  /* The card is one target, and the picture is more than half of it.
+     Both the overlay and the picture are positioned, and the picture comes
+     later in the document — it is only visually first, by `order-first` —
+     so without a z-index it paints over the link and swallows every press.
+     That was live, and measured: a tap on the picture landed on the `img`.
+     The bleed matters for the same reason: the picture runs to both edges
+     of the screen and the overlay has to follow it there. */
+  it('is pressable across the whole of itself, picture and bleed included', () => {
+    const html = renderToStaticMarkup(<PieceRow item={item()} />)
+    const overlay = html.match(/<span aria-hidden="true" class="(absolute[^"]*)"/)?.[1] ?? ''
+    expect(overlay, 'the stretched link overlay').toContain('z-10')
+    expect(overlay).toContain('-inset-x-5')
+    expect(overlay).toContain('inset-y-0')
+    /* And back inside the margin from `sm`, where the picture is a
+       thumbnail rather than a bleed. */
+    expect(overlay).toContain('sm:inset-x-0')
+  })
+
+  /* Nothing else in the row is interactive — the heart and the share mark
+     are counts, not controls — so an overlay across the whole card takes
+     no press away from anything. If a real control is ever added to a row,
+     this breaks and should. */
+  it('covers nothing a reader could otherwise press', () => {
+    const html = renderToStaticMarkup(<PieceRow item={item({ likes: 3, shares: 2 })} />)
+    expect(html).not.toContain('<button')
+    expect(html.match(/<a /g) ?? []).toHaveLength(1)
+  })
+
   it('still draws the section field where a teaching has no picture', () => {
     const html = renderToStaticMarkup(<PieceRow item={item({ thumbnail: undefined })} />)
     expect(html).not.toContain('<img')
