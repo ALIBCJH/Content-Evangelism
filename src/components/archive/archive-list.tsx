@@ -318,26 +318,20 @@ export function ArchiveList({
                 One column because the archive is a chronology, and a
                 chronology poured down two columns is read in the wrong
                 order by anybody who reads it across. */}
-              {/* One column on a phone, two from `sm`.
+              {/* One card to a row, at every width.
 
-                  Equal cards, two across — not the lead-and-column that
-                  was here once, which was a newspaper front telling the
-                  reader which piece mattered most. Every card is the same
-                  size and the reader decides.
+                  It was two across from `sm` (#224). The ministry asked
+                  to try one to a row instead, and this is that: the same
+                  picture-on-top card, the width of the column.
 
-                  The objection written above — that a chronology poured
-                  down two columns is read in the wrong order by anybody
-                  who reads it across — is about CSS columns, which fill
-                  the left column top to bottom before starting the right.
-                  A grid does the opposite: it fills across and then down,
-                  so the newest teaching is top left, the next is beside
-                  it, and a reader going row by row reads them in the
-                  order they were published. That is why this is `grid`
-                  and must never become `columns`.
-
-                  See `PieceRow` for why two and not one: it was measured
-                  at every width before it was built. */}
-              <div className="sm:grid sm:grid-cols-2 sm:gap-x-7 sm:gap-y-11">
+                  It stays a `grid` — one column of one — rather than
+                  going back to a plain stack, so the gap between cards
+                  is the grid's and two across is a single class away if
+                  it is wanted back. If it is, it must stay `grid` and
+                  never become CSS `columns`: columns fill the left side
+                  top to bottom first, which reads a chronology in the
+                  wrong order; a grid fills across, newest first. */}
+              <div className="sm:grid sm:gap-y-14">
                 {rows.map((item, index) => (
                   /* Only the first card is above the fold, so it is the
                      one the browser fetches first rather than lazily. */
