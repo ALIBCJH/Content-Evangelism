@@ -318,21 +318,32 @@ export function ArchiveList({
                 One column because the archive is a chronology, and a
                 chronology poured down two columns is read in the wrong
                 order by anybody who reads it across. */}
-              {/* One column at every width.
+              {/* One column on a phone, two from `sm`.
 
-                  It was two from `xl` — a lead drawn large with a
-                  most-read card under it, and the rest of the archive in
-                  a column beside them. That is a newspaper front, and a
-                  feed is a different thing: one column of equal items,
-                  where the reader decides what is worth their time
-                  rather than being told which piece matters most. What
-                  `xl` changes now is the room, not the shape. */}
-              {rows.map((item, index) => (
-                /* The first row is the only picture above the fold, so
-                   it is the one the browser is told to fetch first
-                   rather than to lazy-load. */
-                <PieceRow key={item.slug} item={item} priority={index === 0} />
-              ))}
+                  Equal cards, two across — not the lead-and-column that
+                  was here once, which was a newspaper front telling the
+                  reader which piece mattered most. Every card is the same
+                  size and the reader decides.
+
+                  The objection written above — that a chronology poured
+                  down two columns is read in the wrong order by anybody
+                  who reads it across — is about CSS columns, which fill
+                  the left column top to bottom before starting the right.
+                  A grid does the opposite: it fills across and then down,
+                  so the newest teaching is top left, the next is beside
+                  it, and a reader going row by row reads them in the
+                  order they were published. That is why this is `grid`
+                  and must never become `columns`.
+
+                  See `PieceRow` for why two and not one: it was measured
+                  at every width before it was built. */}
+              <div className="sm:grid sm:grid-cols-2 sm:gap-x-7 sm:gap-y-11">
+                {rows.map((item, index) => (
+                  /* Only the first card is above the fold, so it is the
+                     one the browser fetches first rather than lazily. */
+                  <PieceRow key={item.slug} item={item} priority={index === 0} />
+                ))}
+              </div>
             </>
           )}
         </div>

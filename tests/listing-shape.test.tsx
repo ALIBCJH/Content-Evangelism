@@ -5,8 +5,11 @@ import type { ArchiveItem } from '@/lib/archive-items'
 import type { Category } from '@/lib/content'
 
 /**
- * The archive row is two shapes, and which one it is depends on the
- * screen.
+ * The archive card: the full width of a phone, and two across from `sm`
+ * (the grid itself is `archive-list`'s). Picture on top at every width.
+ *
+ * What follows was first written for a card on a phone and a row above
+ * it, and the phone half of it still holds exactly.
  *
  * On a phone it is a card: the picture across the full width of the
  * display with the headline under it. A 120px thumbnail beside a headline
@@ -45,13 +48,19 @@ const item = (over: Partial<ArchiveItem> = {}): ArchiveItem =>
 describe('the archive row on a phone', () => {
   it('stacks, with the picture above the headline', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
-    /* Column on a phone, row from `sm`. */
     expect(html).toContain('flex flex-col')
-    expect(html).toContain('sm:flex-row')
     /* The picture is painted first without leaving the headline second
        in the document — it is alt="" and a reader passes over it. */
     expect(html).toContain('order-first')
-    expect(html).toContain('sm:order-none')
+  })
+
+  /* It is a card at every width now, not a card on a phone and a row
+     from `sm`. The two classes that turned it back into a row are gone,
+     and if either returns the desktop listing is a row again. */
+  it('keeps the picture on top at every width', () => {
+    const html = renderToStaticMarkup(<PieceRow item={item()} />)
+    expect(html).not.toContain('sm:flex-row')
+    expect(html).not.toContain('sm:order-none')
   })
 
   it('reaches both edges of the display, and only there', () => {
