@@ -41,16 +41,26 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * rather than to its category precisely so that a column of them reads as
  * fourteen different things. See `paletteFor`.
  *
- * ## One row, at every width
+ * ## Picture on top, at every width
  *
- * There was a lead here — one row drawn large at `xl`, picture above
- * headline, with a most-read card under it and the rest of the archive
- * in a second column beside them. That is a newspaper front, and it is
- * not what was asked for: a feed is one column of equal things, and the
- * reader decides which is worth their time rather than being told. So
- * the row is the whole design again, and the only thing `xl` changes is
- * that there is more room to say it in — a larger headline, the
- * standfirst under it, and a picture at the size a picture can be seen.
+ * It was a row from `sm` up — headline on the left, a 200-pixel picture
+ * on the right — and a card only on a phone. It is a card everywhere
+ * now: picture, headline, the opening, the facts. On a phone one card is
+ * the width of the screen; from `sm` the cards stand two across, in the
+ * grid `archive-list` lays them out in.
+ *
+ * Two across and not one, and that was measured rather than chosen.
+ * One column of picture-on-top cards at 1440 is 641 pixels a card, 1.4
+ * teachings a screen and a listing 8,300 pixels long — and it cannot be
+ * sharp, because a 786-pixel picture on a retina screen wants 1,572 of
+ * source and the largest crop here is 1,468. Two across is 386 pixels a
+ * card and 4.7 teachings a screen, which is exactly what the row gave,
+ * and every picture clears twice its box.
+ *
+ * What made it possible is the pictures. When this was a row, most of
+ * the archive had a generated colour field and no photograph, and a grid
+ * of colour fields reads as an empty page. Every teaching has artwork
+ * now, and a desktop version drawn for this size — see `Thumbnail`.
  *
  * `canLead` and `pickLead` are left where they are, unused. They cost
  * nothing, they are covered, and the archive may well want a lead again
@@ -58,10 +68,12 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  */
 export function PieceRow({ item, priority = false }: { item: ArchiveItem; priority?: boolean }) {
   return (
-    <article className="group relative border-b border-rule py-6 last:border-b-0 sm:py-5 xl:py-7">
-      {/* A card on a phone, a row from `sm` up. See the note on the
-          picture below for why the shape changes at all. */}
-      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 xl:gap-10">
+    <article className="group relative border-b border-rule py-6 last:border-b-0 sm:border-b-0 sm:py-0">
+      {/* A card at every width: the picture on top, the words under it.
+          The rule between cards is a phone's — in the grid the gap does
+          that job, and a rule under each of two cards side by side draws
+          two half-lines that do not meet. */}
+      <div className="flex flex-col gap-3.5 sm:gap-4">
         <div className="min-w-0 flex-1">
           {/* No section label. It stood here as a gold kicker and said
               "Teachings" on eight of fourteen rows, which is a word that
@@ -94,7 +106,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               `.reading-front` and the rule now drawn under every one,
               the headline is the loudest thing on the row, which is what
               a listing is for. */}
-          <h3 className="text-pretty font-article text-[1.3125rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy xl:text-[1.5rem] xl:leading-[1.22] xl:tracking-[-0.012em]">
+          <h3 className="text-pretty font-article text-[1.3125rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy xl:text-[1.375rem] xl:leading-[1.24] xl:tracking-[-0.01em]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place.
@@ -212,14 +224,14 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 
             `-mx-5` is the shell's own margin at this width, cancelled:
             the picture reaches both edges of the screen while the words
-            stay on the measure. From `sm` the margin comes back and the
-            row is exactly what it was.
+            stay on the measure. From `sm` the margin comes back, the
+            corners round, and the picture is the width of its card.
 
             `order-first` rather than reordering the markup, so the
             headline stays the first thing in the document — the picture
             is `alt=""` and a screen reader passes straight over it. */}
         <span
-          className="relative -mx-5 order-first block aspect-[16/10] shrink-0 overflow-hidden bg-surface-2 sm:mx-0 sm:order-none sm:w-[9.5rem] sm:rounded-md xl:w-[12.5rem]"
+          className="relative -mx-5 order-first block aspect-[16/10] overflow-hidden bg-surface-2 sm:mx-0 sm:rounded-md"
           style={{ containerType: 'inline-size' }}
         >
           {item.thumbnail ? (
@@ -239,8 +251,13 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 }
 
 /** The widths the card's picture is drawn at, per the card's own classes. */
-const PHONE = '(max-width: 639px) 100vw, (max-width: 1279px) 152px, 200px'
-const DESKTOP = '(max-width: 1279px) 152px, 200px'
+/* A card's width, per the grid it stands in — measured, not estimated:
+   the full screen on a phone, half the column from `sm` (about half the
+   screen until `lg` takes a sidebar), then 313, 377 and 503 pixels at
+   1280, 1440 and 1920. Rounded up, because a picture fetched a little
+   large is sharp and one fetched a little small is not. */
+const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1535px) 390px, 520px'
+const DESKTOP = '(max-width: 1023px) 50vw, (max-width: 1535px) 390px, 520px'
 
 /**
  * The card's picture — the phone's, or the desktop's where one was made.
