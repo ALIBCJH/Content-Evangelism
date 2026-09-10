@@ -45,11 +45,12 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  *
  * It was a row from `sm` up — headline on the left, a 200-pixel picture
  * on the right — and a card only on a phone. It is a card everywhere
- * now: picture, headline, the opening, the facts. On a phone one card is
- * the width of the screen; from `sm` the cards stand two across, in the
- * grid `archive-list` lays them out in.
+ * now: picture, headline, the opening, the facts, one to a row at every
+ * width, the width of the listing column.
  *
- * Two across and not one, and that was measured rather than chosen.
+ * It was two across from `sm` first (#224), on the numbers below, and
+ * the ministry asked to try one to a row. The numbers still describe
+ * what one to a row costs, so they are kept:
  * One column of picture-on-top cards at 1440 is 641 pixels a card, 1.4
  * teachings a screen and a listing 8,300 pixels long — and it cannot be
  * sharp, because a 786-pixel picture on a retina screen wants 1,572 of
@@ -251,13 +252,13 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 }
 
 /** The widths the card's picture is drawn at, per the card's own classes. */
-/* A card's width, per the grid it stands in — measured, not estimated:
-   the full screen on a phone, half the column from `sm` (about half the
-   screen until `lg` takes a sidebar), then 313, 377 and 503 pixels at
-   1280, 1440 and 1920. Rounded up, because a picture fetched a little
-   large is sharp and one fetched a little small is not. */
-const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1535px) 390px, 520px'
-const DESKTOP = '(max-width: 1023px) 50vw, (max-width: 1535px) 390px, 520px'
+/* A card's width, one to a row — the listing column itself, measured:
+   the full screen on a phone, the column less its margin until `lg`,
+   704 at `lg` where a sidebar takes the rest, then 658, 786 and 1038
+   pixels at 1280, 1440 and 1920. Rounded up, because a picture fetched a
+   little large is sharp and one fetched a little small is not. */
+const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
+const DESKTOP = '(max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
 
 /**
  * The card's picture — the phone's, or the desktop's where one was made.
