@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import Image, { getImageProps } from 'next/image'
 import { Heart, Share2 } from 'lucide-react'
 import type { ArchiveItem } from '@/lib/archive-items'
 import { Posted } from '@/components/posted'
@@ -223,14 +223,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
           style={{ containerType: 'inline-size' }}
         >
           {item.thumbnail ? (
-            <Image
-              src={item.thumbnail.src}
-              alt=""
-              fill
-              priority={priority}
-              sizes="(max-width: 639px) 100vw, (max-width: 1279px) 152px, 200px"
-              className="object-cover"
-            />
+            <Thumbnail thumbnail={item.thumbnail} priority={priority} />
           ) : (
             <TeachingArt
               art={item.art}
@@ -242,5 +235,65 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
         </span>
       </div>
     </article>
+  )
+}
+
+/** The widths the card's picture is drawn at, per the card's own classes. */
+const PHONE = '(max-width: 639px) 100vw, (max-width: 1279px) 152px, 200px'
+const DESKTOP = '(max-width: 1279px) 152px, 200px'
+
+/**
+ * The card's picture — the phone's, or the desktop's where one was made.
+ *
+ * Art direction, not two pictures: a `<picture>` with a `<source>` for
+ * wide screens, so the browser fetches exactly one file and it is the
+ * right one. Two `<Image>`s shown and hidden by CSS would download both on
+ * every screen, which on the mobile data most of these readers are on is
+ * the thing this site has spent the most care avoiding.
+ *
+ * `getImageProps` is Next's way of doing this: it produces the same
+ * srcset and sizes an `<Image>` would, without rendering one, so both
+ * files still go through the optimiser and still come in at the width the
+ * box needs.
+ *
+ * With no desktop file the card is exactly what it was — the same
+ * `<Image>`, the same markup — so nothing changes until a desktop picture
+ * is actually supplied.
+ */
+function Thumbnail({
+  thumbnail,
+  priority,
+}: {
+  thumbnail: NonNullable<ArchiveItem['thumbnail']>
+  priority: boolean
+}) {
+  if (!thumbnail.desktop) {
+    return (
+      <Image src={thumbnail.src} alt="" fill priority={priority} sizes={PHONE} className="object-cover" />
+    )
+  }
+
+  const desktop = getImageProps({
+    src: thumbnail.desktop.src,
+    alt: '',
+    fill: true,
+    sizes: DESKTOP,
+  }).props
+  const phone = getImageProps({
+    src: thumbnail.src,
+    alt: '',
+    fill: true,
+    priority,
+    sizes: PHONE,
+  }).props
+
+  return (
+    <picture>
+      {/* From `sm`, which is where the card stops being a phone card and
+          becomes a row with the picture at the side. */}
+      <source media="(min-width: 640px)" srcSet={desktop.srcSet} sizes={desktop.sizes} />
+      {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+      <img {...phone} className="object-cover" />
+    </picture>
   )
 }

@@ -40,7 +40,18 @@ export interface ArchiveItem {
    * one, the poster where it does not, and absent where it has neither —
    * in which case the row draws the section's own field instead.
    */
-  thumbnail?: { src: string; alt: string; width?: number; height?: number }
+  thumbnail?: {
+    src: string
+    alt: string
+    width?: number
+    height?: number
+    /**
+     * A version drawn for the desktop row, where the picture is 200 by
+     * 125 pixels rather than the width of a phone. Present only when the
+     * file exists — see `desktopVariant`.
+     */
+    desktop?: { src: string; width: number; height: number }
+  }
   /**
    * The passage the teaching leads with, set on the plate at the head of
    * the lead card. Absent on a piece that opens on prose rather than on
@@ -295,6 +306,43 @@ export function pickMostRead(items: ArchiveItem[], exclude: number): number {
 
 const CHIPPED = 3
 
+/**
+ * Where a card's desktop picture lives, by name.
+ *
+ * The picture a card shows today is the phone's: it is drawn for a card
+ * the full width of the display, and on a desktop the same file is shrunk
+ * to 200 by 125. Anything set in type inside it — and most of this
+ * ministry's artwork carries a line or two — shrinks with it, to four or
+ * five pixels a letter.
+ *
+ * So a card can have a second file for the desktop, named after the first
+ * with `-desktop` in place of `-wide`:
+ *
+ *     rapture-of-the-church-wide.webp     the phone, as today
+ *     rapture-of-the-church-desktop.webp  the desktop
+ *
+ * and for the one teaching whose single picture does both jobs, with
+ * `-desktop` added:
+ *
+ *     holiness-puzzle.webp          holiness-puzzle-desktop.webp
+ *
+ * Why the existing files are not renamed to `-mobile`: four of the live
+ * records are held in the store rather than in `content/articles`, and
+ * their `thumbnailUrl` can only be repointed at the desk. Renaming the
+ * files they point at would take four pictures off the front page with
+ * no way to put them back from here. The phone file keeps its name, and
+ * the rule is what says which is which.
+ *
+ * Only paths the site itself ships — an absolute URL on a record has no
+ * desktop sibling to find.
+ */
+export function desktopVariant(src: string): string | undefined {
+  if (!src.startsWith('/images/articles/')) return undefined
+  const match = src.match(/^(.*?)(-wide)?\.(webp|jpe?g|png)$/)
+  if (!match) return undefined
+  return `${match[1]}-desktop.webp`
+}
+
 export function toArchiveItems(
   rows: RealRow[],
   /** Views by path, from the insight counters. */
@@ -347,7 +395,19 @@ export function toArchiveItems(
            does not ship (an absolute URL on a record) simply has no
            size, and is never offered the lead. */
         const size = artSizes[thumbnail.src]
-        return { thumbnail: size ? { ...thumbnail, width: size[0], height: size[1] } : thumbnail }
+        const sized = size ? { ...thumbnail, width: size[0], height: size[1] } : thumbnail
+        /* The desktop version, if one has been made. Looked up in the
+           size table rather than on disk, because the table is generated
+           from the files the site ships — so an entry there is the proof
+           the file exists, and a missing one means the phone picture
+           carries on doing both jobs, as it does today. */
+        const deskSrc = desktopVariant(thumbnail.src)
+        const deskSize = deskSrc ? artSizes[deskSrc] : undefined
+        return {
+          thumbnail: deskSrc && deskSize
+            ? { ...sized, desktop: { src: deskSrc, width: deskSize[0], height: deskSize[1] } }
+            : sized,
+        }
       })(),
       quote: leadQuote(row.body),
       haystack: `${row.title}\n${row.dek}\n${excerpt}\n${all.join(' ')}\n${row.category}`.toLowerCase(),

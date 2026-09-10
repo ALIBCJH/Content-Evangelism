@@ -114,3 +114,51 @@ describe('the archive row on a phone', () => {
     expect(html).toContain('-mx-5')
   })
 })
+
+describe('a desktop picture, when one has been made', () => {
+  /* The phone file keeps its name — four live records are held in the
+     store and point at it, and only the desk can repoint them — so the
+     desktop file is found by rule rather than by a field on the record. */
+  it('is named after the phone picture', async () => {
+    const { desktopVariant } = await import('@/lib/archive-items')
+    expect(desktopVariant('/images/articles/rapture-of-the-church-wide.webp')).toBe(
+      '/images/articles/rapture-of-the-church-desktop.webp'
+    )
+    /* The one teaching whose single picture does both jobs. */
+    expect(desktopVariant('/images/articles/holiness-puzzle.webp')).toBe(
+      '/images/articles/holiness-puzzle-desktop.webp'
+    )
+    /* A picture the site does not ship has no sibling to find. */
+    expect(desktopVariant('https://example.com/x-wide.webp')).toBeUndefined()
+  })
+
+  /* Until a desktop file is supplied, nothing about the card changes. */
+  it('leaves the card exactly as it was when there is none', () => {
+    const html = renderToStaticMarkup(<PieceRow item={item()} />)
+    expect(html).not.toContain('<picture')
+    expect(html).not.toContain('-desktop')
+  })
+
+  it('sends a wide screen the desktop file and a phone the phone file', () => {
+    const html = renderToStaticMarkup(
+      <PieceRow
+        item={item({
+          thumbnail: {
+            src: '/images/articles/x-wide.webp',
+            alt: '',
+            width: 1228,
+            height: 768,
+            desktop: { src: '/images/articles/x-desktop.webp', width: 1600, height: 1000 },
+          },
+        })}
+      />
+    )
+    expect(html).toContain('<picture')
+    /* The source is the desktop's, and only from `sm` up. */
+    expect(html).toMatch(/<source media="\(min-width: 640px\)" srcSet="[^"]*x-desktop\.webp/)
+    /* The fallback — what a phone gets — is still the phone's. */
+    expect(html).toMatch(/<img[^>]*src="[^"]*x-wide\.webp/)
+    /* One picture, not two hidden by CSS: a phone must not fetch both. */
+    expect(html.match(/<img /g) ?? []).toHaveLength(1)
+  })
+})
