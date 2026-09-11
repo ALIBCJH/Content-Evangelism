@@ -4,6 +4,7 @@ import { listAnswers } from '@/lib/questions'
 import { authorHref, siteUrl, topicHref } from '@/lib/content'
 import { authorDirectory, authorOfPiece } from '@/lib/authors'
 import { prophecyRecords, recordHref } from '@/lib/prophecies'
+import { teachingHref, teachingRecordings } from '@/lib/teachings'
 import { listRealRows } from '@/lib/rows'
 import { absoluteUrl } from '@/lib/seo'
 
@@ -88,6 +89,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
+  /* One entry per recorded teaching.
+
+     These were missing, and they were the pages least able to be found
+     any other way: a recording page carries the VideoObject Google needs
+     before it will show a video as a video — upload date and runtime,
+     both the channel's own, since #199 — and it was reachable only by a
+     crawler that happened to follow a link off /teachings. One of them,
+     the earthquakes teaching, has been watched more than a million
+     times, and nothing was telling Google the page for it existed.
+
+     `lastModified` is the upload instant, which is the one date on
+     these that is the ministry's own and never guessed. */
+  const recordings: MetadataRoute.Sitemap = teachingRecordings.map((recording) => ({
+    url: `${siteUrl}${teachingHref(recording)}`,
+    lastModified: recording.uploaded,
+    changeFrequency: 'yearly' as const,
+    priority: 0.7,
+  }))
+
   /* One entry per altar. These are the pages a local search can land on
      — "repentance and holiness church nakuru" — and a page nobody crawls
      answers nobody. */
@@ -122,6 +142,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...altars,
     ...questions,
     ...articles,
+    ...recordings,
     ...records,
     ...derived(topics, 0.7),
     ...derived(authorPages, 0.5),
