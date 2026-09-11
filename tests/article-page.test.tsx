@@ -238,3 +238,34 @@ describe('the opening of a teaching', () => {
     expect(html.match(/chapter-head/g) ?? []).toHaveLength(2)
   })
 })
+
+describe('a link to a teaching that is not on the site', () => {
+  /* Four live teachings linked, in their own text, to two that were never
+     published — so a reader who followed the sentence got a 404, and a
+     crawler counted each as a broken page. */
+  const body = 'See [the difference](/articles/never-published) and [the live one](/articles/is-live).'
+  const live = { 'is-live': { href: '/articles/is-live', title: 'Live', dek: '' } }
+
+  it('keeps its words and loses the link, where the live set is known', () => {
+    const html = renderToStaticMarkup(<ArticleProse body={body} links={live} />)
+    expect(html).not.toContain('href="/articles/never-published"')
+    expect(html).toContain('the difference')
+    /* The link to a teaching that IS published is untouched. */
+    expect(html).toContain('href="/articles/is-live"')
+  })
+
+  /* A desk preview passes no live set: a writer checking a draft has to
+     see the link they typed, so nothing is dropped there. */
+  it('renders every link as written when the live set is not given', () => {
+    const html = renderToStaticMarkup(<ArticleProse body={body} />)
+    expect(html).toContain('href="/articles/never-published"')
+  })
+
+  it('leaves links that are not to a teaching alone', () => {
+    const html = renderToStaticMarkup(
+      <ArticleProse body={'Find [an altar](/altars) or [the ministry](https://example.org).'} links={live} />
+    )
+    expect(html).toContain('href="/altars"')
+    expect(html).toContain('href="https://example.org"')
+  })
+})

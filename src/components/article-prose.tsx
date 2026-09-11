@@ -168,6 +168,57 @@ export function recommendAfter(blocks: ReturnType<typeof parseBody>): number | n
 /** The measure a figure sits in at the widest — 37rem since #202, in pixels. */
 const COLUMN = 592
 
+/** `/articles/<slug>` → the slug; anything else → undefined. */
+const articleSlug = (href: string): string | undefined =>
+  href.match(/^\/articles\/([^/?#]+)\/?(?:[?#].*)?$/)?.[1]
+
+/**
+ * Links to teachings that are not on the site, turned back into their words.
+ *
+ * A link typed into a body is written by a person, often before the piece
+ * it points at is published — and some of those pieces never are. Four
+ * teachings were found linking in their own text to two unpublished ones,
+ * so a reader who followed the sentence landed on a 404, and a crawler
+ * counted each as a broken page on a site it was deciding whether to
+ * trust.
+ *
+ * `@related` already drops a slug the site no longer holds. This does the
+ * same for a link in running text: the words stay and the link does not.
+ * When the piece is published the link comes back by itself, with nobody
+ * editing a body — which matters, because one of the four teachings is
+ * held in the store and could not have been edited from the repo at all.
+ *
+ * A transform on the parsed blocks rather than a check inside the link
+ * renderer, because this component renders on the server, where React
+ * context does not exist to carry the live set down to it.
+ *
+ * `live === null` means the caller did not say which pieces are live —
+ * the desk's previews and the question pages — and then every link stays
+ * as written, because a writer checking a draft has to see the link they
+ * typed.
+ */
+function dropDeadLinks(blocks: ReturnType<typeof parseBody>, live: Set<string> | null) {
+  if (!live) return blocks
+  const fix = (inlines: Inline[]): Inline[] =>
+    inlines.map((inline) => {
+      if (inline.kind !== 'link') return inline
+      const slug = articleSlug(inline.href)
+      return slug && !live.has(slug) ? { kind: 'text' as const, text: inline.text } : inline
+    })
+  return blocks.map((block) => {
+    switch (block.kind) {
+      case 'paragraph':
+      case 'quote':
+      case 'callout':
+        return { ...block, inlines: fix(block.inlines) }
+      case 'list':
+        return { ...block, items: block.items.map(fix) }
+      default:
+        return block
+    }
+  })
+}
+
 export function ArticleProse({
   body,
   links = {},
@@ -178,7 +229,10 @@ export function ArticleProse({
   /** Teachings to offer part-way through. Empty on the desk's preview. */
   recommended?: RealRow[]
 }) {
-  const blocks = parseBody(body)
+  /* The live set, when there is one. An empty map means the caller did not
+     say — a preview — and then nothing is dropped. See `dropDeadLinks`. */
+  const liveSlugs = Object.keys(links)
+  const blocks = dropDeadLinks(parseBody(body), liveSlugs.length > 0 ? new Set(liveSlugs) : null)
   /* Computed once for the piece rather than per block: the rule is about
      the distance between passages, so it needs the whole of it in hand. */
   const plated = platedQuotes(blocks)
