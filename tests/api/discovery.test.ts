@@ -125,3 +125,17 @@ describe('sitemap.xml', () => {
     }
   })
 })
+
+describe('the sitemap', () => {
+  /* The recording pages carry the VideoObject Google needs to show a
+     video as a video, and they were missing from here — reachable only by
+     a crawler that followed a link off /teachings. One entry each. */
+  it('lists every recorded teaching', async () => {
+    const { default: sitemap } = await import('@/app/sitemap')
+    const { teachingRecordings, teachingHref } = await import('@/lib/teachings')
+    const urls = (await sitemap()).map((entry) => entry.url)
+    for (const recording of teachingRecordings) {
+      expect(urls.some((u) => u.endsWith(teachingHref(recording))), recording.id).toBe(true)
+    }
+  })
+})
