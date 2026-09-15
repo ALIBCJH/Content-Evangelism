@@ -239,7 +239,9 @@ export function ArchiveList({
           />
         </aside>
 
-        <div className="order-1 min-w-0 lg:order-none xl:col-start-1 xl:row-start-1">
+        {/* Held to 36rem from `sm`, heading and all, and centred in its
+            track — the width of a phone feed. See the listing below. */}
+        <div className="order-1 min-w-0 sm:mx-auto sm:w-full sm:max-w-[36rem] lg:order-none xl:col-start-1 xl:row-start-1">
           {/* On a phone the heading over a listing is a word describing a
               page the reader can already see, so it is read out and given
               to a crawler without being drawn — which is the whole of
@@ -318,26 +320,22 @@ export function ArchiveList({
                 One column because the archive is a chronology, and a
                 chronology poured down two columns is read in the wrong
                 order by anybody who reads it across. */}
-              {/* One column on a phone, two from `sm`.
+              {/* The phone's listing, at every width: one card under
+                  another, ruled apart.
 
-                  Equal cards, two across — not the lead-and-column that
-                  was here once, which was a newspaper front telling the
-                  reader which piece mattered most. Every card is the same
-                  size and the reader decides.
+                  It was two across from `sm` (#224). One to a row across
+                  the whole column was tried (#225) and went back (#226):
+                  the column is 786 pixels at 1440 and 1,038 at 1920, so
+                  a card was a picture wider than its file and barely one
+                  teaching a screen. This is not that. The listing is held
+                  to the width of a phone feed and centred, so a card on a
+                  desktop is the card on a phone, drawn a little larger.
 
-                  The objection written above — that a chronology poured
-                  down two columns is read in the wrong order by anybody
-                  who reads it across — is about CSS columns, which fill
-                  the left column top to bottom before starting the right.
-                  A grid does the opposite: it fills across and then down,
-                  so the newest teaching is top left, the next is beside
-                  it, and a reader going row by row reads them in the
-                  order they were published. That is why this is `grid`
-                  and must never become `columns`.
-
-                  See `PieceRow` for why two and not one: it was measured
-                  at every width before it was built. */}
-              <div className="sm:grid sm:grid-cols-2 sm:gap-x-7 sm:gap-y-11">
+                  If it ever goes back to more than one column it must be
+                  `grid` and never CSS `columns`: columns fill the left
+                  side top to bottom first, which reads a chronology in
+                  the wrong order; a grid fills across, newest first. */}
+              <div>
                 {rows.map((item, index) => (
                   /* Only the first card is above the fold, so it is the
                      one the browser fetches first rather than lazily. */

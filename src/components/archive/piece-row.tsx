@@ -45,17 +45,15 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  *
  * It was a row from `sm` up — headline on the left, a 200-pixel picture
  * on the right — and a card only on a phone. It is a card everywhere
- * now: picture, headline, the opening, the facts. On a phone one card is
- * the width of the screen; from `sm` the cards stand two across, in the
- * grid `archive-list` lays them out in.
+ * now: picture, headline, the opening, the facts, one under another and
+ * ruled apart, exactly as on a phone.
  *
- * Two across and not one, and that was measured rather than chosen.
- * One column of picture-on-top cards at 1440 is 641 pixels a card, 1.4
- * teachings a screen and a listing 8,300 pixels long — and it cannot be
- * sharp, because a 786-pixel picture on a retina screen wants 1,572 of
- * source and the largest crop here is 1,468. Two across is 386 pixels a
- * card and 4.7 teachings a screen, which is exactly what the row gave,
- * and every picture clears twice its box.
+ * On a wider screen the card is the width of a phone feed, 36rem, and
+ * not the width of the listing column. Two across came first (#224); one
+ * to a row across the whole column was tried and reverted (#225, #226),
+ * because a 786-pixel picture at 1440 wants 1,572 pixels of source on a
+ * retina screen and the desktop files are 1,312. At 576 pixels every
+ * picture still clears twice its box.
  *
  * What made it possible is the pictures. When this was a row, most of
  * the archive had a generated colour field and no photograph, and a grid
@@ -68,11 +66,10 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  */
 export function PieceRow({ item, priority = false }: { item: ArchiveItem; priority?: boolean }) {
   return (
-    <article className="group relative border-b border-rule py-6 last:border-b-0 sm:border-b-0 sm:py-0">
-      {/* A card at every width: the picture on top, the words under it.
-          The rule between cards is a phone's — in the grid the gap does
-          that job, and a rule under each of two cards side by side draws
-          two half-lines that do not meet. */}
+    <article className="group relative border-b border-rule py-6 last:border-b-0 sm:py-9 sm:first:pt-0">
+      {/* A card at every width: the picture on top, the words under it,
+          and a hairline under each — the phone's listing, with more air
+          between cards where there is room for it. */}
       <div className="flex flex-col gap-3.5 sm:gap-4">
         <div className="min-w-0 flex-1">
           {/* No section label. It stood here as a gold kicker and said
@@ -251,13 +248,12 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 }
 
 /** The widths the card's picture is drawn at, per the card's own classes. */
-/* A card's width, per the grid it stands in — measured, not estimated:
-   the full screen on a phone, half the column from `sm` (about half the
-   screen until `lg` takes a sidebar), then 313, 377 and 503 pixels at
-   1280, 1440 and 1920. Rounded up, because a picture fetched a little
-   large is sharp and one fetched a little small is not. */
-const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, (max-width: 1535px) 390px, 520px'
-const DESKTOP = '(max-width: 1023px) 50vw, (max-width: 1535px) 390px, 520px'
+/* A card's width: the full screen on a phone, and from `sm` the 36rem
+   the listing is held to — a little less on a small tablet, where the
+   shell's margin takes it under that, and a picture fetched a little
+   large is sharp where one fetched a little small is not. */
+const PHONE = '(max-width: 639px) 100vw, 576px'
+const DESKTOP = '576px'
 
 /**
  * The card's picture — the phone's, or the desktop's where one was made.

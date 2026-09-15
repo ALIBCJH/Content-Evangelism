@@ -82,6 +82,20 @@ describe('the archive row on a phone', () => {
     expect(html).toContain('(max-width: 639px) 100vw')
   })
 
+  /* The phone's listing at every width: a hairline under each card, and
+     from `sm` a card the 36rem of a phone feed. It was two across (#224),
+     and one across the full column was tried and reverted (#225, #226) —
+     a picture wider than its file. `sizes` has to say 576px or a desktop
+     fetches for a box that no longer exists. */
+  it('stands one under another on a desktop too, the width of a phone feed', () => {
+    const html = renderToStaticMarkup(<PieceRow item={item()} />)
+    const article = html.match(/<article class="([^"]*)"/)?.[1] ?? ''
+    expect(article).toContain('border-b')
+    expect(article).not.toContain('sm:border-b-0')
+    expect(html).toContain('576px')
+    expect(html).not.toContain('50vw')
+  })
+
   it('keeps the whole of the picture somebody framed', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
     /* Every landscape crop in the archive is cut to 16:10. A 16:9 card
