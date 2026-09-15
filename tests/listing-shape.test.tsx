@@ -83,17 +83,16 @@ describe('the archive row on a phone', () => {
   })
 
   /* The phone's listing at every width: a hairline under each card, and
-     from `sm` a card the 36rem of a phone feed. It was two across (#224),
-     and one across the full column was tried and reverted (#225, #226) —
-     a picture wider than its file. `sizes` has to say 576px or a desktop
-     fetches for a box that no longer exists. */
-  it('stands one under another on a desktop too, the width of a phone feed', () => {
+     on a desktop a card the full width of the listing column. `sizes` has
+     to describe that column — 1040px at the widest — or a wide screen
+     fetches a file for a box half the size and stretches it. */
+  it('stands one under another on a desktop too, the width of the column', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
     const article = html.match(/<article class="([^"]*)"/)?.[1] ?? ''
     expect(article).toContain('border-b')
     expect(article).not.toContain('sm:border-b-0')
-    expect(html).toContain('576px')
-    expect(html).not.toContain('50vw')
+    expect(html).toContain('1040px')
+    expect(html).not.toContain('576px')
   })
 
   it('keeps the whole of the picture somebody framed', () => {
