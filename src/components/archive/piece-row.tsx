@@ -48,12 +48,12 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * now: picture, headline, the opening, the facts, one under another and
  * ruled apart, exactly as on a phone.
  *
- * On a wider screen the card is the width of a phone feed, 36rem, and
- * not the width of the listing column. Two across came first (#224); one
- * to a row across the whole column was tried and reverted (#225, #226),
- * because a 786-pixel picture at 1440 wants 1,572 pixels of source on a
- * retina screen and the desktop files are 1,312. At 576 pixels every
- * picture still clears twice its box.
+ * On a wider screen the card is the full width of the listing column —
+ * 786 pixels at 1440, 1,038 at 1920. It was a 36rem phone feed first
+ * (#229), and the ministry asked for the cards to use the screen. The
+ * cost, known going in: the desktop files are 1,312 pixels, so on a
+ * normal-density screen every picture is sharp, and on a retina screen
+ * from 1440 up it is stretched a little (about 1.6 times at 1920).
  *
  * What made it possible is the pictures. When this was a row, most of
  * the archive had a generated colour field and no photograph, and a grid
@@ -248,12 +248,13 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 }
 
 /** The widths the card's picture is drawn at, per the card's own classes. */
-/* A card's width: the full screen on a phone, and from `sm` the 36rem
-   the listing is held to — a little less on a small tablet, where the
-   shell's margin takes it under that, and a picture fetched a little
-   large is sharp where one fetched a little small is not. */
-const PHONE = '(max-width: 639px) 100vw, 576px'
-const DESKTOP = '576px'
+/* A card's width, the listing column itself, measured (#225): the full
+   screen on a phone, the column less its margin until `lg`, 704 at `lg`
+   where a sidebar takes the rest, then 658, 786 and 1038 pixels at 1280,
+   1440 and 1920. Rounded up, because a picture fetched a little large is
+   sharp and one fetched a little small is not. */
+const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
+const DESKTOP = '(max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
 
 /**
  * The card's picture — the phone's, or the desktop's where one was made.

@@ -239,9 +239,7 @@ export function ArchiveList({
           />
         </aside>
 
-        {/* Held to 36rem from `sm`, heading and all, and centred in its
-            track — the width of a phone feed. See the listing below. */}
-        <div className="order-1 min-w-0 sm:mx-auto sm:w-full sm:max-w-[36rem] lg:order-none xl:col-start-1 xl:row-start-1">
+        <div className="order-1 min-w-0 lg:order-none xl:col-start-1 xl:row-start-1">
           {/* On a phone the heading over a listing is a word describing a
               page the reader can already see, so it is read out and given
               to a crawler without being drawn — which is the whole of
@@ -323,13 +321,11 @@ export function ArchiveList({
               {/* The phone's listing, at every width: one card under
                   another, ruled apart.
 
-                  It was two across from `sm` (#224). One to a row across
-                  the whole column was tried (#225) and went back (#226):
-                  the column is 786 pixels at 1440 and 1,038 at 1920, so
-                  a card was a picture wider than its file and barely one
-                  teaching a screen. This is not that. The listing is held
-                  to the width of a phone feed and centred, so a card on a
-                  desktop is the card on a phone, drawn a little larger.
+                  The full width of the listing column. It was two across
+                  (#224, #226), then held to a 36rem phone feed (#229),
+                  and the ministry asked for the cards to fill the screen
+                  rather than leave a margin either side of that. What it
+                  costs is recorded in `PieceRow`.
 
                   If it ever goes back to more than one column it must be
                   `grid` and never CSS `columns`: columns fill the left
