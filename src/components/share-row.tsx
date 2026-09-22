@@ -1,9 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Bookmark, Check, Heart, Link2, Share2 } from 'lucide-react'
+import { Bookmark, Check, Link2, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WhatsAppIcon } from '@/components/brand-icons'
+import { LikeHeart } from '@/components/like-heart'
 import { remember, wasLiked } from '@/lib/liked'
 import { useSaved } from '@/lib/saved'
 
@@ -52,6 +53,8 @@ export function ShareRow({
   const [alreadyLiked, setAlreadyLiked] = React.useState(false)
   const [justLiked, setJustLiked] = React.useState(false)
   const liked = alreadyLiked || justLiked
+  /* Bumped on every press, to replay the heart — see `LikeHeart`. */
+  const [burst, setBurst] = React.useState(0)
   const { toggle, isSaved, ready } = useSaved()
 
   React.useEffect(() => {
@@ -62,7 +65,13 @@ export function ShareRow({
   const shown = likes + (justLiked ? 1 : 0)
 
   const like = () => {
-    if (!slug || liked) return
+    if (!slug) return
+    /* A press on a heart already given plays the heart again and counts
+       nothing: the answer to "did that work?" is yes, it is still there. */
+    setBurst((count) => count + 1)
+    if (liked) return
+    /* A tick under the thumb, where the phone has one to give. */
+    navigator.vibrate?.(12)
     setJustLiked(true)
     remember(slug, true)
     void fetch('/api/likes', {
@@ -108,20 +117,24 @@ export function ShareRow({
             onClick={like}
             aria-pressed={liked}
             data-track="like-article"
+            /* The largest thing in the row, because it is the one thing
+               in it that is about the teaching rather than about sending
+               it somewhere: taller than the pills beside it, a larger
+               heart, and red once it is given. */
             className={cn(
-              pill,
-              liked && 'border-gold/70 text-gold-ink',
-              !liked && 'hover:border-gold/70'
+              'focus-ring inline-flex h-12 items-center gap-2.5 rounded-chip border px-6 font-mono text-[0.75rem] uppercase tracking-[0.12em] transition-colors active:scale-[0.97]',
+              liked
+                ? 'border-heart/50 bg-heart/[0.07] text-heart'
+                : 'border-rule bg-card text-navy hover:border-heart/60 hover:text-heart'
             )}
           >
-            <Heart
-              aria-hidden
-              className="h-4 w-4"
-              strokeWidth={2}
-              fill={liked ? 'currentColor' : 'none'}
-            />
+            <LikeHeart liked={liked} burst={burst} className="h-6 w-6" />
             {liked ? 'Thank you' : 'It helped me'}
-            {shown > 0 && <span className="tabular ml-0.5">{shown}</span>}
+            {shown > 0 && (
+              <span key={shown} className={cn('tabular ml-0.5', justLiked && 'like-count')}>
+                {shown}
+              </span>
+            )}
           </button>
 
           <button

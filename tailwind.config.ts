@@ -91,6 +91,7 @@ const config: Config = {
         },
 
         /* ── The primary call to action ────────────────────────── */
+        heart: 'rgb(var(--heart-rgb) / <alpha-value>)',
         cta: {
           DEFAULT: 'rgb(var(--cta-rgb) / <alpha-value>)',
           hover: 'rgb(var(--cta-hover-rgb) / <alpha-value>)',
