@@ -83,23 +83,26 @@ describe('the archive row on a phone', () => {
   })
 
   /* The phone's listing at every width: a hairline under each card, and
-     on a desktop a card the full width of the listing column. `sizes` has
-     to describe that column — 1040px at the widest — or a wide screen
-     fetches a file for a box half the size and stretches it. */
-  it('stands one under another on a desktop too, the width of the column', () => {
+     on a desktop a card of 672px at most — the full column (#230) was
+     too big. `sizes` has to say so, or a wide screen fetches for a box
+     half again the size. */
+  it('stands one under another on a desktop too, 672px at most', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
     const article = html.match(/<article class="([^"]*)"/)?.[1] ?? ''
     expect(article).toContain('border-b')
     expect(article).not.toContain('sm:border-b-0')
-    expect(html).toContain('1040px')
-    expect(html).not.toContain('576px')
+    expect(html).toContain('672px')
+    expect(html).not.toContain('1040px')
   })
 
   it('keeps the whole of the picture somebody framed', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
-    /* Every landscape crop in the archive is cut to 16:10. A 16:9 card
-       would take the ends off all of them. */
-    expect(html).toContain('aspect-[16/10]')
+    /* Every landscape crop in the archive is cut to 16:10, and from `sm`
+       the card shows all of it. On a phone it is 16:9 — a shorter card,
+       at the cost of about five per cent off the top and the bottom,
+       checked against every current picture when it was made. */
+    expect(html).toContain('aspect-[16/9]')
+    expect(html).toContain('sm:aspect-[16/10]')
   })
 
   /* The card is one target, and the picture is more than half of it.
