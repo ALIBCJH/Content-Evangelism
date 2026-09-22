@@ -56,6 +56,11 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * picture, checked against all thirteen desktop files; the one that lost
  * words, the highway, is anchored to its top (see `FOCUS`).
  *
+ * The words scale with the card: a desktop card is 700 to 1,000 pixels
+ * wide, and a 21- or 22-pixel headline over a 15- or 16-pixel opening
+ * read as small print across it. From `sm` the headline is 24 pixels and 28 from
+ * `xl`, the opening 17 and 19, the dateline 12. A phone keeps its sizes.
+ *
  * On a phone the picture is 16:9 rather than 16:10 and the headline a
  * size down, for the same reason: a card was 438 pixels of an 844-pixel
  * screen. 16:9 takes about five per cent off the top and the bottom of
@@ -109,7 +114,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               `.reading-front` and the rule now drawn under every one,
               the headline is the loudest thing on the row, which is what
               a listing is for. */}
-          <h3 className="text-pretty font-article text-[1.1875rem] font-extrabold leading-[1.26] tracking-[-0.006em] text-navy sm:text-[1.3125rem] sm:leading-[1.25] sm:tracking-[-0.008em] xl:text-[1.375rem] xl:leading-[1.24] xl:tracking-[-0.01em]">
+          <h3 className="text-pretty font-article text-[1.1875rem] font-extrabold leading-[1.26] tracking-[-0.006em] text-navy sm:text-[1.5rem] sm:leading-[1.22] sm:tracking-[-0.01em] xl:text-[1.75rem] xl:leading-[1.2] xl:tracking-[-0.012em]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place.
@@ -166,12 +171,12 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               lines under every headline in a ten-row column is a page of
               openings with headlines in it. */}
           {item.excerpt && (
-            <p className="mt-2 font-reading text-[0.9375rem] leading-[1.55] text-ink-700 line-clamp-2 xl:mt-2.5 xl:text-[1rem]">
+            <p className="mt-2 font-reading text-[0.9375rem] leading-[1.55] text-ink-700 line-clamp-2 sm:mt-2.5 sm:text-[1.0625rem] sm:leading-[1.6] xl:mt-3 xl:text-[1.1875rem]">
               {item.excerpt}
             </p>
           )}
 
-          <p className="kicker mt-2 flex flex-wrap items-center leading-[1.5] text-ink-500 xl:mt-3.5">
+          <p className="kicker mt-2 flex flex-wrap items-center leading-[1.5] text-ink-500 sm:mt-3 sm:text-[0.75rem] xl:mt-3.5">
             <Posted iso={item.publishedAt} dated={item.dated} />
             <span aria-hidden className="mx-1.5">·</span>
             <span className="tabular">{item.readMinutes}</span>&nbsp;min
@@ -186,7 +191,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
                 refused", and that is a different and untrue thing. */}
             <span aria-hidden className="mx-1.5">·</span>
             <span className="inline-flex items-center gap-1">
-              <Heart aria-hidden className="h-3 w-3" strokeWidth={2.2} />
+              <Heart aria-hidden className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />
               {item.likes > 0 && <span className="tabular">{item.likes}</span>}
               <span className="sr-only">
                 {item.likes === 0
@@ -197,7 +202,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               </span>
             </span>
             <span className="ml-2.5 inline-flex items-center gap-1">
-              <Share2 aria-hidden className="h-3 w-3" strokeWidth={2.2} />
+              <Share2 aria-hidden className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />
               {item.shares > 0 && <span className="tabular">{item.shares}</span>}
               <span className="sr-only">
                 {item.shares === 0 ? 'Not shared yet' : `Shared ${item.shares} times`}
