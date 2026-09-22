@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Heart } from 'lucide-react'
+import { LikeHeart } from '@/components/like-heart'
 import { progressThrough } from '@/lib/read-insight'
 import { FINISH_DEPTH, IDLE_AFTER_MS, reachedTheEnd } from '@/lib/reading-rule'
 import { remember, wasAsked } from '@/lib/liked'
@@ -72,6 +72,9 @@ export function ReadingPrompt({
 }) {
   const [asking, setAsking] = React.useState(false)
   const [answered, setAnswered] = React.useState<Answered>('none')
+  /* Set the moment "Yes" is pressed, so the heart can play before the
+     question gives way to the thanks. */
+  const [liking, setLiking] = React.useState(false)
 
   React.useEffect(() => {
     if (wasAsked(slug)) return
@@ -139,16 +142,27 @@ export function ReadingPrompt({
       body: JSON.stringify({ slug }),
       keepalive: true,
     }).catch(() => undefined)
-    close('liked', true)
+    /* The heart plays on the button first, and the thanks replace the
+       question once it has: closing at once swapped the button out
+       before a reader could see that their press had done anything. */
+    if (liking) return
+    setLiking(true)
+    navigator.vibrate?.(12)
+    window.setTimeout(() => close('liked', true), 700)
   }
 
   if (answered !== 'none') {
     return (
       <p
         role="status"
-        className="mt-10 text-center font-sans text-[0.9375rem] text-ink-500"
+        className="mt-10 flex items-center justify-center gap-2 text-center font-sans text-[0.9375rem] text-ink-500"
       >
-        {answered === 'liked' ? 'Thank you. May the Lord bless the reading of it.' : null}
+        {answered === 'liked' ? (
+          <>
+            <LikeHeart liked burst={0} className="h-4 w-4 animate-fade-in" />
+            Thank you. May the Lord bless the reading of it.
+          </>
+        ) : null}
       </p>
     )
   }
@@ -169,9 +183,10 @@ export function ReadingPrompt({
           type="button"
           onClick={like}
           data-track="like-article"
-          className="focus-ring inline-flex items-center gap-2 rounded-chip bg-cta px-5 py-2.5 font-sans text-[0.9375rem] font-semibold text-cta-ink transition-colors hover:bg-cta-hover"
+          aria-pressed={liking}
+          className="focus-ring inline-flex items-center gap-2.5 rounded-chip bg-cta px-6 py-3 font-sans text-[1rem] font-semibold text-cta-ink transition-[background-color,transform] hover:bg-cta-hover active:scale-[0.97]"
         >
-          <Heart aria-hidden className="h-4 w-4" strokeWidth={2} />
+          <LikeHeart liked={liking} burst={liking ? 1 : 0} className="h-5 w-5" />
           Yes, it did
         </button>
         <button
