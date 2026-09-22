@@ -83,26 +83,26 @@ describe('the archive row on a phone', () => {
   })
 
   /* The phone's listing at every width: a hairline under each card, and
-     on a desktop a card of 672px at most — the full column (#230) was
-     too big. `sizes` has to say so, or a wide screen fetches for a box
-     half again the size. */
-  it('stands one under another on a desktop too, 672px at most', () => {
+     on a desktop a card the full width of the column. `sizes` has to
+     describe that column — 1040px at the widest — or a wide screen
+     fetches a file for a box half the size and stretches it. */
+  it('stands one under another on a desktop too, the width of the column', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
     const article = html.match(/<article class="([^"]*)"/)?.[1] ?? ''
     expect(article).toContain('border-b')
     expect(article).not.toContain('sm:border-b-0')
-    expect(html).toContain('672px')
-    expect(html).not.toContain('1040px')
+    expect(html).toContain('1040px')
+    expect(html).not.toContain('672px')
   })
 
-  it('keeps the whole of the picture somebody framed', () => {
+  it('crops the picture to a shorter shape, 16:9 on a phone and 2:1 on a desktop', () => {
     const html = renderToStaticMarkup(<PieceRow item={item()} />)
-    /* Every landscape crop in the archive is cut to 16:10, and from `sm`
-       the card shows all of it. On a phone it is 16:9 — a shorter card,
-       at the cost of about five per cent off the top and the bottom,
-       checked against every current picture when it was made. */
+    /* Every landscape crop in the archive is cut to 16:10. On a phone the
+       card is 16:9 and on a desktop a 2:1 strip — both shorter, at the
+       cost of a little off the top and bottom, checked against every
+       current picture when each was chosen. */
     expect(html).toContain('aspect-[16/9]')
-    expect(html).toContain('sm:aspect-[16/10]')
+    expect(html).toContain('sm:aspect-[2/1]')
   })
 
   /* The card is one target, and the picture is more than half of it.

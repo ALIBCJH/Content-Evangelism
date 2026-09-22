@@ -48,10 +48,13 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * now: picture, headline, the opening, the facts, one under another and
  * ruled apart, exactly as on a phone.
  *
- * On a wider screen the card is 672 pixels at most (the listing is held
- * to 42rem). The full column (#230) made a card 1,038 pixels at 1920 and
- * was too big; at 672 a picture is 420 tall, about 1.7 cards a screen,
- * and the 1,312-pixel desktop files are sharp even on a retina screen.
+ * On a wider screen the card is the full width of the listing column and
+ * the picture is a 2:1 strip, not 16:10. Full width at 16:10 (#230) was
+ * too big and 672 pixels (#231) left the right side empty; 2:1 fills the
+ * width with a card 20 per cent shorter than #230 — 1,038 x 519 at 1920,
+ * 786 x 393 at 1440. It costs a tenth off the top and the bottom of each
+ * picture, checked against all thirteen desktop files; the one that lost
+ * words, the highway, is anchored to its top (see `FOCUS`).
  *
  * On a phone the picture is 16:9 rather than 16:10 and the headline a
  * size down, for the same reason: a card was 438 pixels of an 844-pixel
@@ -231,7 +234,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
             headline stays the first thing in the document — the picture
             is `alt=""` and a screen reader passes straight over it. */}
         <span
-          className="relative -mx-5 order-first block aspect-[16/9] overflow-hidden sm:aspect-[16/10] bg-surface-2 sm:mx-0 sm:rounded-md"
+          className="relative -mx-5 order-first block aspect-[16/9] overflow-hidden sm:aspect-[2/1] bg-surface-2 sm:mx-0 sm:rounded-md"
           style={{ containerType: 'inline-size' }}
         >
           {item.thumbnail ? (
@@ -251,11 +254,21 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 }
 
 /** The widths the card's picture is drawn at, per the card's own classes. */
-/* A card's width: the full screen on a phone, the column less its
-   margin on a small tablet, and from there the 672 pixels of the 42rem
-   the listing is held to. */
-const PHONE = '(max-width: 639px) 100vw, (max-width: 767px) 92vw, 672px'
-const DESKTOP = '(max-width: 767px) 92vw, 672px'
+/* A card's width, the listing column itself, measured (#225): the full
+   screen on a phone, the column less its margin until `lg`, 704 at `lg`
+   where a sidebar takes the rest, then 658, 786 and 1038 pixels at 1280,
+   1440 and 1920. Rounded up, because a picture fetched a little large is
+   sharp and one fetched a little small is not. */
+const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
+const DESKTOP = '(max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
+
+/* Where a desktop picture is held in its 2:1 strip, when the centre is
+   the wrong place. Keyed by file, because the crop is a fact about the
+   picture: the highway has its words at the very top, and centred the
+   strip cuts through "ARE YOU". Everything else is centred. */
+const FOCUS: Record<string, string> = {
+  '/images/articles/highway-of-holiness-desktop.webp': 'sm:object-top',
+}
 
 /**
  * The card's picture — the phone's, or the desktop's where one was made.
@@ -304,11 +317,10 @@ function Thumbnail({
 
   return (
     <picture>
-      {/* From `sm`, which is where the card stops being a phone card and
-          becomes a row with the picture at the side. */}
+      {/* From `sm`, where the picture becomes the 2:1 desktop strip. */}
       <source media="(min-width: 640px)" srcSet={desktop.srcSet} sizes={desktop.sizes} />
       {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-      <img {...phone} className="object-cover" />
+      <img {...phone} className={`object-cover ${FOCUS[thumbnail.desktop.src] ?? ''}`} />
     </picture>
   )
 }
