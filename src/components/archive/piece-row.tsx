@@ -48,12 +48,15 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  * now: picture, headline, the opening, the facts, one under another and
  * ruled apart, exactly as on a phone.
  *
- * On a wider screen the card is the full width of the listing column —
- * 786 pixels at 1440, 1,038 at 1920. It was a 36rem phone feed first
- * (#229), and the ministry asked for the cards to use the screen. The
- * cost, known going in: the desktop files are 1,312 pixels, so on a
- * normal-density screen every picture is sharp, and on a retina screen
- * from 1440 up it is stretched a little (about 1.6 times at 1920).
+ * On a wider screen the card is 672 pixels at most (the listing is held
+ * to 42rem). The full column (#230) made a card 1,038 pixels at 1920 and
+ * was too big; at 672 a picture is 420 tall, about 1.7 cards a screen,
+ * and the 1,312-pixel desktop files are sharp even on a retina screen.
+ *
+ * On a phone the picture is 16:9 rather than 16:10 and the headline a
+ * size down, for the same reason: a card was 438 pixels of an 844-pixel
+ * screen. 16:9 takes about five per cent off the top and the bottom of
+ * each picture, which none of the current pictures has anything in.
  *
  * What made it possible is the pictures. When this was a row, most of
  * the archive had a generated colour field and no photograph, and a grid
@@ -66,11 +69,11 @@ import { TeachingArt } from '@/components/archive/teaching-art'
  */
 export function PieceRow({ item, priority = false }: { item: ArchiveItem; priority?: boolean }) {
   return (
-    <article className="group relative border-b border-rule py-6 last:border-b-0 sm:py-9 sm:first:pt-0">
+    <article className="group relative border-b border-rule py-5 last:border-b-0 sm:py-8 sm:first:pt-0">
       {/* A card at every width: the picture on top, the words under it,
           and a hairline under each — the phone's listing, with more air
           between cards where there is room for it. */}
-      <div className="flex flex-col gap-3.5 sm:gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
           {/* No section label. It stood here as a gold kicker and said
               "Teachings" on eight of fourteen rows, which is a word that
@@ -103,7 +106,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
               `.reading-front` and the rule now drawn under every one,
               the headline is the loudest thing on the row, which is what
               a listing is for. */}
-          <h3 className="text-pretty font-article text-[1.3125rem] font-extrabold leading-[1.25] tracking-[-0.008em] text-navy xl:text-[1.375rem] xl:leading-[1.24] xl:tracking-[-0.01em]">
+          <h3 className="text-pretty font-article text-[1.1875rem] font-extrabold leading-[1.26] tracking-[-0.006em] text-navy sm:text-[1.3125rem] sm:leading-[1.25] sm:tracking-[-0.008em] xl:text-[1.375rem] xl:leading-[1.24] xl:tracking-[-0.01em]">
             <Link href={item.href} data-track="read-article" className="focus-ring">
               {/* The whole row follows the headline, so the small print
                   under it is not a second link to the same place.
@@ -228,7 +231,7 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
             headline stays the first thing in the document — the picture
             is `alt=""` and a screen reader passes straight over it. */}
         <span
-          className="relative -mx-5 order-first block aspect-[16/10] overflow-hidden bg-surface-2 sm:mx-0 sm:rounded-md"
+          className="relative -mx-5 order-first block aspect-[16/9] overflow-hidden sm:aspect-[16/10] bg-surface-2 sm:mx-0 sm:rounded-md"
           style={{ containerType: 'inline-size' }}
         >
           {item.thumbnail ? (
@@ -248,13 +251,11 @@ export function PieceRow({ item, priority = false }: { item: ArchiveItem; priori
 }
 
 /** The widths the card's picture is drawn at, per the card's own classes. */
-/* A card's width, the listing column itself, measured (#225): the full
-   screen on a phone, the column less its margin until `lg`, 704 at `lg`
-   where a sidebar takes the rest, then 658, 786 and 1038 pixels at 1280,
-   1440 and 1920. Rounded up, because a picture fetched a little large is
-   sharp and one fetched a little small is not. */
-const PHONE = '(max-width: 639px) 100vw, (max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
-const DESKTOP = '(max-width: 1023px) 92vw, (max-width: 1279px) 704px, (max-width: 1535px) 790px, 1040px'
+/* A card's width: the full screen on a phone, the column less its
+   margin on a small tablet, and from there the 672 pixels of the 42rem
+   the listing is held to. */
+const PHONE = '(max-width: 639px) 100vw, (max-width: 767px) 92vw, 672px'
+const DESKTOP = '(max-width: 767px) 92vw, 672px'
 
 /**
  * The card's picture — the phone's, or the desktop's where one was made.
